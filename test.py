@@ -8,6 +8,7 @@ label = pyglet.text.Label('Hello, world',
                           x=window.width//2, y=window.height//2,
                           anchor_x='center', anchor_y='center')
 # phil war hier
+# Martin war hier
 
 @window.event
 def on_draw():
