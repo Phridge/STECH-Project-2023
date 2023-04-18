@@ -1,4 +1,5 @@
 import pyglet
+from pyglet.window import key
 from reactivex.subject import BehaviorSubject
 
 stuff = BehaviorSubject(None)
@@ -13,7 +14,7 @@ label = pyglet.text.Label("",
 
 
 def reaction(x):
-    label.text = f"Pressed char {chr(x[0])}, modifiers {x[1]}" if x else "Press something"
+    label.text = f"Typed {x}" if x else "Press something"
 
 
 stuff.subscribe(reaction)
@@ -21,14 +22,16 @@ stuff.subscribe(reaction)
 # phil war hier
 # Martin war hier
 
+
 @window.event
 def on_draw():
     window.clear()
     label.draw()
 
+
 @window.event
-def on_key_press(symbol, modifiers):
-    stuff.on_next((symbol, modifiers))
+def on_text(text):
+    stuff.on_next(text)
 
 
 
