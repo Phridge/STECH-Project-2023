@@ -1,3 +1,5 @@
+import os
+
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, Session
 from sqlalchemy import String, ForeignKey, create_engine, select, delete
 from typing import *
@@ -57,7 +59,9 @@ class Char(Base):
     speed: Mapped[float]
 
 
-engine = create_engine("sqlite:///assets/database.sqlite", echo=True)
+os.makedirs("data", exist_ok=True)
+
+engine = create_engine("sqlite:///data/database.sqlite", echo=True)
 Base.metadata.create_all(engine)
 
 with Session(engine) as session:
