@@ -32,20 +32,25 @@ def on_text(text):
     events.text.on_next(text)
 
 
-@window.event
+@window.event #detected Mausbewegung wenn keine Buttons gedrückt sind
 def on_mouse_motion(x, y, dx, dy):
+    events.mouse_move.on_next((x, y, dx, dy))
+    events.mouse.on_next((x, y))
+
+@window.event #detected Mausbewegung wenn Buttons gedrückt sind
+def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
     events.mouse_move.on_next((x, y, dx, dy))
     events.mouse.on_next((x, y))
 
 
 @window.event
-def on_mouse_down(x, y, button, modifiers):
-    events.mouse_button.on_next((True, x, y, button, modifiers))
+def on_mouse_press(x, y, button, modifiers):
+    events.mouse_button.on_next((True, x, y, button))
 
 
 @window.event
-def on_mouse_up(x, y, button, modifiers):
-    events.mouse_button.on_next((False, x, y, button, modifiers))
+def on_mouse_release(x, y, button, modifiers):
+    events.mouse_button.on_next((False, x, y, button))
 
 
 @window.event
@@ -142,11 +147,11 @@ class GameController(Controller):
 
 class JanekController(Controller):
     def __init__(self):
-        self.testButton = uiElements.BorderedRectangleButton(50, 50, 100, 50, 3, (100, 100, 100), (255, 255, 255),
-                                                    (255, 255, 255), (255, 0, 0), events)
+        self.batch = pyglet.graphics.Batch()
+        self.testButton = uiElements.BorderedRectangleButton("TestButton", 50, 50, 100, 50, 3, (100, 100, 100), (255, 255, 255), (255, 255, 255), (255, 0, 0), (0, 0, 150), (0, 0, 255), events, self.batch)
 
     def get_view(self):
-        return self.testButton
+        return self.batch
 
 
 
