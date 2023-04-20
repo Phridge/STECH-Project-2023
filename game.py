@@ -17,7 +17,7 @@ def on_draw():
 class events:
     key = Subject()
     text = Subject()
-    mouse = BehaviorSubject((0, 0))
+    mouse = BehaviorSubject((0, 0, 0))
     mouse_move = Subject()
     mouse_button = Subject()
     size = BehaviorSubject((window.width, window.height))
@@ -36,12 +36,12 @@ def on_text(text):
 @window.event #detected Mausbewegung wenn keine Buttons gedrückt sind
 def on_mouse_motion(x, y, dx, dy):
     events.mouse_move.on_next((x, y, dx, dy))
-    events.mouse.on_next((x, y))
+    events.mouse.on_next((x, y, False))
 
 @window.event #detected Mausbewegung wenn Buttons gedrückt sind
 def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
     events.mouse_move.on_next((x, y, dx, dy))
-    events.mouse.on_next((x, y))
+    events.mouse.on_next((x, y, buttons))
 
 
 @window.event

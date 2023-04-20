@@ -9,13 +9,13 @@ class BorderedRectangleButton(pyglet.shapes.BorderedRectangle):
         self.label = pyglet.text.Label(text, batch=batch, font_name=font_scheme.font_name, font_size=font_scheme.font_size, color=color_scheme.text, anchor_x="center", anchor_y="center", x=x+width//2, y=y+height//2)
 
         def is_hovered(data): # wird aufgerufen um den Button an seinen aktuellen State anzupassen. Kann aufgerufen werden um den State zu checken
-            mouse_x, mouse_y = data
-            if x <= int(mouse_x) <= x+width and y <= int(mouse_y) <= y+height:
+            mouse_x, mouse_y, buttons = data # buttons gibt an welche Maustasten gedrückt sind
+            if buttons is False and x <= int(mouse_x) <= x+width and y <= int(mouse_y) <= y+height: # testet ob Maus über dem Button ist, falls ja wird er gefärbt
                 self.color = color_scheme.hover
                 self.border = color_scheme.hover_border
                 self.label.color = color_scheme.hover_text
                 return True
-            else:
+            elif buttons is False: # elif verhindert, dass gehaltene Knöpfe überschrieben werden
                 self.color = color_scheme.color
                 self.border = color_scheme.border
                 self.label.color = color_scheme.text
@@ -29,8 +29,8 @@ class BorderedRectangleButton(pyglet.shapes.BorderedRectangle):
                 self.border = color_scheme.click_border
                 self.label.color = color_scheme.click_text
                 return True
-            else:
-                is_hovered((mouse_x, mouse_y))
+            else: # falls nicht geclickt wird wird getestet ob gehovert wird
+                is_hovered((mouse_x, mouse_y, mouse_state))
                 return False
 
         events.mouse.subscribe(is_hovered)
@@ -53,11 +53,11 @@ class ClickableSprite(pyglet.sprite.Sprite):
         self.scale_y = height / self.height
 
         def is_hovered(data):  # wird aufgerufen um den Button an seinen aktuellen State anzupassen. Kann aufgerufen werden um den State zu checken
-            mouse_x, mouse_y = data
-            if x <= int(mouse_x) <= x + width and y <= int(mouse_y) <= y + height:
+            mouse_x, mouse_y, buttons = data  # buttons gibt an welche Maustasten gedrückt sind
+            if buttons is False and x <= int(mouse_x) <= x + width and y <= int(mouse_y) <= y + height: # testet ob Maus über dem Button ist, falls ja wird er gefärbt
                 self.color = color_scheme.img_hover
                 return True
-            else:
+            elif buttons is False:  # elif verhindert, dass gehaltene Knöpfe überschrieben werden
                 self.color = (255,255,255)
                 return False
 
@@ -67,8 +67,8 @@ class ClickableSprite(pyglet.sprite.Sprite):
             if mouse_state is True and button == 1 and x <= int(mouse_x) <= x + width and y <= int(mouse_y) <= y + height:
                 self.color = color_scheme.img_click
                 return True
-            else:
-                is_hovered((mouse_x, mouse_y))
+            else: # falls nicht geclickt wird wird getestet ob gehovert wird
+                is_hovered((mouse_x, mouse_y,mouse_state))
                 return False
 
         events.mouse.subscribe(is_hovered)
