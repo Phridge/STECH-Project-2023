@@ -1,7 +1,8 @@
 import pyglet
 from reactivex.subject import BehaviorSubject, Subject
 from reactivex.operators import publish
-import uiElements
+import ui_elements
+import color_scheme
 
 window = pyglet.window.Window(resizable=False)
 
@@ -148,7 +149,7 @@ class GameController(Controller):
 class JanekController(Controller):
     def __init__(self):
         self.batch = pyglet.graphics.Batch()
-        self.testButton = uiElements.BorderedRectangleButton("TestButton", 50, 50, 100, 50, 3, (100, 100, 100), (255, 255, 255), (255, 255, 255), (255, 0, 0), (0, 0, 150), (0, 0, 255), events, self.batch)
+        self.testButton = ui_elements.BorderedRectangleButton("TestButton", 50, 50, 100, 50, color_scheme.color_scheme1, color_scheme.font_scheme1, events, self.batch)
 
     def get_view(self):
         return self.batch
