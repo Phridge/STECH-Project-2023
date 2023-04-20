@@ -10,8 +10,8 @@ class color_scheme1:
     click = (255, 200, 200)
     click_border = (255, 0, 0)
     click_text = (0, 0, 0, 255)
-    img_hover = (200, 200, 200)
-    img_click = (255, 0, 0)
+    img_hover = (150, 150, 150)
+    img_click = (255, 200, 200)
     border_thickness = 1
 
 class font_scheme1:

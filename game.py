@@ -151,8 +151,8 @@ class JanekController(Controller):
         self.batch = pyglet.graphics.Batch()
         self.testButton = ui_elements.BorderedRectangleButton("TestButton", 50, 50, 100, 50, color_scheme.color_scheme1, color_scheme.font_scheme1, events, self.batch)
         self.testSprite = ui_elements.ClickableSprite("images/popcat.png", 200, 50, 600, 300, color_scheme.color_scheme1, events, self.batch)
-        self.testSprite = ui_elements.Sprite("images/popcat.png", 375, 75, 250, 250, color_scheme.color_scheme1, events, self.batch)
-        self.header = ui_elements.BorderedRectangle("lol nicht klickbar", 100, 400, 800, 100, color_scheme.color_scheme1, color_scheme.font_scheme1, events, self.batch)
+        self.testSprite = ui_elements.Sprite("images/popcat.png", 375, 75, 250, 250, color_scheme.color_scheme1, self.batch)
+        self.header = ui_elements.BorderedRectangle("lol nicht klickbar", 100, 400, 800, 100, color_scheme.color_scheme1, color_scheme.font_scheme1, self.batch)
     def get_view(self):
         return self.batch
 
