@@ -2,14 +2,16 @@
 
 class color_scheme1:
     color = (150, 150, 150)
-    border_color = (255, 255, 255)
-    text_color = (0, 0, 0, 255)
-    hover_color = (50, 50, 50)
-    hover_border_color = (150, 150, 150)
-    hover_text_color = (255, 255, 255, 255)
-    click_color = (255, 200, 200)
-    click_border_color = (255, 0, 0)
-    click_text_color = (0, 0, 0, 255)
+    border = (255, 255, 255)
+    text = (0, 0, 0, 255)
+    hover = (50, 50, 50)
+    hover_border = (150, 150, 150)
+    hover_text = (255, 255, 255, 255)
+    click = (255, 200, 200)
+    click_border = (255, 0, 0)
+    click_text = (0, 0, 0, 255)
+    img_hover = (200, 200, 200)
+    img_click = (255, 0, 0)
     border_thickness = 1
 
 class font_scheme1:
