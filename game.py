@@ -99,12 +99,13 @@ class Controller2(Controller):
 
         self.back_label = pyglet.text.Label("Press space to go back", batch=self.batch, font_name="Arial", font_size=36, anchor_x="center", anchor_y="center", x=window.width//2, y=window.height//2)
 
-        events.key.subscribe(self.key_press)
+        self.key_subscrption = events.key.subscribe(self.key_press)
 
     def key_press(self, data):
         key, mods = data
         if key == pyglet.window.key.SPACE:
             self.on_back.on_next(None)
+            self.key_subscrption.dispose()
 
     def get_view(self):
         return self.batch
