@@ -37,11 +37,18 @@ class BorderedRectangleButton(pyglet.shapes.BorderedRectangle):
         events.mouse_button.subscribe(button_clicked)
 
 
+# nicht klickbare Variante für Überschiften o.ä.
+class BorderedRectangle(pyglet.shapes.BorderedRectangle):
+    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, events, batch=None, group=None):
+        pyglet.shapes.BorderedRectangle.__init__(self, x, y, width, height, color_scheme.border_thickness, color_scheme.color, color_scheme.border, batch=batch, group=None)
+        self.label = pyglet.text.Label(text, batch=batch, font_name=font_scheme.font_name, font_size=font_scheme.font_size, anchor_x="center", anchor_y="center", x=x+width//2, y=y+height//2)
+
+
 # Pyglet Sprite wird erwetert um Bilder klickbar machen zu können (nicht Image, da man das nicht skalieren kann)
 class ClickableSprite(pyglet.sprite.Sprite):
-    def __init__(self, path, x, y, z, width, height, color_scheme, events, batch=None):
+    def __init__(self, path, x, y, width, height, color_scheme, events, batch=None):
         image = pyglet.image.load(path)
-        pyglet.sprite.Sprite.__init__(self, image, x, y, z, batch=batch)
+        pyglet.sprite.Sprite.__init__(self, image, x, y, z=1, batch=batch)
         self.scale_x = width / self.width # skaliert das Bild auf die angegebene Pixelzahl
         self.scale_y = height / self.height
 
@@ -66,3 +73,12 @@ class ClickableSprite(pyglet.sprite.Sprite):
 
         events.mouse.subscribe(is_hovered)
         events.mouse_button.subscribe(button_clicked)
+
+
+# nicht klickbare Variante
+class Sprite(pyglet.sprite.Sprite):
+    def __init__(self, path, x, y, width, height, color_scheme, events, batch=None):
+        image = pyglet.image.load(path)
+        pyglet.sprite.Sprite.__init__(self, image, x, y, z=1, batch=batch)
+        self.scale_x = width / self.width # skaliert das Bild auf die angegebene Pixelzahl
+        self.scale_y = height / self.height
