@@ -4,8 +4,8 @@ import pyglet
 
 class BorderedRectangleButton(pyglet.shapes.BorderedRectangle): #Pyglet Rectangle wird erweitert um auszugeben wann gehovert und geklickt wird
     def __init__(self, text, x, y, width, height, color_scheme, font_scheme, events, batch=None, group=None):
-        pyglet.shapes.BorderedRectangle.__init__(self, x, y, width, height, font_scheme.border_thickness, color_scheme.color, color_scheme.border_color, batch=batch, group=None)
-        self.label = pyglet.text.Label(text, batch=batch, font_name="Arial", font_size=12, anchor_x="center", anchor_y="center", x=x+width//2, y=y+height//2)
+        pyglet.shapes.BorderedRectangle.__init__(self, x, y, width, height, color_scheme.border_thickness, color_scheme.color, color_scheme.border_color, batch=batch, group=None)
+        self.label = pyglet.text.Label(text, batch=batch, font_name=font_scheme.font_name, font_size=font_scheme.font_size, anchor_x="center", anchor_y="center", x=x+width//2, y=y+height//2)
 
         def is_hovered(data):
             mouse_x, mouse_y = data
@@ -34,4 +34,3 @@ class BorderedRectangleButton(pyglet.shapes.BorderedRectangle): #Pyglet Rectangl
 
         events.mouse.subscribe(is_hovered)
         events.mouse_button.subscribe(button_clicked)
-
