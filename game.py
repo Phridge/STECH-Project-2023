@@ -157,9 +157,21 @@ class JanekController(Controller):
         return self.batch
 
 
+import widgets
+
+
+class RichardController(Controller):
+    def __init__(self):
+        self.scaffold = widgets.FillBorder((255,) * 4, 30, (55, 55, 0, 255), widgets.ClampSize(100, 100, 150, 150, widgets.Text("Bruh", "Arial", 36, (255,) * 4)))
+        self.scaffold.layout(0, 0, window.width, window.height)
+
+    def get_view(self):
+        b = pyglet.graphics.Batch()
+        self.stuff = self.scaffold.fill_batch(b)
+        return b
 
 
 controller = JanekController()
-
+# controller = RichardController()
 
 pyglet.app.run(1/30)
