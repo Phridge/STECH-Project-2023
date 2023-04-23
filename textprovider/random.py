@@ -12,7 +12,7 @@ class RandomTextProvider(TextProvider):
         return "".join(random.choice(chars) for _ in range(length))
 
     def get_text(self, args: TextProviderArgs):
-        target_length = random.randrange(args.min_length, args.max_length - 10)
+        target_length = random.randrange(args.min_length, args.max_length)
         acc = ""
         while len(acc) < target_length:
             wordlen = random.triangular(3, 10, 5)
