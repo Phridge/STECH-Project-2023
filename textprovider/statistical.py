@@ -1,11 +1,11 @@
 import dataclasses
-from typing import Dict, Set
+from collections import defaultdict
+from operator import itemgetter
+from typing import Dict, Set, Tuple
 
-from . import TextProvider, TextProviderArgs
+from . import TextProvider, TextProviderArgs, CannotGenerateText, random_word_len
 
 import random
-
-
 
 
 @dataclasses.dataclass
@@ -13,6 +13,57 @@ class TextStatistics:
     twograms: Dict[str, int]
     char_count: Dict[str, int]
     allowed_chars: Set[str]
+
+
+class CharProbTable:
+    table: Dict[str, Dict[str, float]]
+
+    def __init__(self, table):
+        self.table = table
+
+    @classmethod
+    def from_twograms(cls, twograms: Dict[str, int]):
+        char_counts = defaultdict(int)
+        for (c, _), count in twograms.items():
+            char_counts[c] += count
+
+        table = defaultdict(dict)
+
+        for (c1, c2), count in twograms.items():
+            table[c1][c2] = count / char_counts[c1]
+
+        return CharProbTable(table)
+
+    def probs_for(self, char):
+        return self.table.get(char, {})
+
+    def rand_followup_char(self, char):
+        choices = list(self.table[char].items())
+        if not choices:
+            raise KeyError(char)
+        index = select_random(map(itemgetter(1), choices))
+        return choices[index][0]
+
+    def _recalc_probs(self):
+        for c, table in self.table.items():
+            s = sum(table.values())
+            self.table[c] = {c: p / s for c, p in table.items()}
+
+    def retain(self, pred):
+        new_table = {}
+        for c1, table_ in self.table.items():
+            new_table_ = {}
+            for c2, p in table_.items():
+                if not pred(c1, c2):
+                    continue
+                new_table_[c2] = p
+            new_table[c1] = new_table_
+
+        cpt = CharProbTable(new_table)
+        cpt._recalc_probs()
+        return cpt
+
+
 
 
 def select_random(probs, total=1.0):
@@ -28,18 +79,7 @@ def select_random(probs, total=1.0):
 class StatisticalTextProvider(TextProvider):
 
     def __init__(self, char_probs: TextStatistics):
-        followup_table = {}
-        all_chars = set(pair[0] for pair, _ in char_probs.twograms.items())
-
-        for char in all_chars:
-            followup_chars = [(pair[1], count) for pair, count in char_probs.twograms.items() if pair[0] == char]
-            total_count = sum(count for _, count in followup_chars)
-            followup_chars = [(char, count / total_count) for char, count in followup_chars]
-            followup_table[char] = followup_chars
-
-        self.followup_table = followup_table
-
-
+        self.table = CharProbTable.from_twograms(char_probs.twograms)
 
     @classmethod
     def from_pickle(cls, path):
@@ -47,33 +87,31 @@ class StatisticalTextProvider(TextProvider):
         char_probs = pickle.load(open(path, "rb"))
         return cls(char_probs)
 
-    def generate_word(self):
+    def generate_word(self, table, chars):
         current = " "
+        target_len = random_word_len()
         acc = ""
-
-        while True:
-            next_options = self.followup_table[current]
-            next_index = select_random(map(lambda x: x[1], next_options))
-            next_char = next_options[next_index][0]
-            if next_char == " ":
-                break
-            acc += next_char
-            current = next_char
+        for _ in range(target_len):
+            try:
+                next = table.rand_followup_char(current)
+            except KeyError:
+                next = random.choice(chars)
+            acc += next
+            current = next
 
         return acc
 
-
-    def get_reduced_followup_table(self, chars):
-        pass
-
     def get_text(self, args: TextProviderArgs):
-        acc = ""
-        while True:
-            acc += self.generate_word() + " "
-            cutoff_chance = max(0., min(1., (len(acc) - args.min_length) / (args.max_length - args.min_length))) ** 2
-            if random.random() < cutoff_chance:
-                break
-        if len(acc) > args.max_length:
-            acc = acc[:args.max_length]
-        return acc.rstrip()
+        try:
+            table = self.table.retain(lambda c1, c2: (c1 in args.chars or c1 == " ") and c2 in args.chars)
 
+            target_len = random.randrange(args.min_length, args.max_length)
+
+            acc = ""
+            while len(acc) < target_len:
+                acc += self.generate_word(table, args.chars) + " "
+            if len(acc) > args.max_length:
+                acc = acc[:args.max_length]
+            return acc.rstrip()
+        except KeyError:
+            raise CannotGenerateText(f"Unable to generate text with chars {args.chars!r}, available are {''.join(sorted(self.table.table.keys())).strip()!r}")

@@ -1,5 +1,6 @@
 import abc
 import dataclasses
+import random
 from typing import Set
 from enum import Enum
 
@@ -30,3 +31,7 @@ class CannotGenerateText(Exception):
 class TextProvider(abc.ABC):
     def get_text(self, args: TextProviderArgs):
         raise NotImplementedError
+
+
+def random_word_len():
+    return int(random.triangular(3, 11, 5))
