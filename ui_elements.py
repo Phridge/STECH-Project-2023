@@ -33,12 +33,12 @@ class BorderedRectangleButton(pyglet.shapes.Rectangle):  # pyglet.BorderedRectan
             mouse_x, mouse_y, buttons = data  # buttons gibt an welche Maustasten gedrückt sind
             if buttons is False and x_px <= int(mouse_x) <= x_px+width_px and y_px <= int(mouse_y) <= y_px+height_px:  # testet ob Maus über dem Button ist, falls ja wird er gefärbt
                 self.color = color_scheme.hover
-                self.border = color_scheme.hover_border
+                self.borderRectangle.color = color_scheme.hover_border
                 self.label.color = color_scheme.hover_text
                 return True
             elif buttons is False:  # elif verhindert, dass gehaltene Knöpfe überschrieben werden
                 self.color = color_scheme.color
-                self.border = color_scheme.border
+                self.borderRectangle.color = color_scheme.border
                 self.label.color = color_scheme.text
                 return False
 
@@ -46,7 +46,7 @@ class BorderedRectangleButton(pyglet.shapes.Rectangle):  # pyglet.BorderedRectan
             mouse_state, mouse_x, mouse_y, button = data  # button zeigt den gedrückten knopf: Links=1, Rad=2, Rechts=4
             if mouse_state is True and button == 1 and x_px <= int(mouse_x) <= x_px+width_px and y_px <= int(mouse_y) <= y_px+height_px:
                 self.color = color_scheme.click
-                self.border = color_scheme.click_border
+                self.borderRectangle.color = color_scheme.click_border
                 self.label.color = color_scheme.click_text
                 return True
             else:  # falls nicht geclickt wird wird getestet ob gehovert wird
@@ -96,7 +96,7 @@ class ClickableSprite(pyglet.sprite.Sprite):
 
         # zeichnet das Bild in der richtigen Größe
         image = pyglet.image.load(path)
-        pyglet.sprite.Sprite.__init__(self, image, x_px, y_px, z=1, batch=batch)
+        pyglet.sprite.Sprite.__init__(self, image, x_px, y_px, batch=batch)
         self.scale_x = width_px / self.width  # skaliert das Bild auf die angegebene Pixelzahl
         self.scale_y = height_px / self.height
 
@@ -132,9 +132,56 @@ class Sprite(pyglet.sprite.Sprite):
         x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
 
         image = pyglet.image.load(path)
-        pyglet.sprite.Sprite.__init__(self, image, x_px, y_px, z=1, batch=batch)
+        pyglet.sprite.Sprite.__init__(self, image, x_px, y_px, batch=batch)
         self.scale_x = width_px / self.width  # skaliert das Bild auf die angegebene Pixelzahl
         self.scale_y = height_px / self.height
+
+
+# Pyglet Sprite wird erweitert um Bilder klickbar machen zu können (nicht reines Image, da man das nicht skalieren kann)
+class BorderedClickableSprite(pyglet.sprite.Sprite):
+    def __init__(self, path,
+                 x, y, width, height,  # alle Angaben in %
+                 color_scheme, events, batch=None):
+
+        # konvertiert die Prozentangaben zu Pixeln
+        x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
+
+        # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
+        self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
+                                                       color_scheme.border,  # Style wird mitgegeben
+                                                       batch=batch, group=None)
+
+        image = pyglet.image.load(path)
+        pyglet.sprite.Sprite.__init__(self, image,
+                                      x_px + color_scheme.border_thickness,
+                                      y_px + color_scheme.border_thickness, batch=batch)
+        self.scale_x = (
+                                   width_px - 2 * color_scheme.border_thickness) / self.width  # skaliert das Bild auf die angegebene Pixelzahl
+        self.scale_y = (height_px - 2 * color_scheme.border_thickness) / self.height
+
+        def is_hovered(data):  # wird aufgerufen um den Button an seinen aktuellen State anzupassen. Kann aufgerufen werden um den State zu checken
+            mouse_x, mouse_y, buttons = data  # buttons gibt an welche Maustasten gedrückt sind
+            if buttons is False and x_px <= int(mouse_x) <= x_px+width_px and y_px <= int(mouse_y) <= y_px+height_px: # testet ob Maus über dem Button ist, falls ja wird er gefärbt
+                self.color = color_scheme.img_hover
+                self.borderRectangle.color = color_scheme.hover_border
+                return True
+            elif buttons is False:  # elif verhindert, dass gehaltene Knöpfe überschrieben werden
+                self.color = (255, 255, 255)  # Bild ist standardmäßig normal
+                self.borderRectangle.color = color_scheme.border
+                return False
+
+        def button_clicked(data):  # detected wenn der Button gedrückt wird.
+            mouse_state, mouse_x, mouse_y, button = data  # button zeigt den gedrückten knopf: Links=1, Rad=2, Rechts=4
+            if mouse_state is True and button == 1 and x_px <= int(mouse_x) <= x_px+width_px and y_px <= int(mouse_y) <= y_px+height_px:
+                self.color = color_scheme.img_click
+                self.borderRectangle.color = color_scheme.click_border
+                return True
+            else:  # falls nicht geclickt wird wird getestet ob gehovert wird
+                is_hovered((mouse_x, mouse_y, mouse_state))
+                return False
+
+        events.mouse.subscribe(is_hovered)
+        events.mouse_button.subscribe(button_clicked)
 
 
 class BorderedSprite(pyglet.sprite.Sprite):
@@ -153,8 +200,7 @@ class BorderedSprite(pyglet.sprite.Sprite):
         image = pyglet.image.load(path)
         pyglet.sprite.Sprite.__init__(self, image,
                                       x_px + color_scheme.border_thickness,
-                                      y_px + color_scheme.border_thickness,
-                                      z=1, batch=batch)
+                                      y_px + color_scheme.border_thickness, batch=batch)
         self.scale_x = (width_px - 2 * color_scheme.border_thickness) / self.width  # skaliert das Bild auf die angegebene Pixelzahl
         self.scale_y = (height_px - 2 * color_scheme.border_thickness) / self.height
 
