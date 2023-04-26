@@ -31,7 +31,7 @@ class Widget(abc.ABC):
         return None
 
 
-class MixinWidget(abc.ABC, Widget):
+class MixinWidget(Widget, abc.ABC):
     def __init__(self, inner):
         super().__init__()
         self.inner = inner
@@ -119,7 +119,7 @@ class HitBox(MixinWidget):
         return self.inner.is_hit(x, y) or (self.x <= x < self.x + self.w and self.y <= y < self.y + self.h and self.key)
 
 
-class CompositeWidget(abc.ABC, Widget):
+class CompositeWidget(Widget, abc.ABC):
     def __init__(self):
         super().__init__()
         self._inner = None
