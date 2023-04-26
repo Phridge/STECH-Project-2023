@@ -1,3 +1,5 @@
+import abc
+
 import pyglet
 
 
@@ -5,7 +7,8 @@ import pyglet
 def new_key():
     return object()
 
-class Widget:
+
+class Widget(abc.ABC):
     def __init__(self):
         self.x = 0
         self.y = 0
@@ -24,6 +27,31 @@ class Widget:
     def get_interactions(self, env, collector):
         pass
 
+    def is_hit(self, x, y):
+        return None
+
+
+class MixinWidget(abc.ABC, Widget):
+    def __init__(self, inner):
+        super().__init__()
+        self.inner = inner
+
+    def preferred_size(self, w, h):
+        return self.inner.preferred_size(w, h)
+
+    def layout(self, x, y, w, h):
+        self.inner.layout(x, y, w, h)
+        self.x, self.y, self.w, self.h = x, y, w, h
+
+    def fill_batch(self, batch):
+        return self.inner.fill_batch(batch)
+
+    def get_interactions(self, env, collector):
+        return self.inner.get_interactions(env, collector)
+
+    def is_hit(self, x, y):
+        return self.inner.is_hit(x, y)
+
 
 class Fill(Widget):
     def __init__(self, color):
@@ -34,13 +62,12 @@ class Fill(Widget):
         return [pyglet.shapes.Rectangle(self.x, self.y, self.w, self.h, self.color, batch)]
 
 
-class FillBorder(Widget):
+class FillBorder(MixinWidget):
     def __init__(self, border_color, border_width, fill_color, inner):
-        super().__init__()
+        super().__init__(inner)
         self.bc = border_color
         self.bw = border_width
         self.fc = fill_color
-        self.inner = inner
 
     def preferred_size(self, w, h):
         iw, ih = self.inner.preferred_size(max(0, w - 2 * self.bw), max(0, h - 2 * self.bw))
@@ -68,12 +95,11 @@ class Text(Widget):
         return [pyglet.text.Label(self.text, self.font, self.font_size, color=self.color, x=self.x, y=self.y, width=self.w, height=self.h, batch=batch)]
 
 
-class ClampSize(Widget):
+class ClampSize(MixinWidget):
     def __init__(self, min_w, max_w, min_h, max_h, inner):
-        super().__init__()
+        super().__init__(inner)
         self.min_w, self.min_h = min_w, min_h
         self.max_w, self.max_h = max_w, max_h
-        self.inner = inner
 
     def preferred_size(self, w, h):
         return self.inner.preferred_size(max(min(w, self.max_w), self.min_w), max(min(h, self.max_h), self.min_h))
@@ -83,32 +109,45 @@ class ClampSize(Widget):
         self.x, self.y = x, y
         self.w, self.h = self.inner.w, self.inner.h
 
+
+class HitBox(MixinWidget):
+    def __init__(self, key, inner):
+        super().__init__(inner)
+        self.key = key
+
+    def is_hit(self, x, y):
+        return self.inner.is_hit(x, y) or (self.x <= x < self.x + self.w and self.y <= y < self.y + self.h and self.key)
+
+
+class CompositeWidget(abc.ABC, Widget):
+    def __init__(self):
+        super().__init__()
+        self._inner = None
+
+    @property
+    def inner(self):
+        if not self._inner:
+            self._inner = self.render()
+        return self._inner
+
+    def _set_dirty(self):
+        self._inner = None
+
+    def render(self):
+        raise NotImplementedError
+
     def fill_batch(self, batch):
         return self.inner.fill_batch(batch)
-
-
-class Clickable(Widget):
-    def __init__(self, hover_key, down_key, inner):
-        super().__init__()
-        self.hk = hover_key
-        self.dk = down_key
-        self.inner = inner
 
     def preferred_size(self, w, h):
         return self.inner.preferred_size(w, h)
 
     def layout(self, x, y, w, h):
         self.inner.layout(x, y, w, h)
+        self.x, self.y, self.w, self.h = x, y, w, h
 
-    def fill_batch(self, batch):
-        return self.inner.fill_batch(batch)
+    def get_interactions(self, env, collector):
+        return self.inner.get_interactions(env, collector)
 
-    def get_events(self, env, collector):
-        mouse_pos = env.mouse_pos
-        if self.x <= mouse_pos[0] < self.x + self.w and self.y <= mouse_pos[1] < self.y + self.h:
-            collector[self.hk] = True
-            if env.mouse_keys[0]:
-                collector[self.dk] = True
-
-        self.inner.get_events(env, collector)
-
+    def is_hit(self, x, y):
+        return self.inner.is_hit(x, y)
