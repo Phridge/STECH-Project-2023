@@ -152,8 +152,9 @@ class JanekController(Controller):
         # x, y, width und height in % angegeben
         self.testButton = ui_elements.BorderedRectangleButton("TestButton", 10, 55, 80, 20, color_scheme.DarkPurple, color_scheme.Font1, events, self.batch)
         self.header = ui_elements.BorderedRectangle("lol nicht klickbar", 0, 80, 100, 20, color_scheme.BlackWhite, color_scheme.Font1, events, self.batch)
-        self.testSprite = ui_elements.ClickableSprite("images/popcat.png", 20, 10, 60, 40, color_scheme.BlackWhite, events, self.batch)
-        self.testSprite = ui_elements.Sprite("images/popcat.png", 35, 15, 30, 30, color_scheme.BlackWhite, events, self.batch)
+        # self.testSprite = ui_elements.ClickableSprite("images/popcat.png", 20, 10, 60, 40, color_scheme.BlackWhite, events, self.batch)
+        # self.testSprite = ui_elements.Sprite("images/popcat.png", 35, 15, 30, 30, events, self.batch)
+        self.borderedSprite = ui_elements.BorderedSprite("images/popcat.png", 35, 15, 30, 30, color_scheme.BlackWhite, events, self.batch)
 
     def get_view(self):
         return self.batch
@@ -172,7 +173,7 @@ class RichardController(Controller):
         self.stuff = self.scaffold.fill_batch(b)
         return b
 
-
+# controller = GameController()
 controller = JanekController()
 # controller = RichardController()
 

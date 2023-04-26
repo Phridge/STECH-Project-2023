@@ -12,7 +12,7 @@ class BlackWhite:   # klassisches achromatisches Farbschema
     click_text = (0, 0, 0, 255)         # Text beim Klicken
     img_hover = (150, 150, 150)         # Bilder beim Hovern
     img_click = (100, 100, 100)         # Bilder beim Klicken
-    border_thickness = 3
+    border_thickness = 2
 
 
 class DarkPurple:   # Dunkles Farbschema, mit lila Akzenten
@@ -27,7 +27,7 @@ class DarkPurple:   # Dunkles Farbschema, mit lila Akzenten
     click_text = (200, 50, 255, 255)  # Text beim Klicken
     img_hover = (200, 150, 255)  # Bilder beim Hovern
     img_click = (175, 100, 255)  # Bilder beim Klicken
-    border_thickness = 3
+    border_thickness = 2
 
 
 class Font1:
