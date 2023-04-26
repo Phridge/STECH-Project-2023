@@ -1,3 +1,5 @@
+import logging
+
 import pyglet
 # Erweitert die Pyglet-Klassen, um daraus Buttons, Banner und Formen zu machen
 
@@ -207,23 +209,24 @@ class BorderedSprite(pyglet.sprite.Sprite):
 
 class Gif(pyglet.sprite.Sprite):  # lädt ein Gif
     def __init__(self, path,
-                 x, y, width, height,  # alle Angaben in %
-                 color_scheme, events, batch=None):
+                 x, y, width, height, duration, loop,  # alle Angaben in %
+                 events, batch=None):
 
         # konvertiert die Prozentangaben zu Pixeln
         x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
 
-        # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
-        self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
-                                                       color_scheme.border,  # Style wird mitgegeben
-                                                       batch=batch, group=None)
-
         image = pyglet.image.load_animation(path)
-        pyglet.sprite.Sprite.__init__(self, image,
-                                      x_px + color_scheme.border_thickness,
-                                      y_px + color_scheme.border_thickness, batch=batch)
-        self.scale_x = (width_px - 2 * color_scheme.border_thickness) / self.width  # skaliert das Bild auf die angegebene Pixelzahl
-        self.scale_y = (height_px - 2 * color_scheme.border_thickness) / self.height
+        animationFrames = []
+        for frames in image.frames:
+            animationFrames.append(frames)
+
+        animation = image.from_image_sequence(animationFrames, duration=duration / len(animationFrames), loop=loop)
+
+        pyglet.sprite.Sprite.__init__(self, animation, x_px, y_px, batch=batch)
+
+        self.scale_x = width_px / self.width  # skaliert das Bild auf die angegebene Pixelzahl
+        self.scale_y = height_px / self.height
+
 
 
 # Klasse, die die Umrechnung von Prozent in Pixel ermöglicht
