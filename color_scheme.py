@@ -30,7 +30,5 @@ class DarkPurple:   # Dunkles Farbschema, mit lila Akzenten
     border_thickness = 2
 
 
-class Font1:
-    header_font_size = 36
-    font_size = 13
+class Arial:
     font_name = "Arial"

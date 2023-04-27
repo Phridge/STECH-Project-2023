@@ -1,10 +1,14 @@
+import logging
+
 import pyglet
 from reactivex.subject import BehaviorSubject, Subject
+from reactivex.disposable import CompositeDisposable
 from reactivex.operators import publish
 import ui_elements
 import color_scheme
+import widgets
 
-window = pyglet.window.Window(resizable=False)
+window = pyglet.window.Window(resizable=True)
 
 
 @window.event
@@ -21,7 +25,6 @@ class events:
     mouse_move = Subject()
     mouse_button = Subject()
     size = BehaviorSubject((window.width, window.height))
-
 
 @window.event
 def on_key_press(keycode, mods):
@@ -159,7 +162,45 @@ class JanekController(Controller):
         return self.batch
 
 
-import widgets
+class StartScreen(Controller):
+    def __init__(self):
+        self.batch = pyglet.graphics.Batch()
+
+        # Liste, die sämtliche subscriptions fängt, um sie beim Wechseln des Controllers wieder freizugeben
+        sublist = []
+
+        # Erstes Layout für den Hauptbildschirm
+        self.background = ui_elements.Sprite("images/StartScreenBackground.png", 0, 0, 100, 100, events, sublist, self.batch)
+        self.Header = ui_elements.BorderedRectangle("Die Maschinen-Revolution", 20, 75, 60, 20, color_scheme.BlackWhite, color_scheme.Arial, 6, events, sublist, self.batch)
+        self.save1 = ui_elements.BorderedRectangleButton("Spielstand 1", 35, 55, 30, 10, color_scheme.BlackWhite, color_scheme.Arial, 6, events, sublist, self.batch)
+        self.save2 = ui_elements.BorderedRectangleButton("Spielstand 2", 35, 42.5, 30, 10, color_scheme.BlackWhite, color_scheme.Arial, 6, events, sublist, self.batch)
+        self.save3 = ui_elements.BorderedRectangleButton("Spielstand 3", 35, 30, 30, 10, color_scheme.BlackWhite, color_scheme.Arial, 6, events, sublist, self.batch)
+        self.delete_save1 = ui_elements.BorderedRectangleButton("Neu", 67.5, 55, 12.5, 10, color_scheme.BlackWhite, color_scheme.Arial, 20, events, sublist, self.batch)
+        self.delete_save2 = ui_elements.BorderedRectangleButton("Neu", 67.5, 42.5, 12.5, 10, color_scheme.BlackWhite, color_scheme.Arial, 20, events, sublist, self.batch)
+        self.delete_save3 = ui_elements.BorderedRectangleButton("Neu", 67.5, 30, 12.5, 10, color_scheme.BlackWhite, color_scheme.Arial, 20, events, sublist, self.batch)
+
+        # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
+        sublist.extend((self.save1.clicked.subscribe(lambda _: self.save_clicked(1)),
+                        self.save2.clicked.subscribe(lambda _: self.save_clicked(2)),
+                        self.save3.clicked.subscribe(lambda _: self.save_clicked(3)),
+                        self.delete_save1.clicked.subscribe(lambda _: self.delete_save(1)),
+                        self.delete_save2.clicked.subscribe(lambda _: self.delete_save(2)),
+                        self.delete_save3.clicked.subscribe(lambda _: self.delete_save(3))))
+        self.disposable = CompositeDisposable(sublist)
+
+
+    def save_clicked(self, data):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
+        logging.warning(data)
+
+    def delete_save(self, data):  # Wird getriggert, wenn ein Spielstand gelöscht werden soll
+        logging.warning(("Deleting Save", data))
+
+    def dispose_subs(self):  # Muss getriggert werden, wenn der Screen gewechselt wird.
+        self.disposable.dispose()
+
+    def get_view(self):  # Erzeugt den aktuellen View
+        return self.batch
+
 
 class RichardController(Controller):
     def __init__(self):
@@ -173,7 +214,8 @@ class RichardController(Controller):
 
 
 # controller = GameController()
-controller = JanekController()
+# controller = JanekController()
+controller = StartScreen()
 # controller = RichardController()
 
 pyglet.app.run(1/30)
