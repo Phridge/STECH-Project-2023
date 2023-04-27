@@ -153,7 +153,7 @@ class JanekController(Controller):
         self.testButton = ui_elements.BorderedRectangleButton("TestButton", 10, 55, 80, 20, color_scheme.BlackWhite, color_scheme.Font1, events, self.batch)
         self.header = ui_elements.BorderedRectangle("lol nicht klickbar", 0, 80, 100, 20, color_scheme.DarkPurple, color_scheme.Font1, events, self.batch)
         self.testSprite = ui_elements.BorderedClickableSprite("images/popcat.png", 20, 10, 60, 40, color_scheme.BlackWhite, events, self.batch)
-        self.borderedSprite = ui_elements.Gif("images/popcat.gif", 35, 15, 30, 30, 3, False, events, self.batch)
+        self.borderedSprite = ui_elements.GifButton("images/popcat.gif", 35, 15, 30, 30, 1, False, events, self.batch)
 
     def get_view(self):
         return self.batch

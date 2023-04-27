@@ -209,24 +209,57 @@ class BorderedSprite(pyglet.sprite.Sprite):
 
 class Gif(pyglet.sprite.Sprite):  # lädt ein Gif
     def __init__(self, path,
-                 x, y, width, height, duration, loop,  # alle Angaben in %
+                 x, y, width, height,  # alle Angaben in %
+                 duration, loop,  # duration = Zeit für einen Durchlauf des Gif
                  events, batch=None):
 
         # konvertiert die Prozentangaben zu Pixeln
         x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
 
+        # erstellt ein neues custom gif aus den Einzelbildern des gif
         image = pyglet.image.load_animation(path)
-        animationFrames = []
+        animation_frames = []
         for frames in image.frames:
-            animationFrames.append(frames)
+            animation_frames.append(frames.__getattribute__("image"))
 
-        animation = image.from_image_sequence(animationFrames, duration=duration / len(animationFrames), loop=loop)
+        animation = image.from_image_sequence(animation_frames, duration=duration / len(animation_frames), loop=loop)
 
         pyglet.sprite.Sprite.__init__(self, animation, x_px, y_px, batch=batch)
 
         self.scale_x = width_px / self.width  # skaliert das Bild auf die angegebene Pixelzahl
         self.scale_y = height_px / self.height
 
+
+class GifButton(pyglet.sprite.Sprite):  # lädt ein Gif
+    def __init__(self, path,
+                 x, y, width, height,  # alle Angaben in %
+                 duration, loop,  # duration = Zeit für einen Durchlauf des Gif
+                 events, batch=None):
+
+        # konvertiert die Prozentangaben zu Pixeln
+        x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
+
+        # erstellt ein neues custom gif aus den Einzelbildern des gif
+        image = pyglet.image.load_animation(path)
+        animation_frames = []
+        for frames in image.frames:
+            animation_frames.append(frames.__getattribute__("image"))
+
+        animation = image.from_image_sequence(animation_frames, duration=duration / len(animation_frames), loop=loop)
+
+        pyglet.sprite.Sprite.__init__(self, animation, x_px, y_px, batch=batch)
+
+        self.scale_x = width_px / self.width  # skaliert das Bild auf die angegebene Pixelzahl
+        self.scale_y = height_px / self.height
+
+        def button_clicked(data):  # detected wenn der Button gedrückt wird.
+            mouse_state, mouse_x, mouse_y, button = data  # button zeigt den gedrückten knopf: Links=1, Rad=2, Rechts=4
+            if mouse_state is True and button == 1 and x_px <= int(mouse_x) <= x_px+width_px and y_px <= int(mouse_y) <= y_px+height_px:
+                return True
+            else:  # falls nicht geclickt
+                return False
+
+        events.mouse_button.subscribe(button_clicked)
 
 
 # Klasse, die die Umrechnung von Prozent in Pixel ermöglicht
