@@ -34,10 +34,6 @@ class DarkPurple:   # Dunkles Farbschema, mit lila Akzenten
     border_thickness = 2
 
 
-class Arial:
-    font_name = "Arial"
-
-
 def add_font(font_name):
     if not font.have_font(font_name):
         resource.add_font('resource/' + font_name + '.ttf')
@@ -45,11 +41,10 @@ def add_font(font_name):
     return font_name
 
 
-class Minecraft:
-    def __init__(self):
-        resource.add_font('resource/Minecraft.ttf')
-        font.load("Minecraft")
-        logging.warning("Schrift importiert")
+class Arial:
+    font_name = "Arial"
 
+
+class Minecraft:
     font_name = add_font("Minecraft")
 
