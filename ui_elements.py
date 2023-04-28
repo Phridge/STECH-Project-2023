@@ -1,7 +1,16 @@
+from reactivex.disposable import CompositeDisposable
 from reactivex.subject import Subject
 import pyglet
+from pyglet.text import Label, HTMLLabel, DocumentLabel
+from pyglet.gui.widgets import Caret
 # Erweitert die Pyglet-Klassen, um daraus Buttons, Banner und Formen zu machen
 
+
+class Disposable:
+    def dispose(self):
+        for attr, value in vars(self).items():
+            if hasattr(value, "dispose"):
+                value.dispose()
 
 class BorderedRectangleButton:  # Es wird keine Klasse erweitert, damit man die Objekte in der Runtime neu zeichnen kann
     def __init__(self, text,
@@ -33,7 +42,7 @@ class BorderedRectangleButton:  # Es wird keine Klasse erweitert, damit man die 
                                        anchor_x="center", anchor_y="center",
                                        # Text wird in die Mitte des Buttons gezeichnet
                                        batch=batch, font_name=font_scheme.font_name,
-                                       font_size=width_px // (100 // font_size), color=color_scheme.text)
+                                       font_size=width_px // (100 / font_size), color=color_scheme.text)
 
 
         def is_hovered(data):  # wird aufgerufen um den Button visuell anzupassen, falls er gehovert wird
@@ -80,7 +89,7 @@ class BorderedRectangleButton:  # Es wird keine Klasse erweitert, damit man die 
             # skaliert den Text
             self.label.x = self.x_px+self.width_px//2
             self.label.y = self.y_px+self.height_px//2
-            self.label.font_size = self.width_px//(100//font_size)
+            self.label.font_size = self.width_px//(100/font_size)
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         sublist.append(events.size.subscribe(resize))
@@ -122,7 +131,7 @@ class BorderedRectangle: # Es wird keine Klasse erweitert, damit man die Objekte
                                        anchor_x="center", anchor_y="center",
                                        # Text wird in die Mitte des Buttons gezeichnet
                                        batch=batch, font_name=font_scheme.font_name,
-                                       font_size=width_px // (100 // font_size), color=color_scheme.text)
+                                       font_size=width_px // (100 / font_size), color=color_scheme.text)
 
         def resize(data):  # passt alle Objekte an, wenn sich die Bildschirmgröße ändert
             # konvertiert die Prozentangaben zu Pixeln
@@ -143,7 +152,7 @@ class BorderedRectangle: # Es wird keine Klasse erweitert, damit man die Objekte
             # skaliert den Text
             self.label.x = self.x_px + self.width_px // 2
             self.label.y = self.y_px + self.height_px // 2
-            self.label.font_size = self.width_px // (100 // font_size)
+            self.label.font_size = self.width_px // (100 / font_size)
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         sublist.append(events.size.subscribe(resize))
@@ -366,9 +375,7 @@ class Gif(pyglet.sprite.Sprite):  # lädt ein Gif
                  duration, loop,  # duration = Zeit für einen Durchlauf des Gif
                  events,  # die events aus game.py werden mitgegeben, auf Veränderungen zu reagieren
                  sublist,  # Liste an Subscriptions des aktuellen Controllers
-                 batch=None, group=None):  # Batch ermöglicht, dass alles gleichzeitig gerendert wird. Dadurch läuft das Programm effizienter
-
-        # konvertiert die Prozentangaben zu Pixeln
+                 batch=None, group=None):  # Batch ermöglicht, dass alles gleichzeitig gerendert wird. Dadurch läuft das Programm effizienter        # konvertiert die Prozentangaben zu Pixeln
         x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
 
         # erstellt eine Liste der einzelnen Bilder des Gifs
@@ -453,6 +460,7 @@ class GifButton(pyglet.sprite.Sprite):  # lädt ein Gif
 
         # eigenes Event des Buttons, welches abfängt, wenn der Button gedrückt wird
         self.clicked = Subject()
+
 
 
 # Klasse, die die Umrechnung von Prozent in Pixel ermöglicht
