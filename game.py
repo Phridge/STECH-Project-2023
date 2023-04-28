@@ -77,8 +77,8 @@ class Controller1(Controller):
         self.active_letter = rchar()
 
         self.batch = pyglet.graphics.Batch()
-        self.mouse_pos = pyglet.text.Label(font_name="Arial", font_size=36, anchor_y="bottom", anchor_x="left", batch=self.batch)
-        self.write_letter = pyglet.text.Label(self.active_letter, font_name="Arial", font_size=50, anchor_y="center", anchor_x="center", batch=self.batch)
+        self.mouse_pos = pyglet.text.Label(font_name="Minecraft", font_size=36, anchor_y="bottom", anchor_x="left", batch=self.batch)
+        self.write_letter = pyglet.text.Label(self.active_letter, font_name="Minecraft", font_size=50, anchor_y="center", anchor_x="center", batch=self.batch)
 
         def mouse(data):
             self.mouse_pos.text = str(data)
@@ -105,7 +105,7 @@ class Controller2(Controller):
 
         self.batch = pyglet.graphics.Batch()
 
-        self.back_label = pyglet.text.Label("Press space to go back", batch=self.batch, font_name="Arial", font_size=36, anchor_x="center", anchor_y="center", x=window.width//2, y=window.height//2)
+        self.back_label = pyglet.text.Label("Press space to go back", batch=self.batch, font_name="Minecraft", font_size=36, anchor_x="center", anchor_y="center", x=window.width//2, y=window.height//2)
 
         self.key_subscrption = events.key.subscribe(self.key_press)
 
@@ -126,7 +126,7 @@ class GameController(Controller):
 
         self.batch = pyglet.graphics.Batch()
 
-        self.label = pyglet.text.Label("Press 1 or 2", batch=self.batch, font_name="Arial", font_size=36, anchor_x="center", anchor_y="center", x=window.width//2, y=window.height//2)
+        self.label = pyglet.text.Label("Press 1 or 2", batch=self.batch, font_name="Minecraft", font_size=36, anchor_x="center", anchor_y="center", x=window.width//2, y=window.height//2)
 
         events.key.subscribe(self.key_press)
 
@@ -171,13 +171,13 @@ class StartScreen(Controller):
 
         # Erstes Layout für den Hauptbildschirm
         self.background = ui_elements.Sprite("images/StartScreenBackground.png", 0, 0, 100, 100, events, sublist, self.batch)
-        self.Header = ui_elements.BorderedRectangle("Die Maschinen-Revolution", 20, 75, 60, 20, color_scheme.BlackWhite, color_scheme.Arial, 6, events, sublist, self.batch)
-        self.save1 = ui_elements.BorderedRectangleButton("Spielstand 1", 35, 55, 30, 10, color_scheme.BlackWhite, color_scheme.Arial, 6, events, sublist, self.batch)
-        self.save2 = ui_elements.BorderedRectangleButton("Spielstand 2", 35, 42.5, 30, 10, color_scheme.BlackWhite, color_scheme.Arial, 6, events, sublist, self.batch)
-        self.save3 = ui_elements.BorderedRectangleButton("Spielstand 3", 35, 30, 30, 10, color_scheme.BlackWhite, color_scheme.Arial, 6, events, sublist, self.batch)
-        self.delete_save1 = ui_elements.BorderedRectangleButton("Neu", 67.5, 55, 12.5, 10, color_scheme.BlackWhite, color_scheme.Arial, 20, events, sublist, self.batch)
-        self.delete_save2 = ui_elements.BorderedRectangleButton("Neu", 67.5, 42.5, 12.5, 10, color_scheme.BlackWhite, color_scheme.Arial, 20, events, sublist, self.batch)
-        self.delete_save3 = ui_elements.BorderedRectangleButton("Neu", 67.5, 30, 12.5, 10, color_scheme.BlackWhite, color_scheme.Arial, 20, events, sublist, self.batch)
+        self.Header = ui_elements.BorderedRectangle("Die Maschinen-Revolution", 20, 75, 60, 20, color_scheme.BlackWhite, color_scheme.Minecraft, 5, events, sublist, self.batch)
+        self.save1 = ui_elements.BorderedRectangleButton("Spielstand 1", 35, 55, 30, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 6, events, sublist, self.batch)
+        self.save2 = ui_elements.BorderedRectangleButton("Spielstand 2", 35, 42.5, 30, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 6, events, sublist, self.batch)
+        self.save3 = ui_elements.BorderedRectangleButton("Spielstand 3", 35, 30, 30, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 6, events, sublist, self.batch)
+        self.delete_save1 = ui_elements.BorderedRectangleButton("Neu", 67.5, 55, 12.5, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 20, events, sublist, self.batch)
+        self.delete_save2 = ui_elements.BorderedRectangleButton("Neu", 67.5, 42.5, 12.5, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 20, events, sublist, self.batch)
+        self.delete_save3 = ui_elements.BorderedRectangleButton("Neu", 67.5, 30, 12.5, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 20, events, sublist, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
         sublist.extend((self.save1.clicked.subscribe(lambda _: self.save_clicked(1)),
@@ -204,7 +204,7 @@ class StartScreen(Controller):
 
 class RichardController(Controller):
     def __init__(self):
-        self.scaffold = widgets.FillBorder((255,) * 4, 30, (55, 55, 0, 255), widgets.ClampSize(100, 100, 150, 150, widgets.Text("Bruh", "Arial", 36, (255,) * 4)))
+        self.scaffold = widgets.FillBorder((255,) * 4, 30, (55, 55, 0, 255), widgets.ClampSize(100, 100, 150, 150, widgets.Text("Bruh", "Arcard", 36, (255,) * 4)))
         self.scaffold.layout(0, 0, window.width, window.height)
 
     def get_view(self):
