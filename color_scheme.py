@@ -1,4 +1,8 @@
 # Farbsammlung für das gesamte Programm im Form von Klassen
+import logging
+
+from pyglet import resource, font
+
 
 class BlackWhite:   # klassisches achromatisches Farbschema
     color = (0, 0, 0)                   # Standard-Hintergrund
@@ -30,5 +34,17 @@ class DarkPurple:   # Dunkles Farbschema, mit lila Akzenten
     border_thickness = 2
 
 
+def add_font(font_name):
+    if not font.have_font(font_name):
+        resource.add_font('resource/' + font_name + '.ttf')
+        font.load(font_name)
+    return font_name
+
+
 class Arial:
     font_name = "Arial"
+
+
+class Minecraft:
+    font_name = add_font("Minecraft")
+
