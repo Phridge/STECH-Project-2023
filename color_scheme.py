@@ -36,7 +36,7 @@ class DarkPurple:   # Dunkles Farbschema, mit lila Akzenten
 
 def add_font(font_name):
     if not font.have_font(font_name):
-        resource.add_font('resource/' + font_name + '.ttf')
+        resource.add_font('assets/fonts/' + font_name + '.ttf')
         font.load(font_name)
     return font_name
 
