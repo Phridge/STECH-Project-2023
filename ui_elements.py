@@ -12,13 +12,25 @@ class Disposable:
             if hasattr(value, "dispose"):
                 value.dispose()
 
-class BorderedRectangleButton:  # Es wird keine Klasse erweitert, damit man die Objekte in der Runtime neu zeichnen kann
-    def __init__(self, text,
-                 x, y, width, height,  # alle Angaben in %
-                 color_scheme, font_scheme, font_size,  # für Aussehen
-                 events,  # die events aus game.py werden mitgegeben, auf Veränderungen zu reagieren
-                 sublist,  # Liste an Subscriptions des aktuellen Controllers
-                 batch=None, group=None):  # Batch ermöglicht, dass alles gleichzeitig gerendert wird. Dadurch läuft das Programm effizienter
+
+class BorderedRectangleButton:
+    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None):
+        """
+        Rechtecktiger Button mit einer Border. Er kann gehovert und geclickt werden.
+        Es wird keine Klasse erweitert, damit man die Objekte in der Runtime neu zeichnen kann.
+
+        :param text:
+        :param x: X-Koordinate in %
+        :param y: Y-Koordinate in %
+        :param width: Breite des Elements in %
+        :param height: Höhe des Elements in %
+        :param color_scheme: Style-Klasse der Datei color_scheme.py
+        :param font_scheme: Schrift-Klasse der Datei color_scheme.py
+        :param font_size: Schrift-Größe
+        :param events: events des games
+        :param sublist: Liste an subscriptions des aktuellen Controllers
+        :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
+        """
 
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
         x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
@@ -44,8 +56,12 @@ class BorderedRectangleButton:  # Es wird keine Klasse erweitert, damit man die 
                                        batch=batch, font_name=font_scheme.font_name,
                                        font_size=width_px // (100 / font_size), color=color_scheme.text)
 
+        def is_hovered(data):
+            """
+            Wird aufgerufen, wenn die Maus sich bewegt. Testet, ob sie über dem Button ist und reagiert entsprechend.
 
-        def is_hovered(data):  # wird aufgerufen um den Button visuell anzupassen, falls er gehovert wird
+            :param data: Aktuelle Position der Maus (x, y)
+            """
             mouse_x, mouse_y, buttons = data  # buttons zeigt den gedrückten knopf: Links=1, Rad=2, Rechts=4
             if buttons is False and self.x_px <= int(mouse_x) <= self.x_px+self.width_px and self.y_px <= int(mouse_y) <= self.y_px+self.height_px:  # testet ob Maus über dem Button ist, falls ja wird er gefärbt
                 self.rectangle.color = color_scheme.hover
@@ -58,7 +74,12 @@ class BorderedRectangleButton:  # Es wird keine Klasse erweitert, damit man die 
                 self.label.color = color_scheme.text
                 return False
 
-        def button_clicked(data):  # wird aufgerufen um den Button anzupassen, falls er geklickt wird
+        def button_clicked(data):
+            """
+            Wird aufgerufen, wenn ein Maus-Button gedrückt wird. Testet, ob sie über dem Button ist und reagiert entsprechend.
+
+            :param data: Aktueller Zustand und aktuelle Position der Maus (bool, x, y, buttons)
+            """
             mouse_state, mouse_x, mouse_y, buttons = data  # buttons zeigt den gedrückten knopf: Links=1, Rad=2, Rechts=4
             if mouse_state is True and buttons == 1 and self.x_px <= int(mouse_x) <= self.x_px+self.width_px and self.y_px <= int(mouse_y) <= self.y_px+self.height_px:
                 self.rectangle.color = color_scheme.click
@@ -70,7 +91,12 @@ class BorderedRectangleButton:  # Es wird keine Klasse erweitert, damit man die 
                 is_hovered((mouse_x, mouse_y, mouse_state))
                 return False
 
-        def resize(data):  # passt alle Objekte an, wenn sich die Bildschirmgröße ändert
+        def resize(data):
+            """
+            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
+
+            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
+            """
             # konvertiert die Prozentangaben zu Pixeln
             self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
 
@@ -100,14 +126,24 @@ class BorderedRectangleButton:  # Es wird keine Klasse erweitert, damit man die 
         self.clicked = Subject()
 
 
-# nicht klickbare Variante für Überschiften o.ä.
-class BorderedRectangle: # Es wird keine Klasse erweitert, damit man die Objekte in der Runtime neu zeichnen kann
-    def __init__(self, text,
-                 x, y, width, height,  # alle Angaben in %
-                 color_scheme, font_scheme, font_size,  # für Aussehen
-                 events,  # die events aus game.py werden mitgegeben, auf Veränderungen zu reagieren
-                 sublist,  # Liste an Subscriptions des aktuellen Controllers
-                 batch=None, group=None):  # Batch ermöglicht, dass alles gleichzeitig gerendert wird. Dadurch läuft das Programm effizienter
+class BorderedRectangle:
+    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None):
+        """
+        Rechtecktiges Element mit einer Border. Nicht klickbar. Nutzung für einfache Überschriften oder Textkästen.
+        Es wird keine Klasse erweitert, damit man die Objekte in der Runtime neu zeichnen kann.
+
+        :param text:
+        :param x: X-Koordinate in %
+        :param y: Y-Koordinate in %
+        :param width: Breite des Elements in %
+        :param height: Höhe des Elements in %
+        :param color_scheme: Style-Klasse der Datei color_scheme.py
+        :param font_scheme: Schrift-Klasse der Datei color_scheme.py
+        :param font_size: Schrift-Größe
+        :param events: events des games
+        :param sublist: Liste an subscriptions des aktuellen Controllers
+        :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
+        """
 
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
         x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
@@ -133,7 +169,12 @@ class BorderedRectangle: # Es wird keine Klasse erweitert, damit man die Objekte
                                        batch=batch, font_name=font_scheme.font_name,
                                        font_size=width_px // (100 / font_size), color=color_scheme.text)
 
-        def resize(data):  # passt alle Objekte an, wenn sich die Bildschirmgröße ändert
+        def resize(data):
+            """
+            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
+
+            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
+            """
             # konvertiert die Prozentangaben zu Pixeln
             self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
 
@@ -158,13 +199,22 @@ class BorderedRectangle: # Es wird keine Klasse erweitert, damit man die Objekte
         sublist.append(events.size.subscribe(resize))
 
 
-class SpriteButton(pyglet.sprite.Sprite):  # Pyglet Sprite wird erweitert um Bilder klickbar machen zu können (nicht reines Image, da man das nicht skalieren kann)
-    def __init__(self, path,
-                 x, y, width, height,  # alle Angaben in %
-                 color_scheme,  # für Aussehen
-                 events,  # die events aus game.py werden mitgegeben, auf Veränderungen zu reagieren
-                 sublist,  # Liste an Subscriptions des aktuellen Controllers
-                 batch=None, group=None):  # Batch ermöglicht, dass alles gleichzeitig gerendert wird. Dadurch läuft das Programm effizienter
+class SpriteButton(pyglet.sprite.Sprite):
+    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None):
+        """
+        Rechteckiger Button mit einem Bild als Fläche. Er kann gehovert und geclickt werden.
+        pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
+
+        :param path: Pfad des zu zeichnenden Bildes. Vorzugsweise eine relative Pfadangabe
+        :param x: X-Koordinate in %
+        :param y: Y-Koordinate in %
+        :param width: Breite des Elements in %
+        :param height: Höhe des Elements in %
+        :param color_scheme: Style-Klasse der Datei color_scheme.py
+        :param events: events des games
+        :param sublist: Liste an subscriptions des aktuellen Controllers
+        :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
+        """
 
         # konvertiert die Prozentangaben zu Pixeln
         x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
@@ -179,16 +229,26 @@ class SpriteButton(pyglet.sprite.Sprite):  # Pyglet Sprite wird erweitert um Bil
         normal_width = self.width
         normal_height = self.height
 
-        def is_hovered(data):  # wird aufgerufen um den Button visuell anzupassen, falls er gehovert wird
+        def is_hovered(data):
+            """
+            Wird aufgerufen, wenn die Maus sich bewegt. Testet, ob sie über dem Button ist und reagiert entsprechend.
+
+            :param data: Aktuelle Position der Maus (x, y)
+            """
             mouse_x, mouse_y, buttons = data  # buttons zeigt den gedrückten knopf: Links=1, Rad=2, Rechts=4
-            if buttons is False and x_px <= int(mouse_x) <= x_px+width_px and y_px <= int(mouse_y) <= y_px+height_px: # testet ob Maus über dem Button ist, falls ja wird er gefärbt
+            if buttons is False and x_px <= int(mouse_x) <= x_px+width_px and y_px <= int(mouse_y) <= y_px+height_px:  # testet ob Maus über dem Button ist, falls ja wird er gefärbt
                 self.color = color_scheme.img_hover
                 return True
             elif buttons is False:  # elif verhindert, dass gehaltene Knöpfe überschrieben werden
                 self.color = (255, 255, 255)  # Bild ist standardmäßig normal
                 return False
 
-        def button_clicked(data):  # wird aufgerufen um den Button anzupassen, falls er geklickt wird
+        def button_clicked(data):
+            """
+            Wird aufgerufen, wenn ein Maus-Button gedrückt wird. Testet, ob sie über dem Button ist und reagiert entsprechend.
+
+            :param data: Aktueller Zustand und aktuelle Position der Maus (bool, x, y, buttons)
+            """
             mouse_state, mouse_x, mouse_y, buttons = data  # buttons zeigt den gedrückten knopf: Links=1, Rad=2, Rechts=4
             if mouse_state is True and buttons == 1 and x_px <= int(mouse_x) <= x_px+width_px and y_px <= int(mouse_y) <= y_px+height_px:
                 self.color = color_scheme.img_click
@@ -198,7 +258,12 @@ class SpriteButton(pyglet.sprite.Sprite):  # Pyglet Sprite wird erweitert um Bil
                 is_hovered((mouse_x, mouse_y, mouse_state))
                 return False
 
-        def resize(data):  # passt alle Objekte an, wenn sich die Bildschirmgröße ändert
+        def resize(data):
+            """
+            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
+
+            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
+            """
             # konvertiert die Prozentangaben zu Pixeln
             self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
 
@@ -212,13 +277,21 @@ class SpriteButton(pyglet.sprite.Sprite):  # Pyglet Sprite wird erweitert um Bil
         sublist.append(events.mouse_button.subscribe(button_clicked))
 
 
-# nicht klickbare Variante
 class Sprite(pyglet.sprite.Sprite):
-    def __init__(self, path,
-                 x, y, width, height,  # alle Angaben in %
-                 events,  # die events aus game.py werden mitgegeben, auf Veränderungen zu reagieren
-                 sublist,  # Liste an Subscriptions des aktuellen Controllers
-                 batch=None, group=None):  # Batch ermöglicht, dass alles gleichzeitig gerendert wird. Dadurch läuft das Programm effizienter:
+    def __init__(self, path, x, y, width, height, events, sublist, batch=None):
+        """
+        Rechteckiges Element mit einem Bild als Fläche. Nicht klckbar.
+        pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
+
+        :param path: Pfad des zu zeichnenden Bildes. Vorzugsweise eine relative Pfadangabe
+        :param x: X-Koordinate in %
+        :param y: Y-Koordinate in %
+        :param width: Breite des Elements in %
+        :param height: Höhe des Elements in %
+        :param events: events des games
+        :param sublist: Liste an subscriptions des aktuellen Controllers
+        :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
+        """
 
         # konvertiert die Prozentangaben zu Pixeln
         x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
@@ -235,7 +308,12 @@ class Sprite(pyglet.sprite.Sprite):
         self.scale_x = width_px / normal_width
         self.scale_y = height_px / normal_height
 
-        def resize(data):  # passt alle Objekte an, wenn sich die Bildschirmgröße ändert
+        def resize(data):
+            """
+            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
+
+            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
+            """
             # konvertiert die Prozentangaben zu Pixeln
             self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
 
@@ -247,14 +325,22 @@ class Sprite(pyglet.sprite.Sprite):
         sublist.append(events.size.subscribe(resize))
 
 
-# Pyglet Sprite wird erweitert um Bilder klickbar machen zu können (nicht reines Image, da man das nicht skalieren kann)
 class BorderedSpriteButton(pyglet.sprite.Sprite):
-    def __init__(self, path,
-                 x, y, width, height,  # alle Angaben in %
-                 color_scheme,  # für Aussehen
-                 events,  # die events aus game.py werden mitgegeben, auf Veränderungen zu reagieren
-                 sublist,  # Liste an Subscriptions des aktuellen Controllers
-                 batch=None, group=None):  # Batch ermöglicht, dass alles gleichzeitig gerendert wird. Dadurch läuft das Programm effizienter
+    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None):
+        """
+        Rechteckiger Button mit einem Bild als Fläche und einer Border. Er kann gehovert und geclickt werden.
+        pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
+
+        :param path: Pfad des zu zeichnenden Bildes. Vorzugsweise eine relative Pfadangabe
+        :param x: X-Koordinate in %
+        :param y: Y-Koordinate in %
+        :param width: Breite des Elements in %
+        :param height: Höhe des Elements in %
+        :param color_scheme: Style-Klasse der Datei color_scheme.py
+        :param events: events des games
+        :param sublist: Liste an subscriptions des aktuellen Controllers
+        :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
+        """
 
         # konvertiert die Prozentangaben zu Pixeln
         x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
@@ -278,9 +364,14 @@ class BorderedSpriteButton(pyglet.sprite.Sprite):
         self.scale_x = (width_px - 2 * color_scheme.border_thickness) / self.width  # skaliert das Bild auf die angegebene Pixelzahl
         self.scale_y = (height_px - 2 * color_scheme.border_thickness) / self.height
 
-        def is_hovered(data):  # wird aufgerufen um den Button visuell anzupassen, falls er gehovert wird
+        def is_hovered(data):
+            """
+            Wird aufgerufen, wenn die Maus sich bewegt. Testet, ob sie über dem Button ist und reagiert entsprechend.
+
+            :param data: Aktuelle Position der Maus (x, y)
+            """
             mouse_x, mouse_y, buttons = data  # buttons zeigt den gedrückten knopf: Links=1, Rad=2, Rechts=4
-            if buttons is False and x_px <= int(mouse_x) <= x_px+width_px and y_px <= int(mouse_y) <= y_px+height_px: # testet ob Maus über dem Button ist, falls ja wird er gefärbt
+            if buttons is False and x_px <= int(mouse_x) <= x_px+width_px and y_px <= int(mouse_y) <= y_px+height_px:  # testet ob Maus über dem Button ist, falls ja wird er gefärbt
                 self.color = color_scheme.img_hover
                 self.borderRectangle.color = color_scheme.hover_border
                 return True
@@ -289,7 +380,12 @@ class BorderedSpriteButton(pyglet.sprite.Sprite):
                 self.borderRectangle.color = color_scheme.border
                 return False
 
-        def button_clicked(data):  # wird aufgerufen um den Button anzupassen, falls er geklickt wird
+        def button_clicked(data):
+            """
+            Wird aufgerufen, wenn ein Maus-Button gedrückt wird. Testet, ob sie über dem Button ist und reagiert entsprechend.
+
+            :param data: Aktueller Zustand und aktuelle Position der Maus (bool, x, y, buttons)
+            """
             mouse_state, mouse_x, mouse_y, buttons = data  # buttons zeigt den gedrückten knopf: Links=1, Rad=2, Rechts=4
             if mouse_state is True and buttons == 1 and x_px <= int(mouse_x) <= x_px+width_px and y_px <= int(mouse_y) <= y_px+height_px:
                 self.color = color_scheme.img_click
@@ -300,7 +396,12 @@ class BorderedSpriteButton(pyglet.sprite.Sprite):
                 is_hovered((mouse_x, mouse_y, mouse_state))
                 return False
 
-        def resize(data):  # passt alle Objekte an, wenn sich die Bildschirmgröße ändert
+        def resize(data):
+            """
+            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
+
+            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
+            """
             # konvertiert die Prozentangaben zu Pixeln
             self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
 
@@ -321,14 +422,22 @@ class BorderedSpriteButton(pyglet.sprite.Sprite):
         self.clicked = Subject()
 
 
-# Pyglet Sprite wird erweitert (nicht reines Image, da man das nicht skalieren kann)
 class BorderedSprite(pyglet.sprite.Sprite):
-    def __init__(self, path,
-                 x, y, width, height,  # alle Angaben in %
-                 color_scheme,  # für Aussehen
-                 events,  # die events aus game.py werden mitgegeben, auf Veränderungen zu reagieren
-                 sublist,  # Liste an Subscriptions des aktuellen Controllers
-                 batch=None, group=None):  # Batch ermöglicht, dass alles gleichzeitig gerendert wird. Dadurch läuft das Programm effizienter
+    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None):
+        """
+        Rechteckiges Element mit einem Bild als Fläche und einer Border. Nicht klickbar.
+        pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
+
+        :param path: Pfad des zu zeichnenden Bildes. Vorzugsweise eine relative Pfadangabe
+        :param x: X-Koordinate in %
+        :param y: Y-Koordinate in %
+        :param width: Breite des Elements in %
+        :param height: Höhe des Elements in %
+        :param color_scheme: Style-Klasse der Datei color_scheme.py
+        :param events: events des games
+        :param sublist: Liste an subscriptions des aktuellen Controllers
+        :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
+        """
 
         # konvertiert die Prozentangaben zu Pixeln
         x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
@@ -352,7 +461,12 @@ class BorderedSprite(pyglet.sprite.Sprite):
         self.scale_x = (width_px - 2 * color_scheme.border_thickness) / self.width  # skaliert das Bild auf die angegebene Pixelzahl
         self.scale_y = (height_px - 2 * color_scheme.border_thickness) / self.height
 
-        def resize(data):  # passt alle Objekte an, wenn sich die Bildschirmgröße ändert
+        def resize(data):
+            """
+            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
+
+            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
+            """
             # konvertiert die Prozentangaben zu Pixeln
             self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
 
@@ -368,54 +482,23 @@ class BorderedSprite(pyglet.sprite.Sprite):
         sublist.append(events.size.subscribe(resize))
 
 
-# Pyglet Sprite wird erweitert um variabel Gifs anzuzeigen (nicht reines Image, da man das nicht skalieren kann)
 class Gif(pyglet.sprite.Sprite):  # lädt ein Gif
-    def __init__(self, path,
-                 x, y, width, height,  # alle Angaben in %
-                 duration, loop,  # duration = Zeit für einen Durchlauf des Gif
-                 events,  # die events aus game.py werden mitgegeben, auf Veränderungen zu reagieren
-                 sublist,  # Liste an Subscriptions des aktuellen Controllers
-                 batch=None, group=None):  # Batch ermöglicht, dass alles gleichzeitig gerendert wird. Dadurch läuft das Programm effizienter        # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
+    def __init__(self, path, x, y, width, height, duration, loop, events, sublist, batch=None):
+        """
+        Rechteckiges Element mit einem Gif als Fläche. Nicht klickbar.
+        pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
 
-        # erstellt eine Liste der einzelnen Bilder des Gifs
-        image = pyglet.image.load_animation(path)
-        animation_frames = []
-        for frames in image.frames:
-            animation_frames.append(frames.__getattribute__("image"))
-
-        # erstellt aus den einzelnen Bildern eine Animation der gewünschten Länge. Loop erlaubt ununterbrochene Wiederholung der Animation
-        animation = image.from_image_sequence(animation_frames, duration=duration / len(animation_frames), loop=loop)
-        pyglet.sprite.Sprite.__init__(self, animation, x_px, y_px, batch=batch)
-
-        # speichert die Standard-Maße des Gifs
-        normal_width = self.width
-        normal_height = self.height
-
-        # skaliert das Bild auf die angegebene Prozentgröße des Fensters
-        self.scale_x = width_px / normal_width
-        self.scale_y = height_px / normal_height
-
-        def resize(data):  # passt alle Objekte an, wenn sich die Bildschirmgröße ändert
-            # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
-
-            # skaliert das Bild auf die angegebene Prozentgröße des Fensters
-            self.scale_x = self.width_px / normal_width
-            self.scale_y = self.height_px / normal_height
-
-        # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        sublist.append(events.size.subscribe(resize))
-
-
-# Pyglet Sprite wird erweitert um variabel Gifs anzuzeigen und klickbar zu machen (nicht reines Image, da man das nicht skalieren kann)
-class GifButton(pyglet.sprite.Sprite):  # lädt ein Gif
-    def __init__(self, path,
-                 x, y, width, height,  # alle Angaben in %
-                 duration, loop,  # duration = Zeit für einen Durchlauf des Gif
-                 events,  # die events aus game.py werden mitgegeben, auf Veränderungen zu reagieren
-                 sublist,  # Liste an Subscriptions des aktuellen Controllers
-                 batch=None, group=None):  # Batch ermöglicht, dass alles gleichzeitig gerendert wird. Dadurch läuft das Programm effizienter
+        :param path: Pfad des zu zeichnenden Bildes. Vorzugsweise eine relative Pfadangabe
+        :param x: X-Koordinate in %
+        :param y: Y-Koordinate in %
+        :param width: Breite des Elements in %
+        :param height: Höhe des Elements in %
+        :param duration: Dauer in Sekunden, die ein Durchlauf des Gifs dauern soll.
+        :param loop: boolean, der angibt, ob das Gif nach dem ersten Durchlauf stoppt oder neu startet
+        :param events: events des games
+        :param sublist: Liste an subscriptions des aktuellen Controllers
+        :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
+        """
 
         # konvertiert die Prozentangaben zu Pixeln
         x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
@@ -438,7 +521,68 @@ class GifButton(pyglet.sprite.Sprite):  # lädt ein Gif
         self.scale_x = width_px / normal_width
         self.scale_y = height_px / normal_height
 
-        def button_clicked(data):  # wird aufgerufen um den Button anzupassen, falls er geklickt wird
+        def resize(data):
+            """
+            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
+
+            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
+            """
+            # konvertiert die Prozentangaben zu Pixeln
+            self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
+
+            # skaliert das Bild auf die angegebene Prozentgröße des Fensters
+            self.scale_x = self.width_px / normal_width
+            self.scale_y = self.height_px / normal_height
+
+        # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
+        sublist.append(events.size.subscribe(resize))
+
+
+class GifButton(pyglet.sprite.Sprite):
+    def __init__(self, path, x, y, width, height, duration, loop, events, sublist, batch=None):
+        """
+        Rechteckiger Button mit einem Gif als Fläche. Kann geklickt werden..
+        pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
+
+        :param path: Pfad des zu zeichnenden Bildes. Vorzugsweise eine relative Pfadangabe
+        :param x: X-Koordinate in %
+        :param y: Y-Koordinate in %
+        :param width: Breite des Elements in %
+        :param height: Höhe des Elements in %
+        :param duration: Dauer in Sekunden, die ein Durchlauf des Gifs dauern soll.
+        :param loop: boolean, der angibt, ob das Gif nach dem ersten Durchlauf stoppt oder neu startet
+        :param events: events des games
+        :param sublist: Liste an subscriptions des aktuellen Controllers
+        :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
+        """
+
+        # konvertiert die Prozentangaben zu Pixeln
+        x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
+
+        # erstellt eine Liste der einzelnen Bilder des Gifs
+        image = pyglet.image.load_animation(path)
+        animation_frames = []
+        for frames in image.frames:
+            animation_frames.append(frames.__getattribute__("image"))
+
+        # erstellt aus den einzelnen Bildern eine Animation der gewünschten Länge. Loop erlaubt ununterbrochene Wiederholung der Animation
+        animation = image.from_image_sequence(animation_frames, duration=duration / len(animation_frames), loop=loop)
+        pyglet.sprite.Sprite.__init__(self, animation, x_px, y_px, batch=batch)
+
+        # speichert die Standard-Maße des Gifs
+        normal_width = self.width
+        normal_height = self.height
+
+        # skaliert das Bild auf die angegebene Prozentgröße des Fensters
+        self.scale_x = width_px / normal_width
+        self.scale_y = height_px / normal_height
+
+        def button_clicked(data):
+            """
+            Wird aufgerufen, wenn ein Maus-Button gedrückt wird. Testet, ob sie über dem Button ist und reagiert entsprechend.
+
+            :param data: Aktueller Zustand und aktuelle Position der Maus (bool, x, y, buttons)
+            """
             mouse_state, mouse_x, mouse_y, buttons = data  # buttons zeigt den gedrückten knopf: Links=1, Rad=2, Rechts=4
             if mouse_state is True and buttons == 1 and self.x_px <= int(mouse_x) <= self.x_px+self.width_px and self.y_px <= int(mouse_y) <= self.y_px+self.height_px:
                 self.clicked.on_next(None)  # gibt dem clicked-event mit, dass der Button geklickt wurde
@@ -446,7 +590,12 @@ class GifButton(pyglet.sprite.Sprite):  # lädt ein Gif
             else:  # falls nicht geklickt
                 return False
 
-        def resize(data):  # passt alle Objekte an, wenn sich die Bildschirmgröße ändert
+        def resize(data):
+            """
+            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
+
+            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
+            """
             # konvertiert die Prozentangaben zu Pixeln
             self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
 
@@ -462,12 +611,18 @@ class GifButton(pyglet.sprite.Sprite):  # lädt ein Gif
         self.clicked = Subject()
 
 
-
-# Klasse, die die Umrechnung von Prozent in Pixel ermöglicht
 class Refactor:
     @classmethod
     def percent_to_pixel(cls, x, y, width, height, window_data):
-        # konvertiert die Prozentangaben zu Pixeln
+        """
+        Ermöglicht die Umrechnung von Prozentangaben in Pixel, damit die ui-elements die Werte nutzen können
+        :param x: X-Koordinate in %
+        :param y: Y-Koordinate in %
+        :param width: Breite des Elements in %
+        :param height: Höhe des Elements in %
+        :param window_data: Event-Daten, die die aktuelle Höhe und Breite des Fensters beinhalten
+        :return: X, Y, Breite und Höhe in Pixeln
+        """
         screen_width, screen_height = window_data
         x_px = x * screen_width // 100
         y_px = y * screen_height // 100
