@@ -155,8 +155,8 @@ class JanekController(Controller):
         # x, y, width und height in % angegeben
         self.testButton = ui_elements.BorderedRectangleButton("TestButton", 10, 55, 80, 20, color_scheme.BlackWhite, color_scheme.Font1, events, self.batch)
         self.header = ui_elements.BorderedRectangle("lol nicht klickbar", 0, 80, 100, 20, color_scheme.DarkPurple, color_scheme.Font1, events, self.batch)
-        self.testSprite = ui_elements.BorderedClickableSprite("images/popcat.png", 20, 10, 60, 40, color_scheme.BlackWhite, events, self.batch)
-        self.borderedSprite = ui_elements.GifButton("images/popcat.gif", 35, 15, 30, 30, 1, False, events, self.batch)
+        self.testSprite = ui_elements.BorderedClickableSprite("assets/images/popcat.png", 20, 10, 60, 40, color_scheme.BlackWhite, events, self.batch)
+        self.borderedSprite = ui_elements.GifButton("assets/images/popcat.gif", 35, 15, 30, 30, 1, True, events, self.batch)
 
     def get_view(self):
         return self.batch
@@ -170,7 +170,7 @@ class StartScreen(Controller):
         sublist = []
 
         # Erstes Layout für den Hauptbildschirm
-        self.background = ui_elements.Sprite("images/StartScreenBackground.png", 0, 0, 100, 100, events, sublist, self.batch)
+        self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, sublist, self.batch)
         self.Header = ui_elements.BorderedRectangle("Die Maschinen-Revolution", 20, 75, 60, 20, color_scheme.BlackWhite, color_scheme.Minecraft, 5, events, sublist, self.batch)
         self.save1 = ui_elements.BorderedRectangleButton("Spielstand 1", 35, 55, 30, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 6, events, sublist, self.batch)
         self.save2 = ui_elements.BorderedRectangleButton("Spielstand 2", 35, 42.5, 30, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 6, events, sublist, self.batch)
@@ -188,11 +188,21 @@ class StartScreen(Controller):
                         self.delete_save3.clicked.subscribe(lambda _: self.delete_save(3))))
         self.disposable = CompositeDisposable(sublist)
 
+        self.save_selected = Subject()
+
+
+
 
     def save_clicked(self, data):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
+        # save suchen und auswählen
         logging.warning(data)
+        self.save_selected.on_next("save")
 
     def delete_save(self, data):  # Wird getriggert, wenn ein Spielstand gelöscht werden soll
+        # datenbank stuff
+        #  save löschen
+        #  neuen erstelleln
+        self.save_selected.on_next("save")
         logging.warning(("Deleting Save", data))
 
     def dispose_subs(self):  # Muss getriggert werden, wenn der Screen gewechselt wird.
