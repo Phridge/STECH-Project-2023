@@ -2,6 +2,7 @@ import pyglet
 from controller.start_screen import StartScreen
 from controller.home_screen import HomeScreen
 from controller.error_screen import ErrorScreen
+from controller.template_screen import TemplateScreen
 from reactivex.subject import BehaviorSubject, Subject
 from reactivex.disposable import CompositeDisposable
 
@@ -68,7 +69,7 @@ Es darf also nur ein Controller gleichzeitig aktiv sein
 '''
 
 
-controller = StartScreen(Events)  # Setzt StartBildschirm als initialen Controller
+controller = TemplateScreen(Events)  # Setzt StartBildschirm als initialen Controller
 sublist = []  # erstellte eine sublist, die ermöglicht Subscriptions wieder aufzuheben
 
 

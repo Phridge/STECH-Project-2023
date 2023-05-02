@@ -6,12 +6,7 @@ from reactivex.subject import Subject
 from reactivex.disposable import CompositeDisposable
 
 
-class Controller:
-    def get_view(self):
-        raise NotImplementedError
-
-
-class StartScreen(Controller):
+class StartScreen:
     def __init__(self, events):
         self.batch = pyglet.graphics.Batch()
 

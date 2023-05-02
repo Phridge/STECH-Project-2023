@@ -6,12 +6,7 @@ from reactivex.subject import Subject
 from reactivex.disposable import CompositeDisposable
 
 
-class Controller:
-    def get_view(self):
-        raise NotImplementedError
-
-
-class ErrorScreen(Controller):
+class ErrorScreen:
     def __init__(self, events):
         self.batch = pyglet.graphics.Batch()
 
@@ -19,7 +14,8 @@ class ErrorScreen(Controller):
         sublist = []
 
         # Erstes Layout für den Error-Bildschirm
-        self.background = ui_elements.Sprite("assets/images/popcat.png", 0, 0, 100, 100, events, sublist, self.batch)
+        self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, sublist, self.batch)
+        self.gif = ui_elements.Gif("assets/images/popcat.gif", 30, 10, 40, 40, 0.5, True, events, sublist, self.batch)
         self.Header = ui_elements.BorderedRectangle("Es liegt ein Fehler vor :(", 20, 75, 60, 20, color_scheme.BlackWhite, color_scheme.Minecraft, 5, events, sublist, self.batch)
         self.save1 = ui_elements.BorderedRectangleButton("Zurück zum Hauptmenü", 35, 55, 30, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 6, events, sublist, self.batch)
 
