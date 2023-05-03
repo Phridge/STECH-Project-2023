@@ -17,8 +17,8 @@ class HomeScreen:
         # Erstes Layout für den HomeScreen
         self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, sublist, self.batch)
         self.Header = ui_elements.BorderedRectangle("HomeScreen von Save " + str(save_file), 20, 75, 60, 20, color_scheme.BlackWhite, color_scheme.Minecraft, 5, events, sublist, self.batch)
-        self.save1 = ui_elements.BorderedRectangleButton("Zurück", 35, 55, 30, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 6, events, sublist, self.batch)
-        self.save2 = ui_elements.BorderedRectangleButton("auf nicht existente Seite wechseln (versuchen)", 25, 42.5, 50, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 3, events, sublist, self.batch)
+        self.save1 = ui_elements.InputButton("Zurück", 35, 55, 30, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 6, events, sublist, self.batch)
+        self.save2 = ui_elements.InputButton("auf nicht existente Seite wechseln (versuchen)", 25, 42.5, 50, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 3, events, sublist, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
         sublist.extend((self.save1.clicked.subscribe(lambda _: self.save_clicked(1)),

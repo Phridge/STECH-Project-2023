@@ -69,7 +69,7 @@ Es darf also nur ein Controller gleichzeitig aktiv sein
 '''
 
 
-controller = TemplateScreen(Events)  # Setzt StartBildschirm als initialen Controller
+controller = StartScreen(Events)  # Setzt StartBildschirm als initialen Controller
 sublist = []  # erstellte eine sublist, die ermöglicht Subscriptions wieder aufzuheben
 
 
