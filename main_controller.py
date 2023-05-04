@@ -2,9 +2,12 @@ import pyglet
 from controller.start_screen import StartScreen
 from controller.home_screen import HomeScreen
 from controller.error_screen import ErrorScreen
-from controller.template_screen import TemplateScreen
+from controller.delete_save_screen import DeleteSaveScreen
 from reactivex.subject import BehaviorSubject, Subject
 from reactivex.disposable import CompositeDisposable
+
+# Beispiel-Bildschirm
+from controller.template_screen import TemplateScreen
 
 window = pyglet.window.Window(resizable=False)
 
@@ -91,8 +94,15 @@ def load_controller(data):
     controller.dispose_subs()
 
     # Schlüsselt den Namen des nächsten Controllers auf und weist den neuen controller zu
-    if new_controller == "HomeScreen": controller = HomeScreen(Events, parameter)
+    if new_controller == "Restart":
+        controller = StartScreen(Events)
+        pyglet.app.exit()
+        if bool(parameter[0]) is True:
+            controller.change_controller.subscribe(load_controller)
+            pyglet.app.run(1/30)
+    elif new_controller == "HomeScreen": controller = HomeScreen(Events, parameter)
     elif new_controller == "StartScreen": controller = StartScreen(Events)
+    elif new_controller == "DeleteSaveScreen": controller = DeleteSaveScreen(Events, parameter)
     else: controller = ErrorScreen(Events)
 
     # ermöglicht es, aus dem neuen Controller diese Methode aufzurufen
