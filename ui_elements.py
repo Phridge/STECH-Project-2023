@@ -204,6 +204,7 @@ class InputBox:
                  batch=None):
         """
         Rechtecktiges Element mit einer Border. Nicht klickbar. Nutzung für einfache Überschriften oder Textkästen.
+        Der im Button angezeigte Text kann vollständig eingegeben werden, um ihn zu aktivieren.
         Es wird keine Klasse erweitert, damit man die Objekte in der Runtime neu zeichnen kann.
 
         :param text:
@@ -287,6 +288,7 @@ class InputButton:
     def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None):
         """
         Rechtecktiger Button mit einer Border. Er kann gehovert und geclickt werden.
+        Zudem kann der im Button angezeigte Text vollständig eingegeben werden, um ihn ebenfalls zu aktivieren.
         Es wird keine Klasse erweitert, damit man die Objekte in der Runtime neu zeichnen kann.
 
         :param text:
@@ -402,6 +404,151 @@ class InputButton:
 
         # eigenes Event des Buttons, welches abfängt, wenn der Button gedrückt wird
         self.clicked = Subject()
+
+
+class TextField:
+    def __init__(self, number_of_chars, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, name,
+                 batch=None):
+        """
+        Rechtecktiges Element mit einer Border. Nicht klickbar. Text kann eingegeben werden.
+        Es wird keine Klasse erweitert, damit man die Objekte in der Runtime neu zeichnen kann.
+
+        :param number_of_chars: erlaubte Maximalanzahl an Zeichen
+        :param x: X-Koordinate in %
+        :param y: Y-Koordinate in %
+        :param width: Breite des Elements in %
+        :param height: Höhe des Elements in %
+        :param color_scheme: Style-Klasse der Datei color_scheme.py
+        :param font_scheme: Schrift-Klasse der Datei color_scheme.py
+        :param font_size: Schrift-Größe
+        :param events: events des games
+        :param sublist: Liste an subscriptions des aktuellen Controllers
+        :param name: Name of the element, needed to identify it inside class
+        :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
+        """
+
+        self.color_scheme = color_scheme
+
+        # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
+        x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
+        self.active = False
+
+        # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
+        self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
+                                                       color_scheme.border,  # Style wird mitgegeben
+                                                       batch=batch, group=None)
+
+        # Zeichnet das Rechteck
+        self.rectangle = pyglet.shapes.Rectangle(x_px + color_scheme.border_thickness,
+                                                 y_px + color_scheme.border_thickness,
+                                                 width_px - 2 * color_scheme.border_thickness,
+                                                 height_px - 2 * color_scheme.border_thickness,
+                                                 color_scheme.color,  # Style wird mitgegeben
+                                                 batch=batch, group=None)
+
+        # Zeichnet den Text in die Mitte des Rechteckes
+        self.text = ""
+        self.label = pyglet.text.Label("", x=x_px + width_px // 2, y=y_px + height_px // 2,
+                                       # Text wird in die Mitte des Buttons gezeichnet
+                                       anchor_x="center", anchor_y="center",
+                                       # Text wird in die Mitte des Buttons gezeichnet
+                                       batch=batch, font_name=font_scheme.font_name,
+                                       font_size=width_px // (100 / font_size), color=color_scheme.text)
+
+        def resize(data):
+            """
+            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
+
+            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
+            """
+            # konvertiert die Prozentangaben zu Pixeln
+            self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height,
+                                                                                            data)
+
+            # skaliert das Hintergrund-Rechteck
+            self.borderRectangle.x = self.x_px
+            self.borderRectangle.y = self.y_px
+            self.borderRectangle.width = self.width_px
+            self.borderRectangle.height = self.height_px
+
+            # skaliert das Vordergrund-Rechteck
+            self.rectangle.x = self.x_px + color_scheme.border_thickness
+            self.rectangle.y = self.y_px + color_scheme.border_thickness
+            self.rectangle.width = self.width_px - 2 * color_scheme.border_thickness
+            self.rectangle.height = self.height_px - 2 * color_scheme.border_thickness
+
+            # skaliert den Text
+            self.label.x = self.x_px + self.width_px // 2
+            self.label.y = self.y_px + self.height_px // 2
+            self.label.font_size = self.width_px // (100 / font_size)
+
+        def is_hovered(data):
+            """
+            Wird aufgerufen, wenn die Maus sich bewegt. Testet, ob sie über dem Button ist und reagiert entsprechend.
+
+            :param data: Aktuelle Position der Maus (x, y)
+            """
+            mouse_x, mouse_y, buttons = data  # buttons zeigt den gedrückten knopf: Links=1, Rad=2, Rechts=4
+            if self.active is False and buttons is False and self.x_px <= int(mouse_x) <= self.x_px + self.width_px and self.y_px <= int(
+                    mouse_y) <= self.y_px + self.height_px:  # testet ob Maus über dem Button ist, falls ja wird er gefärbt
+                self.rectangle.color = color_scheme.hover
+                self.borderRectangle.color = color_scheme.hover_border
+                self.label.color = color_scheme.hover_text
+                return True
+            elif self.active is False and buttons is False:  # elif verhindert, dass gehaltene Knöpfe überschrieben werden
+                self.rectangle.color = color_scheme.color
+                self.borderRectangle.color = color_scheme.border
+                self.label.color = color_scheme.text
+                return False
+
+        def button_clicked(data):
+            """
+            Wird aufgerufen, wenn ein Maus-Button gedrückt wird. Testet, ob sie über dem Button ist und reagiert entsprechend.
+
+            :param data: Aktueller Zustand und aktuelle Position der Maus (bool, x, y, buttons)
+            """
+            mouse_state, mouse_x, mouse_y, buttons = data  # buttons zeigt den gedrückten knopf: Links=1, Rad=2, Rechts=4
+            if self.active is False and mouse_state is True and buttons == 1 and self.x_px <= int(
+                    mouse_x) <= self.x_px + self.width_px and self.y_px <= int(mouse_y) <= self.y_px + self.height_px:
+                self.rectangle.color = color_scheme.click
+                self.borderRectangle.color = color_scheme.click_border
+                self.label.color = color_scheme.click_text
+                self.clicked.on_next(None)  # gibt dem clicked-event mit, dass der Button geklickt wurde
+                return True
+            elif self.active is False:  # falls nicht geclickt wird wird getestet, ob gehovert wird
+                is_hovered((mouse_x, mouse_y, mouse_state))
+                return False
+
+        def update_text(data):
+            if self.active and str(data).isnumeric():
+                data = str(data)
+                if len(self.text) < number_of_chars: self.text = self.text + data
+                else: self.text = data
+                if int(self.text) > 255: self.text = "255"
+                elif int(self.text) < 0: self.text = "0"
+                self.label.text = str(self.text)
+                self.changed.on_next((name, str(self.text)))  # gibt dem clicked-event mit, dass der Button geklickt wurde
+
+        # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
+        sublist.append(events.size.subscribe(resize))
+        sublist.append(events.mouse.subscribe(is_hovered))
+        sublist.append(events.mouse_button.subscribe(button_clicked))
+        sublist.append(events.text.subscribe(update_text))
+
+        # eigenes Event des Buttons, welches abfängt, wenn der Button gedrückt wird
+        self.clicked = Subject()
+        self.changed = Subject()
+
+    def set_active(self, param):
+        self.active = param
+        if self.active:
+            self.rectangle.color = self.color_scheme.click
+            self.borderRectangle.color = self.color_scheme.click_border
+            self.label.color = self.color_scheme.click_text
+        else:
+            self.rectangle.color = self.color_scheme.color
+            self.borderRectangle.color = self.color_scheme.border
+            self.label.color = self.color_scheme.text
 
 
 class SpriteButton(pyglet.sprite.Sprite):

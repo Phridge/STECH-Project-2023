@@ -34,7 +34,9 @@ class TemplateScreen:
                         self.button3.clicked.subscribe(lambda _: self.button_clicked(3))))
 
         self.disposable = CompositeDisposable(sublist)
+
         self.change_controller = Subject()
+        self.event = Subject()  # separates Subject für eventuelle Events die in diesem Screen stattfinden
 
     #  Falls die Funktionen namentlich nicht passen erstellte einfach neue!
     def button_clicked(self, data):  # Wird getriggert, wenn ein Spielstand ausgewählt wird

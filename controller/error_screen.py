@@ -25,6 +25,7 @@ class ErrorScreen:
         self.disposable = CompositeDisposable(sublist)
 
         self.change_controller = Subject()
+        self.event = Subject()  # separates Subject für eventuelle Events die in diesem Screen stattfinden
 
     def restart(self, data):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
         self.change_controller.on_next(("Restart", data))

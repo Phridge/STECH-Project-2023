@@ -1,10 +1,17 @@
+import logging
+
 import pyglet
+from reactivex.subject import BehaviorSubject, Subject
+from reactivex.disposable import CompositeDisposable
+import color_scheme
+
+from controller.settings import SettingsScreen
+from controller.statistics import StatisticsScreen
 from controller.start_screen import StartScreen
 from controller.home_screen import HomeScreen
 from controller.error_screen import ErrorScreen
 from controller.delete_save_screen import DeleteSaveScreen
-from reactivex.subject import BehaviorSubject, Subject
-from reactivex.disposable import CompositeDisposable
+from controller.pause_screen import PauseScreen
 
 # Beispiel-Bildschirm
 from controller.template_screen import TemplateScreen
@@ -19,7 +26,7 @@ class Events:
     mouse_move = Subject()
     mouse_button = Subject()
     size = BehaviorSubject((window.width, window.height))
-
+    color_scheme = color_scheme.BlackWhite
 
 @window.event
 def on_draw():
@@ -95,11 +102,13 @@ def load_controller(data):
 
     # Schlüsselt den Namen des nächsten Controllers auf und weist den neuen controller zu
     if new_controller == "Restart":
-        controller = StartScreen(Events)
         pyglet.app.exit()
         if bool(parameter[0]) is True:
+            controller = StartScreen(Events)
             controller.change_controller.subscribe(load_controller)
             pyglet.app.run(1/30)
+    elif new_controller == "Statistics": controller = StatisticsScreen(Events, parameter, controller.__class__.__name__)  # gibt den Klassennamen mit, damit man zurück zum letzten Screen gehen kann)
+    elif new_controller == "Settings": controller = SettingsScreen(Events, parameter, controller.__class__.__name__)  # gibt den Klassennamen mit, damit man zurück zum letzten Screen gehen kann
     elif new_controller == "HomeScreen": controller = HomeScreen(Events, parameter)
     elif new_controller == "StartScreen": controller = StartScreen(Events)
     elif new_controller == "DeleteSaveScreen": controller = DeleteSaveScreen(Events, parameter)
@@ -107,10 +116,21 @@ def load_controller(data):
 
     # ermöglicht es, aus dem neuen Controller diese Methode aufzurufen
     controller.change_controller.subscribe(load_controller)
+    controller.event.subscribe(decode_event)
 
 
-# setzt erst Subscription
+def decode_event(data):
+    event, *parameter = data  # entpackt data in die Einzelkomponenten
+
+    if event == "ChangeColorScheme":
+        logging.warning(parameter)
+        Events.color_scheme = color_scheme.EditableColorScheme((parameter[0], parameter[1], parameter[2]))
+        logging.warning(Events.color_scheme)
+
+
+# setzt ersten Subscriptions
 controller.change_controller.subscribe(load_controller)
+controller.event.subscribe(decode_event)  # ermöglicht das Auslesen von Events aus dem aktuellen Screen
 
 # startet das Spiel
 pyglet.app.run(1/30)

@@ -26,6 +26,7 @@ class DeleteSaveScreen:
 
         self.disposable = CompositeDisposable(sublist)
         self.change_controller = Subject()
+        self.event = Subject()  # separates Subject für eventuelle Events die in diesem Screen stattfinden
 
     def delete_save(self, data):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
         # Hier muss der Save gelöscht werden

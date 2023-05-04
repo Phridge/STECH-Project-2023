@@ -33,6 +33,21 @@ class DarkPurple:   # Dunkles Farbschema, mit lila Akzenten
     img_click = (175, 100, 255)  # Bilder beim Klicken
     border_thickness = 2
 
+class EditableColorScheme:
+    def __init__(self, color):
+        self.color = (0, 0, 0)  # Standard-Hintergrund
+        self.border = color  # Standard-Border
+        self.text = (color[0], color[1], color[2], 255)  # Standard-Text
+        self.hover = (color[0]//5, color[1]//5, color[2]//5)  # Hintergrund beim Hovern
+        self.hover_border = color  # Border beim Hovern
+        self.hover_text = (color[0], color[1], color[2], 255)  # Text beim Hovern
+        self.click = color  # Hintergrund beim Klicken
+        self.click_border = color  # Border beim Klicken
+        self.click_text = (0, 0, 0, 255)  # Text beim Klicken
+        self.img_hover = (color[0]//2, color[1]//2, color[2]//2)  # Bilder beim Hovern
+        self.img_click = (color[0]//3, color[1]//3, color[2]//3)  # Bilder beim Klicken
+        self.border_thickness = 2
+
 
 def add_font(font_name):
     if not font.have_font(font_name):

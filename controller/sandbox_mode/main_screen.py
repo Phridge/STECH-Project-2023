@@ -23,6 +23,7 @@ class MainSandboxScreen:
         self.disposable = CompositeDisposable(sublist)
 
         self.change_controller = Subject()
+        self.event = Subject()  # separates Subject für eventuelle Events die in diesem Screen stattfinden
 
     '''def button_clicked(self, data):  # Wird getriggert, wenn Buttons geklickt werden
             pass'''
