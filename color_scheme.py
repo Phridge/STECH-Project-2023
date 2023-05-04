@@ -46,5 +46,5 @@ class Arial:
 
 
 class Minecraft:
-    font_name = add_font("Minecraft")
+    font_name = add_font("Monocraft")
 
