@@ -16,9 +16,9 @@ class DeleteSaveScreen:
 
         # Design
         self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, sublist, self.batch)
-        self.header = ui_elements.BorderedRectangle("Spielstand " + str(save) + " wirklich löschen?", 20, 75, 60, 20, color_scheme.BlackWhite, color_scheme.Minecraft, 3.4, events, sublist, self.batch)
-        self.button1 = ui_elements.InputButton("Ja", 30, 55, 17.5, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 16, events, sublist, self.batch)
-        self.button2 = ui_elements.InputButton("Nein", 52.5, 55, 17.5, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 16, events, sublist, self.batch)
+        self.header = ui_elements.BorderedRectangle("Spielstand " + str(save) + " wirklich löschen?", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 3.4, events, sublist, self.batch)
+        self.button1 = ui_elements.InputButton("Ja", 30, 55, 17.5, 10, events.color_scheme, color_scheme.Minecraft, 16, events, sublist, self.batch)
+        self.button2 = ui_elements.InputButton("Nein", 52.5, 55, 17.5, 10, events.color_scheme, color_scheme.Minecraft, 16, events, sublist, self.batch)
 
         # erstellt Sublist, damit der Screen vollständig verworfen wird
         sublist.extend((self.button1.clicked.subscribe(lambda _: self.delete_save(save)),

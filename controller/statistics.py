@@ -18,9 +18,9 @@ class StatisticsScreen:
 
         # Layout für den Statistik-Bildschirm
         self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, sublist, self.batch)
-        self.header = ui_elements.BorderedRectangle("Statistiken", 20, 75, 60, 20, color_scheme.BlackWhite, color_scheme.Minecraft, 4, events, sublist, self.batch)
-        self.current_stats = ui_elements.BorderedRectangle(save_text, 20, 62.5, 60, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 4, events, sublist, self.batch)
-        self.back = ui_elements.InputButton("Zurück", 20, 50, 60, 10, color_scheme.BlackWhite, color_scheme.Minecraft,
+        self.header = ui_elements.BorderedRectangle("Statistiken", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, self.batch)
+        self.current_stats = ui_elements.BorderedRectangle(save_text, 20, 62.5, 60, 10, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, self.batch)
+        self.back = ui_elements.InputButton("Zurück", 20, 50, 60, 10, events.color_scheme, color_scheme.Minecraft,
                                             4, events, sublist, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions

@@ -15,7 +15,7 @@ class MainLearningScreen:
 
         # Layout für den Startbildschirm des Lern-Modus
         self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, sublist, self.batch)
-        self.header = ui_elements.BorderedRectangle("Lernen", 20, 75, 60, 20, color_scheme.BlackWhite, color_scheme.Minecraft, 4, events, sublist, self.batch)
+        self.header = ui_elements.BorderedRectangle("Lernen", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
         '''sublist.extend((self.restart_button.clicked.subscribe(lambda _: self.button_clicked(True)),

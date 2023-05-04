@@ -17,11 +17,11 @@ class SettingsScreen:
 
         # Layout für den Einstellungs-Bildschirm
         self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, sublist, self.batch)
-        self.header = ui_elements.BorderedRectangle("Einstellungen", 20, 75, 60, 20, color_scheme.BlackWhite, color_scheme.Minecraft, 4, events, sublist, self.batch)
-        self.back = ui_elements.InputButton("Zurück", 20, 62.5, 60, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 4, events, sublist, self.batch)
-        self.color_picker_red = ui_elements.TextField(3, 20, 50, 17.5, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 4, events, sublist, "red", self.batch)
-        self.color_picker_green = ui_elements.TextField(3, 41.25, 50, 17.5, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 4, events, sublist, "green", self.batch)
-        self.color_picker_blue = ui_elements.TextField(3, 62.5, 50, 17.5, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 4, events, sublist, "blue", self.batch)
+        self.header = ui_elements.BorderedRectangle("Einstellungen", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, self.batch)
+        self.back = ui_elements.InputButton("Zurück", 20, 62.5, 60, 10, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, self.batch)
+        self.color_picker_red = ui_elements.TextField(3, 20, 50, 17.5, 10, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, "red", self.batch)
+        self.color_picker_green = ui_elements.TextField(3, 41.25, 50, 17.5, 10, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, "green", self.batch)
+        self.color_picker_blue = ui_elements.TextField(3, 62.5, 50, 17.5, 10, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, "blue", self.batch)
 
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
