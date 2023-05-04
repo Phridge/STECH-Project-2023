@@ -15,7 +15,7 @@ class HomeScreen:
 
         # Erstes Layout für den HomeScreen
         self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, sublist, self.batch)
-        self.Header = ui_elements.BorderedRectangle("HomeScreen von Save " + str(save_file), 20, 75, 60, 20, color_scheme.BlackWhite, color_scheme.Minecraft, 5, events, sublist, self.batch)
+        self.header = ui_elements.BorderedRectangle("HomeScreen von Save " + str(save_file), 20, 75, 60, 20, color_scheme.BlackWhite, color_scheme.Minecraft, 5, events, sublist, self.batch)
         self.back = ui_elements.InputButton("Zurück", 35, 55, 30, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 6, events, sublist, self.batch)
         self.to_error = ui_elements.InputButton("auf nicht existente Seite wechseln (versuchen)", 25, 42.5, 50, 10, color_scheme.BlackWhite, color_scheme.Minecraft, 2.3, events, sublist, self.batch)
 
