@@ -112,11 +112,11 @@ def load_controller(data):
     elif new_controller == "HomeScreen": controller = HomeScreen(Events, parameter)
     elif new_controller == "StartScreen": controller = StartScreen(Events)
     elif new_controller == "DeleteSaveScreen": controller = DeleteSaveScreen(Events, parameter)
-    else: controller = ErrorScreen(Events)
+    else: controller = ErrorScreen(Events)  # falls auf eine nicht existente Seite verwiesen wird, wird ein Error-Screen aufgerufen
 
     # ermöglicht es, aus dem neuen Controller diese Methode aufzurufen
-    controller.change_controller.subscribe(load_controller)
-    controller.event.subscribe(decode_event)
+    sublist.append(controller.change_controller.subscribe(load_controller))
+    sublist.append(controller.event.subscribe(decode_event))
 
 
 def decode_event(data):
@@ -127,14 +127,14 @@ def decode_event(data):
     """
     event, *parameter = data  # entpackt data in die Einzelkomponenten
 
-    if event == "ChangeColorScheme":
+    if event == "ChangeColorScheme":  # ändert das Farbschema des gesamten Spiels. Parameter beinhaltet das fertige ColorScheme
         logging.warning("HIER SOLLTE DAS FARBSCHEMA IN DIE DATENBANK(DB) GESPEICHERT WERDEN")
-        Events.color_scheme = color_scheme.EditableColorScheme((parameter[0], parameter[1], parameter[2]))
+        Events.color_scheme = parameter[0]
 
 
 # setzt ersten Subscriptions
-controller.change_controller.subscribe(load_controller)
-controller.event.subscribe(decode_event)  # ermöglicht das Auslesen von Events aus dem aktuellen Screen
+sublist.append(controller.change_controller.subscribe(load_controller))
+sublist.append(controller.event.subscribe(decode_event))  # ermöglicht das Auslesen von Events aus dem aktuellen Screen
 
 # startet das Spiel
 pyglet.app.run(1/30)

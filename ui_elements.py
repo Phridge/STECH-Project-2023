@@ -406,14 +406,15 @@ class InputButton:
         self.clicked = Subject()
 
 
-class TextField:
-    def __init__(self, number_of_chars, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, name,
+class SettingTextField:
+    def __init__(self, number_of_chars, limit, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, name,
                  batch=None):
         """
-        Rechtecktiges Element mit einer Border. Nicht klickbar. Text kann eingegeben werden.
+        Rechtecktiges Element mit einer Border. Nicht klickbar. Zahl von 0 bis limit kann eingegeben werden.
         Es wird keine Klasse erweitert, damit man die Objekte in der Runtime neu zeichnen kann.
 
         :param number_of_chars: erlaubte Maximalanzahl an Zeichen
+        :param limit: höchster erlaubter Eingabewert
         :param x: X-Koordinate in %
         :param y: Y-Koordinate in %
         :param width: Breite des Elements in %
@@ -524,7 +525,7 @@ class TextField:
                 data = str(data)
                 if len(self.text) < number_of_chars: self.text = self.text + data
                 else: self.text = data
-                if int(self.text) > 255: self.text = "255"
+                if int(self.text) > limit: self.text = str(limit)
                 elif int(self.text) < 0: self.text = "0"
                 self.label.text = str(self.text)
                 self.changed.on_next((name, str(self.text)))  # gibt dem clicked-event mit, dass der Button geklickt wurde
