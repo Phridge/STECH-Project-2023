@@ -24,7 +24,8 @@ class SettingsScreen:
         self.color_picker_green = ui_elements.SettingTextField(str(self.preview_color_scheme.border[1]), 3, 255, 35, 50, 13, 10, color_scheme.EditableColorScheme((0, 255, 0)), color_scheme.Minecraft, 15, events, sublist, "green", self.batch)
         self.color_picker_blue = ui_elements.SettingTextField(str(self.preview_color_scheme.border[2]), 3, 255, 50, 50, 13, 10, color_scheme.EditableColorScheme((0, 0, 255)), color_scheme.Minecraft, 15, events, sublist, "blue", self.batch)
         self.color_preview = ui_elements.BorderedRectangle("Beispiel", 67, 50, 13, 10, self.preview_color_scheme, color_scheme.Minecraft, 11, events, sublist, self.batch)
-
+        self.header = ui_elements.BorderedRectangle("Volume :", 20, 37.5, 28, 10, events.color_scheme, color_scheme.Minecraft, 8, events, sublist, self.batch)
+        self.volume_picker = ui_elements.SettingTextField(str(0), 3, 100, 50, 37.5, 13, 10, events.color_scheme, color_scheme.Minecraft, 15, events, sublist, "volume", self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
         sublist.extend((self.back.clicked.subscribe(lambda _: self.go_back(previous_controller, save)),
@@ -33,7 +34,9 @@ class SettingsScreen:
                         self.color_picker_green.changed.subscribe(self.change_color),
                         self.color_picker_green.clicked.subscribe(lambda _: self.color_button_active("green")),
                         self.color_picker_blue.changed.subscribe(self.change_color),
-                        self.color_picker_blue.clicked.subscribe(lambda _: self.color_button_active("blue"))))
+                        self.color_picker_blue.clicked.subscribe(lambda _: self.color_button_active("blue")),
+                        self.volume_picker.changed.subscribe(self.change_volume),
+                        self.volume_picker.clicked.subscribe(lambda _: self.color_button_active("volume"))))
         self.disposable = CompositeDisposable(sublist)
 
         self.change_controller = Subject()
@@ -69,9 +72,16 @@ class SettingsScreen:
         self.color_picker_red.set_active(True if data == "red" else False)
         self.color_picker_green.set_active(True if data == "green" else False)
         self.color_picker_blue.set_active(True if data == "blue" else False)
+        self.volume_picker.set_active(True if data == "volume" else False)
+
+    def change_volume(self, data):
+        #Muss noch implementiert werden
+        pass
+
 
     def dispose_subs(self):  # Muss getriggert werden, wenn der Screen gewechselt wird.
         self.disposable.dispose()
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
+
