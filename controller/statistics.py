@@ -6,7 +6,7 @@ from reactivex.disposable import CompositeDisposable
 
 
 class StatisticsScreen:
-    def __init__(self, events, save, previous_controller):
+    def __init__(self, events, previous_controller, save):
         save = save[0]
         if save == 0: save_text = "Alle Spielstände"
         else: save_text = "Spielstand " + str(save)
