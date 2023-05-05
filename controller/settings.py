@@ -8,7 +8,7 @@ from reactivex.disposable import CompositeDisposable
 
 
 class SettingsScreen:
-    def __init__(self, events, save, previous_controller):
+    def __init__(self, events, previous_controller, save):
         if type(save) == list: save = save[0]
         self.batch = pyglet.graphics.Batch()
         self.preview_color_scheme = events.color_scheme  # aktuelles Color_scheme
@@ -55,6 +55,8 @@ class SettingsScreen:
         """
         self.event.on_next(("ChangeColorScheme", self.preview_color_scheme))
         self.event.on_next(("ChangeVolume", self.volume_value))
+        logging.warning(previous_controller)
+        logging.warning(save)
         self.change_controller.on_next((previous_controller, save))
 
     def apply_changes(self, previous_controller, data):
