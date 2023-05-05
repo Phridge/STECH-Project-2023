@@ -26,7 +26,7 @@ class Events:
     mouse_move = Subject()
     mouse_button = Subject()
     size = BehaviorSubject((window.width, window.height))
-    color_scheme = color_scheme.BlackWhite
+    color_scheme = color_scheme.BlackWhite  # Sollte her eigentlich aus der Datenbank(DB) gelesen werden
 
 @window.event
 def on_draw():
@@ -85,7 +85,7 @@ sublist = []  # erstellte eine sublist, die ermöglicht Subscriptions wieder auf
 
 def load_controller(data):
     """
-    Lädt einen neuen Controller und trennt alle Subscriptions zum alten Controller.
+    Wird aufgerufen, wenn ein Controller zu einem anderen Controller wechseln will. Trennt auch alle Subscriptions zum alten Controller.
 
     :param data: der Name des neuen Controllers als string, und eventuell ein parameter (new_controller, *parameter)
     """
@@ -101,7 +101,7 @@ def load_controller(data):
     controller.dispose_subs()
 
     # Schlüsselt den Namen des nächsten Controllers auf und weist den neuen controller zu
-    if new_controller == "Restart":
+    if new_controller == "Restart":  # Handelt Rückgabe des ErrorScreens
         pyglet.app.exit()
         if bool(parameter[0]) is True:
             controller = StartScreen(Events)
@@ -120,12 +120,16 @@ def load_controller(data):
 
 
 def decode_event(data):
+    """
+    Wird aufgerufen falls Screens ein Event haben, was zurückgegeben wird (außer Screen-Wechsel)
+
+    :param data: Name des Events als String, und Parameter als ein Tupel (event, *parameter)
+    """
     event, *parameter = data  # entpackt data in die Einzelkomponenten
 
     if event == "ChangeColorScheme":
-        logging.warning(parameter)
+        logging.warning("HIER SOLLTE DAS FARBSCHEMA IN DIE DATENBANK(DB) GESPEICHERT WERDEN")
         Events.color_scheme = color_scheme.EditableColorScheme((parameter[0], parameter[1], parameter[2]))
-        logging.warning(Events.color_scheme)
 
 
 # setzt ersten Subscriptions

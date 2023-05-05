@@ -1,5 +1,3 @@
-import logging
-
 import pyglet
 import color_scheme
 import ui_elements
@@ -11,6 +9,7 @@ class SettingsScreen:
     def __init__(self, events, save, previous_controller):
         save = save[0]
         self.batch = pyglet.graphics.Batch()
+        self.preview_color_scheme = events.color_scheme
 
         # Liste, die sämtliche subscriptions fängt, um sie beim Wechseln des Controllers wieder freizugeben
         sublist = []
@@ -19,9 +18,10 @@ class SettingsScreen:
         self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, sublist, self.batch)
         self.header = ui_elements.BorderedRectangle("Einstellungen", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, self.batch)
         self.back = ui_elements.InputButton("Zurück", 20, 62.5, 60, 10, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, self.batch)
-        self.color_picker_red = ui_elements.TextField(3, 20, 50, 17.5, 10, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, "red", self.batch)
-        self.color_picker_green = ui_elements.TextField(3, 41.25, 50, 17.5, 10, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, "green", self.batch)
-        self.color_picker_blue = ui_elements.TextField(3, 62.5, 50, 17.5, 10, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, "blue", self.batch)
+        self.color_picker_red = ui_elements.TextField(3, 20, 50, 17.5, 10, color_scheme.EditableColorScheme((255, 0, 0)), color_scheme.Minecraft, 9, events, sublist, "red", self.batch)
+        self.color_picker_green = ui_elements.TextField(3, 41.25, 50, 17.5, 10, color_scheme.EditableColorScheme((0, 255, 0)), color_scheme.Minecraft, 9, events, sublist, "green", self.batch)
+        self.color_picker_blue = ui_elements.TextField(3, 62.5, 50, 17.5, 10, color_scheme.EditableColorScheme((0, 0, 255)), color_scheme.Minecraft, 9, events, sublist, "blue", self.batch)
+        self.color_preview = ui_elements.BorderedRectangle("Beispiel", 83.75, 50, 10, 10, self.preview_color_scheme, color_scheme.Minecraft, 10, events, sublist, self.batch)
 
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
@@ -47,6 +47,11 @@ class SettingsScreen:
         else: green = 0
         if self.color_picker_blue.text.isnumeric(): blue = int(self.color_picker_blue.text)
         else: blue = 0
+        if red < 100 and green < 100 and blue < 100: red = green = blue = 100
+        self.preview_color_scheme = color_scheme.EditableColorScheme((red, green, blue))
+        self.color_preview.rectangle.color = self.preview_color_scheme.color
+        self.color_preview.borderRectangle.color = self.preview_color_scheme.border
+        self.color_preview.label.color = self.preview_color_scheme.text
         self.event.on_next(("ChangeColorScheme", red, green, blue))
 
     def button_active(self, data):
