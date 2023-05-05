@@ -26,7 +26,8 @@ class Events:
     mouse_move = Subject()
     mouse_button = Subject()
     size = BehaviorSubject((window.width, window.height))
-    color_scheme = color_scheme.BlackWhite  # Sollte her eigentlich aus der Datenbank(DB) gelesen werden
+    color_scheme = color_scheme.BlackWhite  # Sollte hier eigentlich aus der Datenbank(DB) gelesen werden
+
 
 @window.event
 def on_draw():
@@ -78,7 +79,7 @@ Jeder Controller zeigt eine "Seite", siehe SiteMap.
 Es darf also nur ein Controller gleichzeitig aktiv sein
 '''
 
-
+logging.warning("Oben bei Events muss das Color_scheme aus der Datenbank importiert werden")
 controller = StartScreen(Events)  # Setzt StartBildschirm als initialen Controller
 sublist = []  # erstellte eine sublist, die ermöglicht Subscriptions wieder aufzuheben
 

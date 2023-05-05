@@ -1,3 +1,5 @@
+import logging
+
 import pyglet
 import color_scheme
 import ui_elements
@@ -18,10 +20,10 @@ class SettingsScreen:
         self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, sublist, self.batch)
         self.header = ui_elements.BorderedRectangle("Einstellungen", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, self.batch)
         self.back = ui_elements.InputButton("Zurück", 20, 62.5, 60, 10, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, self.batch)
-        self.color_picker_red = ui_elements.SettingTextField(3, 255, 20, 50, 17.5, 10, color_scheme.EditableColorScheme((255, 0, 0)), color_scheme.Minecraft, 9, events, sublist, "red", self.batch)
-        self.color_picker_green = ui_elements.SettingTextField(3, 255, 41.25, 50, 17.5, 10, color_scheme.EditableColorScheme((0, 255, 0)), color_scheme.Minecraft, 9, events, sublist, "green", self.batch)
-        self.color_picker_blue = ui_elements.SettingTextField(3, 255, 62.5, 50, 17.5, 10, color_scheme.EditableColorScheme((0, 0, 255)), color_scheme.Minecraft, 9, events, sublist, "blue", self.batch)
-        self.color_preview = ui_elements.BorderedRectangle("Beispiel", 83.75, 50, 10, 10, self.preview_color_scheme, color_scheme.Minecraft, 10, events, sublist, self.batch)
+        self.color_picker_red = ui_elements.SettingTextField(str(self.preview_color_scheme.border[0]), 3, 255, 20, 50, 13, 10, color_scheme.EditableColorScheme((255, 0, 0)), color_scheme.Minecraft, 15, events, sublist, "red", self.batch)
+        self.color_picker_green = ui_elements.SettingTextField(str(self.preview_color_scheme.border[1]), 3, 255, 35, 50, 13, 10, color_scheme.EditableColorScheme((0, 255, 0)), color_scheme.Minecraft, 15, events, sublist, "green", self.batch)
+        self.color_picker_blue = ui_elements.SettingTextField(str(self.preview_color_scheme.border[2]), 3, 255, 50, 50, 13, 10, color_scheme.EditableColorScheme((0, 0, 255)), color_scheme.Minecraft, 15, events, sublist, "blue", self.batch)
+        self.color_preview = ui_elements.BorderedRectangle("Beispiel", 67, 50, 13, 10, self.preview_color_scheme, color_scheme.Minecraft, 11, events, sublist, self.batch)
 
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions

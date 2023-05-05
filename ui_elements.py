@@ -407,7 +407,7 @@ class InputButton:
 
 
 class SettingTextField:
-    def __init__(self, number_of_chars, limit, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, name,
+    def __init__(self, text, number_of_chars, limit, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, name,
                  batch=None):
         """
         Rechtecktiges Element mit einer Border. Nicht klickbar. Zahl von 0 bis limit kann eingegeben werden.
@@ -448,8 +448,8 @@ class SettingTextField:
                                                  batch=batch, group=None)
 
         # Zeichnet den Text in die Mitte des Rechteckes
-        self.text = ""
-        self.label = pyglet.text.Label("", x=x_px + width_px // 2, y=y_px + height_px // 2,
+        self.text = text
+        self.label = pyglet.text.Label(self.text, x=x_px + width_px // 2, y=y_px + height_px // 2,
                                        # Text wird in die Mitte des Buttons gezeichnet
                                        anchor_x="center", anchor_y="center",
                                        # Text wird in die Mitte des Buttons gezeichnet
@@ -514,6 +514,7 @@ class SettingTextField:
                 self.rectangle.color = color_scheme.click
                 self.borderRectangle.color = color_scheme.click_border
                 self.label.color = color_scheme.click_text
+                self.text = self.label.text = ""
                 self.clicked.on_next(None)  # gibt dem clicked-event mit, dass der Button geklickt wurde
                 return True
             elif self.active is False:  # falls nicht geclickt wird wird getestet, ob gehovert wird
