@@ -76,6 +76,9 @@ class SettingsScreen:
 
     def change_volume(self, data):
         #Muss noch implementiert werden
+        if self.volume_picker.text.isnumeric(): volume = int(self.volume_picker.text)/100
+        else: volume = 0
+        logging.warning(volume)
         pass
 
 
