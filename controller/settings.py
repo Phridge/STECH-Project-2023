@@ -9,9 +9,10 @@ from reactivex.disposable import CompositeDisposable
 
 class SettingsScreen:
     def __init__(self, events, save, previous_controller):
-        save = save[0]
+        if type(save) == list: save = save[0]
         self.batch = pyglet.graphics.Batch()
-        self.preview_color_scheme = events.color_scheme
+        self.preview_color_scheme = events.color_scheme  # aktuelles Color_scheme
+        self.volume_value = events.volume_value  # aktuelle Lautstärke
 
         # Liste, die sämtliche subscriptions fängt, um sie beim Wechseln des Controllers wieder freizugeben
         sublist = []
@@ -19,24 +20,26 @@ class SettingsScreen:
         # Layout für den Einstellungs-Bildschirm
         self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, sublist, self.batch)
         self.header = ui_elements.BorderedRectangle("Einstellungen", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, self.batch)
-        self.back = ui_elements.InputButton("Zurück", 20, 62.5, 60, 10, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, self.batch)
         self.color_picker_red = ui_elements.SettingTextField(str(self.preview_color_scheme.border[0]), 3, 255, 20, 50, 13, 10, color_scheme.EditableColorScheme((255, 0, 0)), color_scheme.Minecraft, 15, events, sublist, "red", self.batch)
         self.color_picker_green = ui_elements.SettingTextField(str(self.preview_color_scheme.border[1]), 3, 255, 35, 50, 13, 10, color_scheme.EditableColorScheme((0, 255, 0)), color_scheme.Minecraft, 15, events, sublist, "green", self.batch)
         self.color_picker_blue = ui_elements.SettingTextField(str(self.preview_color_scheme.border[2]), 3, 255, 50, 50, 13, 10, color_scheme.EditableColorScheme((0, 0, 255)), color_scheme.Minecraft, 15, events, sublist, "blue", self.batch)
         self.color_preview = ui_elements.BorderedRectangle("Beispiel", 67, 50, 13, 10, self.preview_color_scheme, color_scheme.Minecraft, 11, events, sublist, self.batch)
         self.header = ui_elements.BorderedRectangle("Volume :", 20, 37.5, 28, 10, events.color_scheme, color_scheme.Minecraft, 8, events, sublist, self.batch)
-        self.volume_picker = ui_elements.SettingTextField(str(0), 3, 100, 50, 37.5, 13, 10, events.color_scheme, color_scheme.Minecraft, 15, events, sublist, "volume", self.batch)
+        self.volume_picker = ui_elements.SettingTextField(str(int(events.volume_value*100)), 3, 100, 50, 37.5, 13, 10, events.color_scheme, color_scheme.Minecraft, 15, events, sublist, "volume", self.batch)
+        self.back = ui_elements.InputButton("Zurück", 20, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 8, events, sublist, self.batch)
+        self.apply_button = ui_elements.InputButton("Anwenden", 60, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 8, events, sublist, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
         sublist.extend((self.back.clicked.subscribe(lambda _: self.go_back(previous_controller, save)),
+                        self.apply_button.clicked.subscribe(lambda _: self.apply_changes(previous_controller, save)),
                         self.color_picker_red.changed.subscribe(self.change_color),
-                        self.color_picker_red.clicked.subscribe(lambda _: self.color_button_active("red")),
+                        self.color_picker_red.clicked.subscribe(lambda _: self.set_button_active("red")),
                         self.color_picker_green.changed.subscribe(self.change_color),
-                        self.color_picker_green.clicked.subscribe(lambda _: self.color_button_active("green")),
+                        self.color_picker_green.clicked.subscribe(lambda _: self.set_button_active("green")),
                         self.color_picker_blue.changed.subscribe(self.change_color),
-                        self.color_picker_blue.clicked.subscribe(lambda _: self.color_button_active("blue")),
+                        self.color_picker_blue.clicked.subscribe(lambda _: self.set_button_active("blue")),
                         self.volume_picker.changed.subscribe(self.change_volume),
-                        self.volume_picker.clicked.subscribe(lambda _: self.color_button_active("volume"))))
+                        self.volume_picker.clicked.subscribe(lambda _: self.set_button_active("volume"))))
         self.disposable = CompositeDisposable(sublist)
 
         self.change_controller = Subject()
@@ -50,7 +53,13 @@ class SettingsScreen:
         :param save: aktuelle Save-File
         """
         self.event.on_next(("ChangeColorScheme", self.preview_color_scheme))
+        self.event.on_next(("ChangeVolume", self.volume_value))
         self.change_controller.on_next((previous_controller, save))
+
+    def apply_changes(self, previous_controller, data):
+        self.event.on_next(("ChangeColorScheme", self.preview_color_scheme))
+        self.event.on_next(("ChangeVolume", self.volume_value))
+        self.change_controller.on_next(("ReloadSettings", previous_controller, data))
 
     def change_color(self, data):
         """
@@ -68,18 +77,16 @@ class SettingsScreen:
         self.color_preview.borderRectangle.color = self.preview_color_scheme.border
         self.color_preview.label.color = self.preview_color_scheme.text
 
-    def color_button_active(self, data):
+    def set_button_active(self, data):
         self.color_picker_red.set_active(True if data == "red" else False)
         self.color_picker_green.set_active(True if data == "green" else False)
         self.color_picker_blue.set_active(True if data == "blue" else False)
         self.volume_picker.set_active(True if data == "volume" else False)
 
     def change_volume(self, data):
-        #Muss noch implementiert werden
-        if self.volume_picker.text.isnumeric(): volume = int(self.volume_picker.text)/100
-        else: volume = 0
-        logging.warning(volume)
-        pass
+        if self.volume_picker.text.isnumeric(): self.volume_value = int(self.volume_picker.text)/100
+        else: self.volume_value = 0
+        logging.warning(self.volume_value)
 
 
     def dispose_subs(self):  # Muss getriggert werden, wenn der Screen gewechselt wird.

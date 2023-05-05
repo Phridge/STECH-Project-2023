@@ -23,7 +23,7 @@ class StartScreen:
         self.delete_save3 = ui_elements.InputButton("Neu 3", 67.5, 30, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 16, events, sublist, self.batch)
         self.info = ui_elements.BorderedRectangle("Hinweis: Gib mal \"Erster Spielstand\" auf der Tastatur ein!", 10, 12.5, 80, 10, events.color_scheme, color_scheme.Minecraft, 1.9, events, sublist, self.batch)
         self.settings = ui_elements.InputButton("Einstellungen", 2.5, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8, events, sublist, self.batch)
-        self.statistics = ui_elements.InputButton("Statistiken", 85, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8, events, sublist, self.batch)
+        self.statistics = ui_elements.InputButton("Statistiken", 85, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, sublist, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
         sublist.extend((self.save1.clicked.subscribe(lambda _: self.save_clicked(1)),

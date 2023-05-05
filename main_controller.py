@@ -27,6 +27,7 @@ class Events:
     mouse_button = Subject()
     size = BehaviorSubject((window.width, window.height))
     color_scheme = color_scheme.BlackWhite  # Sollte hier eigentlich aus der Datenbank(DB) gelesen werden
+    volume_value = 0
 
 
 @window.event
@@ -110,6 +111,7 @@ def load_controller(data):
             pyglet.app.run(1/30)
     elif new_controller == "Statistics": controller = StatisticsScreen(Events, parameter, controller.__class__.__name__)  # gibt den Klassennamen mit, damit man zurück zum letzten Screen gehen kann)
     elif new_controller == "Settings": controller = SettingsScreen(Events, parameter, controller.__class__.__name__)  # gibt den Klassennamen mit, damit man zurück zum letzten Screen gehen kann
+    elif new_controller == "ReloadSettings": controller = SettingsScreen(Events, parameter[0], parameter[1])  # gibt den Klassennamen mit, damit man zurück zum letzten Screen gehen kann
     elif new_controller == "HomeScreen": controller = HomeScreen(Events, parameter)
     elif new_controller == "StartScreen": controller = StartScreen(Events)
     elif new_controller == "DeleteSaveScreen": controller = DeleteSaveScreen(Events, parameter)
@@ -131,6 +133,9 @@ def decode_event(data):
     if event == "ChangeColorScheme":  # ändert das Farbschema des gesamten Spiels. Parameter beinhaltet das fertige ColorScheme
         logging.warning("HIER SOLLTE DAS FARBSCHEMA IN DIE DATENBANK(DB) GESPEICHERT WERDEN")
         Events.color_scheme = parameter[0]
+    elif event == "ChangeVolume":  # ändert das Farbschema des gesamten Spiels. Parameter beinhaltet das fertige ColorScheme
+        logging.warning("HIER SOLLTE DAS VOLUME IN DIE DATENBANK(DB) GESPEICHERT WERDEN")
+        Events.volume_value = parameter[0]
 
 
 # setzt ersten Subscriptions

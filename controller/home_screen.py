@@ -19,7 +19,7 @@ class HomeScreen:
         self.back = ui_elements.InputButton("Zurück", 35, 55, 30, 10, events.color_scheme, color_scheme.Minecraft, 6, events, sublist, self.batch)
         self.to_error = ui_elements.InputButton("auf nicht existente Seite wechseln (versuchen)", 25, 42.5, 50, 10, events.color_scheme, color_scheme.Minecraft, 2.3, events, sublist, self.batch)
         self.settings = ui_elements.InputButton("Einstellungen", 2.5, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8, events, sublist, self.batch)
-        self.statistics = ui_elements.InputButton("Statistiken", 85, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8, events, sublist, self.batch)
+        self.statistics = ui_elements.InputButton("Statistiken", 85, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, sublist, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
         sublist.extend((self.back.clicked.subscribe(lambda _: self.go_back(1)),
