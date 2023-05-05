@@ -1,8 +1,8 @@
 from reactivex.disposable import CompositeDisposable
 from reactivex.subject import Subject
 import pyglet
+from pyglet.gui.widgets import Slider
 from pyglet.text import Label, HTMLLabel, DocumentLabel
-from pyglet.gui.widgets import Caret
 # Erweitert die Pyglet-Klassen, um daraus Buttons, Banner und Formen zu machen
 
 
@@ -966,6 +966,10 @@ class GifButton(pyglet.sprite.Sprite):
 
         # eigenes Event des Buttons, welches abfängt, wenn der Button gedrückt wird
         self.clicked = Subject()
+
+
+class SliderElement(Slider):
+    pass
 
 
 class Refactor:
