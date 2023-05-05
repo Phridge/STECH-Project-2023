@@ -29,11 +29,11 @@ class SettingsScreen:
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
         sublist.extend((self.back.clicked.subscribe(lambda _: self.go_back(previous_controller, save)),
                         self.color_picker_red.changed.subscribe(self.change_color),
-                        self.color_picker_red.clicked.subscribe(lambda _: self.button_active("red")),
+                        self.color_picker_red.clicked.subscribe(lambda _: self.color_button_active("red")),
                         self.color_picker_green.changed.subscribe(self.change_color),
-                        self.color_picker_green.clicked.subscribe(lambda _: self.button_active("green")),
+                        self.color_picker_green.clicked.subscribe(lambda _: self.color_button_active("green")),
                         self.color_picker_blue.changed.subscribe(self.change_color),
-                        self.color_picker_blue.clicked.subscribe(lambda _: self.button_active("blue"))))
+                        self.color_picker_blue.clicked.subscribe(lambda _: self.color_button_active("blue"))))
         self.disposable = CompositeDisposable(sublist)
 
         self.change_controller = Subject()
@@ -65,7 +65,7 @@ class SettingsScreen:
         self.color_preview.borderRectangle.color = self.preview_color_scheme.border
         self.color_preview.label.color = self.preview_color_scheme.text
 
-    def button_active(self, data):
+    def color_button_active(self, data):
         self.color_picker_red.set_active(True if data == "red" else False)
         self.color_picker_green.set_active(True if data == "green" else False)
         self.color_picker_blue.set_active(True if data == "blue" else False)
