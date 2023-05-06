@@ -17,7 +17,7 @@ from controller.story_mode.level2_screen import Level2Screen
 # Beispiel-Bildschirm
 from controller.template_screen import TemplateScreen
 
-window = pyglet.window.Window(resizable=True)
+window = pyglet.window.Window(resizable=False)
 
 
 class Events:
