@@ -14,7 +14,7 @@ class Disposable:
 
 
 class BorderedRectangle:
-    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None, group=None):
+    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechtecktiges Element mit einer Border. Nicht klickbar. Nutzung für einfache Überschriften oder Textkästen.
         Es wird keine Klasse erweitert, damit man die Objekte in der Runtime neu zeichnen kann.
@@ -87,7 +87,7 @@ class BorderedRectangle:
 
 
 class BorderedRectangleButton:
-    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None, group=None):
+    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechtecktiger Button mit einer Border. Er kann gehovert und geclickt werden.
         Es wird keine Klasse erweitert, damit man die Objekte in der Runtime neu zeichnen kann.
@@ -201,7 +201,7 @@ class BorderedRectangleButton:
 
 class InputBox:
     def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist,
-                 batch=None, group=None):
+                 batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechtecktiges Element mit einer Border. Nicht klickbar. Nutzung für einfache Überschriften oder Textkästen.
         Der im Button angezeigte Text kann vollständig eingegeben werden, um ihn zu aktivieren.
@@ -285,7 +285,7 @@ class InputBox:
 
 
 class InputButton:
-    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None, group=None):
+    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechtecktiger Button mit einer Border. Er kann gehovert und geclickt werden.
         Zudem kann der im Button angezeigte Text vollständig eingegeben werden, um ihn ebenfalls zu aktivieren.
@@ -408,7 +408,7 @@ class InputButton:
 
 class SettingTextField:
     def __init__(self, text, number_of_chars, limit, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, name,
-                 batch=None, group=None):
+                 batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechtecktiges Element mit einer Border. Nicht klickbar. Zahl von 0 bis limit kann eingegeben werden.
         Es wird keine Klasse erweitert, damit man die Objekte in der Runtime neu zeichnen kann.
@@ -554,7 +554,7 @@ class SettingTextField:
 
 
 class SpriteButton(pyglet.sprite.Sprite):
-    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None, group=None):
+    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiger Button mit einem Bild als Fläche. Er kann gehovert und geclickt werden.
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
@@ -635,7 +635,7 @@ class SpriteButton(pyglet.sprite.Sprite):
 
 
 class Sprite(pyglet.sprite.Sprite):
-    def __init__(self, path, x, y, width, height, events, sublist, batch=None, group=None):
+    def __init__(self, path, x, y, width, height, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiges Element mit einem Bild als Fläche. Nicht klckbar.
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
@@ -683,7 +683,7 @@ class Sprite(pyglet.sprite.Sprite):
 
 
 class BorderedSpriteButton(pyglet.sprite.Sprite):
-    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None, group=None):
+    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiger Button mit einem Bild als Fläche und einer Border. Er kann gehovert und geclickt werden.
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
@@ -780,7 +780,7 @@ class BorderedSpriteButton(pyglet.sprite.Sprite):
 
 
 class BorderedSprite(pyglet.sprite.Sprite):
-    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None, group=None):
+    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiges Element mit einem Bild als Fläche und einer Border. Nicht klickbar.
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
@@ -840,7 +840,7 @@ class BorderedSprite(pyglet.sprite.Sprite):
 
 
 class Gif(pyglet.sprite.Sprite):  # lädt ein Gif
-    def __init__(self, path, x, y, width, height, duration, loop, events, sublist, batch=None, group=None):
+    def __init__(self, path, x, y, width, height, duration, loop, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiges Element mit einem Gif als Fläche. Nicht klickbar.
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
@@ -896,7 +896,7 @@ class Gif(pyglet.sprite.Sprite):  # lädt ein Gif
 
 
 class GifButton(pyglet.sprite.Sprite):
-    def __init__(self, path, x, y, width, height, duration, loop, events, sublist, batch=None, group=None):
+    def __init__(self, path, x, y, width, height, duration, loop, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiger Button mit einem Gif als Fläche. Kann geklickt werden..
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.

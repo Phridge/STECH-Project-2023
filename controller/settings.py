@@ -11,6 +11,11 @@ class SettingsScreen:
     def __init__(self, events, previous_controller, save):
         if type(save) == list: save = save[0]
         self.batch = pyglet.graphics.Batch()
+        # dient, um Objekte manuell nach vorne und hinten zu schieben. Je weniger er genutzt wird, umso performanter ist alles.
+        # Standardmäßig ist alles im Mittelgrund zwischen Vorder- und Hintergrund
+        background = pyglet.graphics.Group(order=-1)
+        foreground = pyglet.graphics.Group(order=1)
+
         self.preview_color_scheme = events.color_scheme  # aktuelles Color_scheme
         self.volume_value = events.volume_value  # aktuelle Lautstärke
 

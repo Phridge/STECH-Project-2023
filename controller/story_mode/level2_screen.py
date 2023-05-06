@@ -14,12 +14,16 @@ Lasst euch dieses Template anzeigen, indem ihr es im main_controller als initial
 class Level2Screen:
     def __init__(self, events):
         self.batch = pyglet.graphics.Batch()
+        # dient, um Objekte manuell nach vorne und hinten zu schieben. Je weniger er genutzt wird, umso performanter ist alles.
+        # Standardmäßig ist alles im Mittelgrund zwischen Vorder- und Hintergrund
+        background = pyglet.graphics.Group(order=-1)
+        foreground = pyglet.graphics.Group(order=1)
 
         # Liste, die sämtliche subscriptions fängt, um sie beim Wechseln des Controllers wieder freizugeben
         sublist = []
 
         # im folgenden Block können Elemente eingefügt werden. Die Elemente die schon da sind dienen nur als Beispiele
-        self.gif = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, events, sublist, self.batch)
+        self.gif = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, events, sublist, self.batch, background)
         # hier Problem: wie mehrere Gifs in mehreren Ebenen anzeigen?
         # self.gif = ui_elements.Gif("assets/images/mech_walk.gif", 30, 30, 20, 20, 5, True, events, sublist, self.batch)
         self.header = ui_elements.BorderedRectangle("Level 2: Der Wald des Widerstands", 20, 80, 60, 20, events.color_scheme, color_scheme.Minecraft, 2, events, sublist, self.batch)
