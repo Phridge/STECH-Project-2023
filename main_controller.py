@@ -29,6 +29,7 @@ class Events:
     size = BehaviorSubject((window.width, window.height))
     color_scheme = color_scheme.BlackWhite  # Sollte hier eigentlich aus der Datenbank(DB) gelesen werden
     volume_value = 0
+    fullscreen = False
 
 
 @window.event
@@ -137,7 +138,13 @@ def decode_event(data):
     elif event == "ChangeVolume":  # ändert das Farbschema des gesamten Spiels. Parameter beinhaltet das fertige ColorScheme
         logging.warning("HIER SOLLTE DAS VOLUME IN DIE DATENBANK(DB) GESPEICHERT WERDEN")
         Events.volume_value = parameter[0]
-
+    elif event == "ToggleFullscreen":  # togglet Vollbild an und aus
+        if parameter[0] is True:
+            Events.fullscreen = False
+            window.set_fullscreen(False)
+        else:
+            Events.fullscreen = True
+            window.set_fullscreen(True)
 
 # setzt ersten Subscriptions
 sublist.append(controller.change_controller.subscribe(load_controller))
