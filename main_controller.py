@@ -110,8 +110,8 @@ def load_controller(data):
             controller = StartScreen(Events)
             controller.change_controller.subscribe(load_controller)
             pyglet.app.run(1/30)
-    elif new_controller == "Statistics": controller = StatisticsScreen(Events, parameter, controller.__class__.__name__)  # gibt den Klassennamen mit, damit man zurück zum letzten Screen gehen kann)
-    elif new_controller == "Settings": controller = SettingsScreen(Events, parameter, controller.__class__.__name__)  # gibt den Klassennamen mit, damit man zurück zum letzten Screen gehen kann
+    elif new_controller == "Statistics": controller = StatisticsScreen(Events, controller.__class__.__name__, parameter)  # gibt den Klassennamen mit, damit man zurück zum letzten Screen gehen kann)
+    elif new_controller == "Settings": controller = SettingsScreen(Events, controller.__class__.__name__, parameter)  # gibt den Klassennamen mit, damit man zurück zum letzten Screen gehen kann
     elif new_controller == "ReloadSettings": controller = SettingsScreen(Events, parameter[0], parameter[1])  # gibt den Klassennamen mit, damit man zurück zum letzten Screen gehen kann
     elif new_controller == "HomeScreen": controller = HomeScreen(Events, parameter)
     elif new_controller == "StartScreen": controller = StartScreen(Events)
