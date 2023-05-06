@@ -12,11 +12,12 @@ from controller.home_screen import HomeScreen
 from controller.error_screen import ErrorScreen
 from controller.delete_save_screen import DeleteSaveScreen
 from controller.pause_screen import PauseScreen
+from controller.story_mode.level2_screen import Level2Screen
 
 # Beispiel-Bildschirm
 from controller.template_screen import TemplateScreen
 
-window = pyglet.window.Window(resizable=False)
+window = pyglet.window.Window(resizable=True)
 
 
 class Events:
