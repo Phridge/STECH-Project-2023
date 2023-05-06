@@ -145,6 +145,9 @@ def decode_event(data):
         else:
             Events.fullscreen = True
             window.set_fullscreen(True)
+    elif event == "ChangeScreenSize": # änddert die Größe des Bildschirms
+        window.set_size(int(parameter[0]), int(parameter[1]))
+
 
 # setzt ersten Subscriptions
 sublist.append(controller.change_controller.subscribe(load_controller))

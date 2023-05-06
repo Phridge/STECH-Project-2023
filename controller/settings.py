@@ -43,6 +43,8 @@ class SettingsScreen:
         self.fullscreen_toggle_button = ui_elements.InputButton("", 20, 25, 18.3333, 10, events.color_scheme, color_scheme.Minecraft, 8, events, sublist, self.batch)
         if self.fullscreen is False: self.fullscreen_toggle_button.label.text = "Vollbild an"
         else: self.fullscreen_toggle_button.label.text = "Vollbild aus"
+        self.window_x = ui_elements.SettingTextField("", 4, 9999, 40.8333, 25, 18.3333, 10, events.color_scheme, color_scheme.Minecraft, 10, events, sublist, "x", self.batch)
+        self.window_y = ui_elements.SettingTextField("", 4, 9999, 61.6666, 25, 18.3333, 10, events.color_scheme, color_scheme.Minecraft, 10, events, sublist, "y", self.batch)
 
         # Menü-Buttons
         self.back = ui_elements.InputButton("Zurück", 20, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 8, events, sublist, self.batch)
@@ -51,6 +53,9 @@ class SettingsScreen:
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
         sublist.extend((self.back.clicked.subscribe(lambda _: self.go_back(previous_controller, save)),
                         self.fullscreen_toggle_button.clicked.subscribe(lambda _: self.toggle_fullscreen(self.fullscreen)),
+                        events.size.subscribe(self.update_screen_size),
+                        self.window_x.clicked.subscribe(lambda _: self.set_button_active("x")),
+                        self.window_y.clicked.subscribe(lambda _: self.set_button_active("y")),
                         self.apply_button.clicked.subscribe(lambda _: self.apply_changes(previous_controller, save)),
                         self.color_picker_red.changed.subscribe(self.change_color),
                         self.color_picker_red.clicked.subscribe(lambda _: self.set_button_active("red")),
@@ -74,13 +79,13 @@ class SettingsScreen:
         """
         self.event.on_next(("ChangeColorScheme", self.preview_color_scheme))
         self.event.on_next(("ChangeVolume", self.volume_value))
-        logging.warning(previous_controller)
-        logging.warning(save)
+        if not self.fullscreen: self.event.on_next(("ChangeScreenSize", self.window_x.label.text, self.window_y.label.text))
         self.change_controller.on_next((previous_controller, save))
 
     def apply_changes(self, previous_controller, data):
         self.event.on_next(("ChangeColorScheme", self.preview_color_scheme))
         self.event.on_next(("ChangeVolume", self.volume_value))
+        if not self.fullscreen: self.event.on_next(("ChangeScreenSize", self.window_x.label.text, self.window_y.label.text))
         self.change_controller.on_next(("ReloadSettings", previous_controller, data))
 
     def change_color(self, data):
@@ -104,6 +109,8 @@ class SettingsScreen:
         self.color_picker_green.set_active(True if data == "green" else False)
         self.color_picker_blue.set_active(True if data == "blue" else False)
         self.volume_picker.set_active(True if data == "volume" else False)
+        self.window_x.set_active(True if data == "x" else False)
+        self.window_y.set_active(True if data == "y" else False)
 
     def change_volume(self, data):
         if self.volume_picker.text.isnumeric(): self.volume_value = int(self.volume_picker.text)/100
@@ -120,6 +127,9 @@ class SettingsScreen:
 
         self.event.on_next(("ToggleFullscreen", fullscreen_state))
 
+    def update_screen_size(self, data):
+        self.window_x.label.text = str(data[0])
+        self.window_y.label.text = str(data[1])
 
     def dispose_subs(self):  # Muss getriggert werden, wenn der Screen gewechselt wird.
         self.disposable.dispose()
