@@ -14,7 +14,7 @@ class Disposable:
 
 
 class BorderedRectangle:
-    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None):
+    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None, group=None):
         """
         Rechtecktiges Element mit einer Border. Nicht klickbar. Nutzung für einfache Überschriften oder Textkästen.
         Es wird keine Klasse erweitert, damit man die Objekte in der Runtime neu zeichnen kann.
@@ -38,7 +38,7 @@ class BorderedRectangle:
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
                                                        color_scheme.border,  # Style wird mitgegeben
-                                                       batch=batch, group=None)
+                                                       batch=batch, group=group)
 
         # Zeichnet das Rechteck
         self.rectangle = pyglet.shapes.Rectangle(x_px + color_scheme.border_thickness,
@@ -46,7 +46,7 @@ class BorderedRectangle:
                                                  width_px - 2 * color_scheme.border_thickness,
                                                  height_px - 2 * color_scheme.border_thickness,
                                                  color_scheme.color,  # Style wird mitgegeben
-                                                 batch=batch, group=None)
+                                                 batch=batch, group=group)
 
         # Zeichnet den Text in die Mitte des Rechteckes
         self.label = pyglet.text.Label(text, x=x_px + width_px // 2, y=y_px + height_px // 2,
@@ -54,7 +54,7 @@ class BorderedRectangle:
                                        anchor_x="center", anchor_y="center",
                                        # Text wird in die Mitte des Buttons gezeichnet
                                        batch=batch, font_name=font_scheme.font_name,
-                                       font_size=width_px // (100 / font_size), color=color_scheme.text)
+                                       font_size=width_px // (100 / font_size), color=color_scheme.text, group=group)
 
         def resize(data):
             """
@@ -87,7 +87,7 @@ class BorderedRectangle:
 
 
 class BorderedRectangleButton:
-    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None):
+    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None, group=None):
         """
         Rechtecktiger Button mit einer Border. Er kann gehovert und geclickt werden.
         Es wird keine Klasse erweitert, damit man die Objekte in der Runtime neu zeichnen kann.
@@ -111,7 +111,7 @@ class BorderedRectangleButton:
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
                                                        color_scheme.border,  # Style wird mitgegeben
-                                                       batch=batch, group=None)
+                                                       batch=batch, group=group)
 
         # Zeichnet das Rechteck
         self.rectangle = pyglet.shapes.Rectangle(x_px + color_scheme.border_thickness,
@@ -119,7 +119,7 @@ class BorderedRectangleButton:
                                                  width_px - 2 * color_scheme.border_thickness,
                                                  height_px - 2 * color_scheme.border_thickness,
                                                  color_scheme.color,  # Style wird mitgegeben
-                                                 batch=batch, group=None)
+                                                 batch=batch, group=group)
 
         # Zeichnet den Text in die Mitte des Rechteckes
         self.label = pyglet.text.Label(text, x=x_px + width_px // 2, y=y_px + height_px // 2,
@@ -127,7 +127,7 @@ class BorderedRectangleButton:
                                        anchor_x="center", anchor_y="center",
                                        # Text wird in die Mitte des Buttons gezeichnet
                                        batch=batch, font_name=font_scheme.font_name,
-                                       font_size=width_px // (100 / font_size), color=color_scheme.text)
+                                       font_size=width_px // (100 / font_size), color=color_scheme.text, group=group)
 
         def is_hovered(data):
             """
@@ -201,7 +201,7 @@ class BorderedRectangleButton:
 
 class InputBox:
     def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist,
-                 batch=None):
+                 batch=None, group=None):
         """
         Rechtecktiges Element mit einer Border. Nicht klickbar. Nutzung für einfache Überschriften oder Textkästen.
         Der im Button angezeigte Text kann vollständig eingegeben werden, um ihn zu aktivieren.
@@ -226,7 +226,7 @@ class InputBox:
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
                                                        color_scheme.border,  # Style wird mitgegeben
-                                                       batch=batch, group=None)
+                                                       batch=batch, group=group)
 
         # Zeichnet das Rechteck
         self.rectangle = pyglet.shapes.Rectangle(x_px + color_scheme.border_thickness,
@@ -234,7 +234,7 @@ class InputBox:
                                                  width_px - 2 * color_scheme.border_thickness,
                                                  height_px - 2 * color_scheme.border_thickness,
                                                  color_scheme.color,  # Style wird mitgegeben
-                                                 batch=batch, group=None)
+                                                 batch=batch, group=group)
 
         # Zeichnet den Text in die Mitte des Rechteckes
         self.label = pyglet.text.Label(text, x=x_px + width_px // 2, y=y_px + height_px // 2,
@@ -242,7 +242,7 @@ class InputBox:
                                        anchor_x="center", anchor_y="center",
                                        # Text wird in die Mitte des Buttons gezeichnet
                                        batch=batch, font_name=font_scheme.font_name,
-                                       font_size=width_px // (100 / font_size), color=color_scheme.text)
+                                       font_size=width_px // (100 / font_size), color=color_scheme.text, group=group)
 
         def resize(data):
             """
@@ -285,7 +285,7 @@ class InputBox:
 
 
 class InputButton:
-    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None):
+    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None, group=None):
         """
         Rechtecktiger Button mit einer Border. Er kann gehovert und geclickt werden.
         Zudem kann der im Button angezeigte Text vollständig eingegeben werden, um ihn ebenfalls zu aktivieren.
@@ -310,7 +310,7 @@ class InputButton:
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
                                                        color_scheme.border,  # Style wird mitgegeben
-                                                       batch=batch, group=None)
+                                                       batch=batch, group=group)
 
         # Zeichnet das Rechteck
         self.rectangle = pyglet.shapes.Rectangle(x_px + color_scheme.border_thickness,
@@ -318,7 +318,7 @@ class InputButton:
                                                  width_px - 2 * color_scheme.border_thickness,
                                                  height_px - 2 * color_scheme.border_thickness,
                                                  color_scheme.color,  # Style wird mitgegeben
-                                                 batch=batch, group=None)
+                                                 batch=batch, group=group)
 
         # Zeichnet den Text in die Mitte des Rechteckes
         self.label = pyglet.text.Label(text, x=x_px + width_px // 2, y=y_px + height_px // 2,
@@ -326,7 +326,7 @@ class InputButton:
                                        anchor_x="center", anchor_y="center",
                                        # Text wird in die Mitte des Buttons gezeichnet
                                        batch=batch, font_name=font_scheme.font_name,
-                                       font_size=width_px // (100 / font_size), color=color_scheme.text)
+                                       font_size=width_px // (100 / font_size), color=color_scheme.text, group=group)
 
         def is_hovered(data):
             """
@@ -408,7 +408,7 @@ class InputButton:
 
 class SettingTextField:
     def __init__(self, text, number_of_chars, limit, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, name,
-                 batch=None):
+                 batch=None, group=None):
         """
         Rechtecktiges Element mit einer Border. Nicht klickbar. Zahl von 0 bis limit kann eingegeben werden.
         Es wird keine Klasse erweitert, damit man die Objekte in der Runtime neu zeichnen kann.
@@ -437,7 +437,7 @@ class SettingTextField:
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
                                                        color_scheme.border,  # Style wird mitgegeben
-                                                       batch=batch, group=None)
+                                                       batch=batch, group=group)
 
         # Zeichnet das Rechteck
         self.rectangle = pyglet.shapes.Rectangle(x_px + color_scheme.border_thickness,
@@ -445,7 +445,7 @@ class SettingTextField:
                                                  width_px - 2 * color_scheme.border_thickness,
                                                  height_px - 2 * color_scheme.border_thickness,
                                                  color_scheme.color,  # Style wird mitgegeben
-                                                 batch=batch, group=None)
+                                                 batch=batch, group=group)
 
         # Zeichnet den Text in die Mitte des Rechteckes
         self.text = text
@@ -454,7 +454,7 @@ class SettingTextField:
                                        anchor_x="center", anchor_y="center",
                                        # Text wird in die Mitte des Buttons gezeichnet
                                        batch=batch, font_name=font_scheme.font_name,
-                                       font_size=width_px // (100 / font_size), color=color_scheme.text)
+                                       font_size=width_px // (100 / font_size), color=color_scheme.text, group=group)
 
         def resize(data):
             """
@@ -554,7 +554,7 @@ class SettingTextField:
 
 
 class SpriteButton(pyglet.sprite.Sprite):
-    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None):
+    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None, group=None):
         """
         Rechteckiger Button mit einem Bild als Fläche. Er kann gehovert und geclickt werden.
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
@@ -575,7 +575,7 @@ class SpriteButton(pyglet.sprite.Sprite):
 
         # zeichnet das Bild in der richtigen Größe
         image = pyglet.image.load(path)
-        pyglet.sprite.Sprite.__init__(self, image, x_px, y_px, batch=batch)
+        pyglet.sprite.Sprite.__init__(self, image, x_px, y_px, batch=batch, group=group)
         self.scale_x = width_px / self.width  # skaliert das Bild auf die angegebene Prozentgröße des Fensters
         self.scale_y = height_px / self.height
 
@@ -635,7 +635,7 @@ class SpriteButton(pyglet.sprite.Sprite):
 
 
 class Sprite(pyglet.sprite.Sprite):
-    def __init__(self, path, x, y, width, height, events, sublist, batch=None):
+    def __init__(self, path, x, y, width, height, events, sublist, batch=None, group=None):
         """
         Rechteckiges Element mit einem Bild als Fläche. Nicht klckbar.
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
@@ -655,7 +655,7 @@ class Sprite(pyglet.sprite.Sprite):
 
         # zeichnet das Bild in der richtigen Größe
         image = pyglet.image.load(path)
-        pyglet.sprite.Sprite.__init__(self, image, x_px, y_px, batch=batch)
+        pyglet.sprite.Sprite.__init__(self, image, x_px, y_px, batch=batch, group=group)
 
         # speichert die Standard-Maße des Bildes ab
         normal_width = self.width
@@ -683,7 +683,7 @@ class Sprite(pyglet.sprite.Sprite):
 
 
 class BorderedSpriteButton(pyglet.sprite.Sprite):
-    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None):
+    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None, group=None):
         """
         Rechteckiger Button mit einem Bild als Fläche und einer Border. Er kann gehovert und geclickt werden.
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
@@ -705,13 +705,13 @@ class BorderedSpriteButton(pyglet.sprite.Sprite):
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
                                                        color_scheme.border,  # Style wird mitgegeben
-                                                       batch=batch, group=None)
+                                                       batch=batch, group=group)
 
         # zeichnet das Bild in der richtigen Größe
         image = pyglet.image.load(path)
         pyglet.sprite.Sprite.__init__(self, image,
                                       x_px + color_scheme.border_thickness,
-                                      y_px + color_scheme.border_thickness, batch=batch)
+                                      y_px + color_scheme.border_thickness, batch=batch, group=group)
 
         # speichert die Standard-Maße des Bildes ab
         normal_width = self.width
@@ -780,7 +780,7 @@ class BorderedSpriteButton(pyglet.sprite.Sprite):
 
 
 class BorderedSprite(pyglet.sprite.Sprite):
-    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None):
+    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None, group=None):
         """
         Rechteckiges Element mit einem Bild als Fläche und einer Border. Nicht klickbar.
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
@@ -802,13 +802,13 @@ class BorderedSprite(pyglet.sprite.Sprite):
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
                                                        color_scheme.border,  # Style wird mitgegeben
-                                                       batch=batch, group=None)
+                                                       batch=batch, group=group)
 
         # zeichnet das Bild in der richtigen Größe
         image = pyglet.image.load(path)
         pyglet.sprite.Sprite.__init__(self, image,
                                       x_px + color_scheme.border_thickness,
-                                      y_px + color_scheme.border_thickness, batch=batch)
+                                      y_px + color_scheme.border_thickness, batch=batch, group=group)
 
         # speichert die Standard-Maße des Bildes ab
         normal_width = self.width
@@ -840,7 +840,7 @@ class BorderedSprite(pyglet.sprite.Sprite):
 
 
 class Gif(pyglet.sprite.Sprite):  # lädt ein Gif
-    def __init__(self, path, x, y, width, height, duration, loop, events, sublist, batch=None):
+    def __init__(self, path, x, y, width, height, duration, loop, events, sublist, batch=None, group=None):
         """
         Rechteckiges Element mit einem Gif als Fläche. Nicht klickbar.
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
@@ -868,7 +868,7 @@ class Gif(pyglet.sprite.Sprite):  # lädt ein Gif
 
         # erstellt aus den einzelnen Bildern eine Animation der gewünschten Länge. Loop erlaubt ununterbrochene Wiederholung der Animation
         animation = image.from_image_sequence(animation_frames, duration=duration / len(animation_frames), loop=loop)
-        pyglet.sprite.Sprite.__init__(self, animation, x_px, y_px, batch=batch)
+        pyglet.sprite.Sprite.__init__(self, animation, x_px, y_px, batch=batch, group=group)
 
         # speichert die Standard-Maße des Gifs
         normal_width = self.width
@@ -896,7 +896,7 @@ class Gif(pyglet.sprite.Sprite):  # lädt ein Gif
 
 
 class GifButton(pyglet.sprite.Sprite):
-    def __init__(self, path, x, y, width, height, duration, loop, events, sublist, batch=None):
+    def __init__(self, path, x, y, width, height, duration, loop, events, sublist, batch=None, group=None):
         """
         Rechteckiger Button mit einem Gif als Fläche. Kann geklickt werden..
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
@@ -924,7 +924,7 @@ class GifButton(pyglet.sprite.Sprite):
 
         # erstellt aus den einzelnen Bildern eine Animation der gewünschten Länge. Loop erlaubt ununterbrochene Wiederholung der Animation
         animation = image.from_image_sequence(animation_frames, duration=duration / len(animation_frames), loop=loop)
-        pyglet.sprite.Sprite.__init__(self, animation, x_px, y_px, batch=batch)
+        pyglet.sprite.Sprite.__init__(self, animation, x_px, y_px, batch=batch, group=group)
 
         # speichert die Standard-Maße des Gifs
         normal_width = self.width
@@ -966,10 +966,6 @@ class GifButton(pyglet.sprite.Sprite):
 
         # eigenes Event des Buttons, welches abfängt, wenn der Button gedrückt wird
         self.clicked = Subject()
-
-
-class SliderElement(Slider):
-    pass
 
 
 class Refactor:
