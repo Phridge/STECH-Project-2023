@@ -895,6 +895,7 @@ class Gif(pyglet.sprite.Sprite):  # lädt ein Gif
         sublist.append(events.size.subscribe(resize))
 
 
+
 class GifButton(pyglet.sprite.Sprite):
     def __init__(self, path, x, y, width, height, duration, loop, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
         """
@@ -966,6 +967,10 @@ class GifButton(pyglet.sprite.Sprite):
 
         # eigenes Event des Buttons, welches abfängt, wenn der Button gedrückt wird
         self.clicked = Subject()
+        self.loop_finished = Subject()
+
+    def on_animation_end(self):
+        self.loop_finished.on_next(True)
 
 
 class Refactor:

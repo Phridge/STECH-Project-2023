@@ -10,6 +10,7 @@ class StartScreen:
         self.batch = pyglet.graphics.Batch()
         # dient, um Objekte manuell nach vorne und hinten zu schieben. Je weniger er genutzt wird, umso performanter ist alles.
         # Standardmäßig ist alles im Mittelgrund zwischen Vorder- und Hintergrund
+        # einfach foreground oder background als zusätzliche Variable ans Element packen
         background = pyglet.graphics.Group(order=-1)
         foreground= pyglet.graphics.Group(order=1)
 

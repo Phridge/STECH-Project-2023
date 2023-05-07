@@ -77,12 +77,15 @@ class SettingsScreen:
         :param previous_controller: Name des letzten Controllers --> Wechsel-Ziel
         :param save: aktuelle Save-File
         """
-        self.event.on_next(("ChangeColorScheme", self.preview_color_scheme))
-        self.event.on_next(("ChangeVolume", self.volume_value))
-        if not self.fullscreen: self.event.on_next(("ChangeScreenSize", self.window_x.label.text, self.window_y.label.text))
         self.change_controller.on_next((previous_controller, save))
 
     def apply_changes(self, previous_controller, data):
+        """
+        Lädt den SettingsScreen neu, nachdem die Einstellungen angewandt wurden
+
+        :param previous_controller: Voriger Controller, um Zurück gehen zu können
+        :param data: aktuelle Save-File
+        """
         self.event.on_next(("ChangeColorScheme", self.preview_color_scheme))
         self.event.on_next(("ChangeVolume", self.volume_value))
         if not self.fullscreen: self.event.on_next(("ChangeScreenSize", self.window_x.label.text, self.window_y.label.text))
@@ -105,6 +108,11 @@ class SettingsScreen:
         self.color_preview.label.color = self.preview_color_scheme.text
 
     def set_button_active(self, data):
+        """
+        Sorgt dafür, dass in den Einstellungen immer nur ein Button gleichzeitig Inputs annehmen kann
+
+        :param data: String mit Button, der Aktiv gesetzt werden soll
+        """
         self.color_picker_red.set_active(True if data == "red" else False)
         self.color_picker_green.set_active(True if data == "green" else False)
         self.color_picker_blue.set_active(True if data == "blue" else False)
@@ -113,11 +121,18 @@ class SettingsScreen:
         self.window_y.set_active(True if data == "y" else False)
 
     def change_volume(self, data):
+        """
+        Korrigiert den Input von 0-100 auf 0-1, damit das Pyglet den Wert verwenden kann
+        """
         if self.volume_picker.text.isnumeric(): self.volume_value = int(self.volume_picker.text)/100
         else: self.volume_value = 0
-        logging.warning(self.volume_value)
 
     def toggle_fullscreen(self, fullscreen_state):
+        """
+        Ändert zu Fullscreen bzw zu Fenstermodus
+
+        :param fullscreen_state: Bool, ob das Fenster momentan im Fullscreen-Modus ist
+        """
         if fullscreen_state is True:
             self.fullscreen = False
             self.fullscreen_toggle_button.label.text = "Vollbild an"
@@ -128,6 +143,9 @@ class SettingsScreen:
         self.event.on_next(("ToggleFullscreen", fullscreen_state))
 
     def update_screen_size(self, data):
+        """
+        Aktualisiert die beiden Eingabefelder mit der aktuellen Fenstergröße
+        """
         self.window_x.label.text = str(data[0])
         self.window_y.label.text = str(data[1])
 

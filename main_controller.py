@@ -26,10 +26,10 @@ class Events:
     mouse = BehaviorSubject((0, 0, 0))
     mouse_move = Subject()
     mouse_button = Subject()
-    size = BehaviorSubject((window.width, window.height))
+    size = BehaviorSubject((window.width, window.height))  # Sollte hier eigentlich aus der Datenbank(DB) gelesen werden
     color_scheme = color_scheme.BlackWhite  # Sollte hier eigentlich aus der Datenbank(DB) gelesen werden
-    volume_value = 0
-    fullscreen = False
+    volume_value = 0  # Sollte hier eigentlich aus der Datenbank(DB) gelesen werden
+    fullscreen = False  # Sollte hier eigentlich aus der Datenbank(DB) gelesen werden
 
 
 @window.event
@@ -83,7 +83,7 @@ Es darf also nur ein Controller gleichzeitig aktiv sein
 '''
 
 logging.warning("Oben bei Events muss das Color_scheme aus der Datenbank importiert werden")
-controller = StartScreen(Events)  # Setzt StartBildschirm als initialen Controller
+controller = Level2Screen(Events)  # Setzt StartBildschirm als initialen Controller
 sublist = []  # erstellte eine sublist, die ermöglicht Subscriptions wieder aufzuheben
 
 
@@ -139,6 +139,7 @@ def decode_event(data):
         logging.warning("HIER SOLLTE DAS VOLUME IN DIE DATENBANK(DB) GESPEICHERT WERDEN")
         Events.volume_value = parameter[0]
     elif event == "ToggleFullscreen":  # togglet Vollbild an und aus
+        logging.warning("HIER SOLLTE DAS Fullscreen-Value IN DIE DATENBANK(DB) GESPEICHERT WERDEN")
         if parameter[0] is True:
             Events.fullscreen = False
             window.set_fullscreen(False)
@@ -146,6 +147,7 @@ def decode_event(data):
             Events.fullscreen = True
             window.set_fullscreen(True)
     elif event == "ChangeScreenSize": # änddert die Größe des Bildschirms
+        logging.warning("HIER SOLLTE Die FENSTERGRÖßE IN DIE DATENBANK(DB) GESPEICHERT WERDEN")
         window.set_size(int(parameter[0]), int(parameter[1]))
 
 
