@@ -19,6 +19,7 @@ class SettingsScreen:
         self.preview_color_scheme = events.color_scheme  # aktuelles Color_scheme
         self.volume_value = events.volume_value  # aktuelle Lautstärke
         self.fullscreen = events.fullscreen
+        self.new_screen_size = None
 
         # Liste, die sämtliche subscriptions fängt, um sie beim Wechseln des Controllers wieder freizugeben
         sublist = []
@@ -28,23 +29,23 @@ class SettingsScreen:
         self.header = ui_elements.BorderedRectangle("Einstellungen", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 4, events, sublist, self.batch)
 
         # Color-Picker
-        self.color = ui_elements.BorderedRectangle("Farbe:", 2.5, 50, 15, 10, events.color_scheme, color_scheme.Minecraft, 10, events, sublist, self.batch)
-        self.color_picker_red = ui_elements.SettingTextField(str(self.preview_color_scheme.border[0]), 3, 255, 20, 50, 18.3333, 10, color_scheme.EditableColorScheme((255, 0, 0)), color_scheme.Minecraft, 15, events, sublist, "red", self.batch)
-        self.color_picker_green = ui_elements.SettingTextField(str(self.preview_color_scheme.border[1]), 3, 255, 40.8333, 50, 18.3333, 10, color_scheme.EditableColorScheme((0, 255, 0)), color_scheme.Minecraft, 15, events, sublist, "green", self.batch)
-        self.color_picker_blue = ui_elements.SettingTextField(str(self.preview_color_scheme.border[2]), 3, 255, 61.6666, 50, 18.3333, 10, color_scheme.EditableColorScheme((0, 0, 255)), color_scheme.Minecraft, 15, events, sublist, "blue", self.batch)
-        self.color_preview = ui_elements.BorderedRectangle("Beispiel", 82.5, 50, 15, 10, self.preview_color_scheme, color_scheme.Minecraft, 11, events, sublist, self.batch)
+        self.color = ui_elements.BorderedRectangle("Farbe:", 2.5, 55, 15, 10, events.color_scheme, color_scheme.Minecraft, 10, events, sublist, self.batch)
+        self.color_picker_red = ui_elements.SettingTextField(str(self.preview_color_scheme.border[0]), 3, 255, 20, 55, 18.3333, 10, color_scheme.EditableColorScheme((255, 0, 0)), color_scheme.Minecraft, 15, events, sublist, "red", self.batch)
+        self.color_picker_green = ui_elements.SettingTextField(str(self.preview_color_scheme.border[1]), 3, 255, 40.8333, 55, 18.3333, 10, color_scheme.EditableColorScheme((0, 255, 0)), color_scheme.Minecraft, 15, events, sublist, "green", self.batch)
+        self.color_picker_blue = ui_elements.SettingTextField(str(self.preview_color_scheme.border[2]), 3, 255, 61.6666, 55, 18.3333, 10, color_scheme.EditableColorScheme((0, 0, 255)), color_scheme.Minecraft, 15, events, sublist, "blue", self.batch)
+        self.color_preview = ui_elements.BorderedRectangle("Beispiel", 82.5, 55, 15, 10, self.preview_color_scheme, color_scheme.Minecraft, 11, events, sublist, self.batch)
 
         # Volume-Picker
-        self.volume = ui_elements.BorderedRectangle("Lautstärke:", 2.5, 37.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8.5, events, sublist, self.batch)
-        self.volume_picker = ui_elements.SettingTextField(str(int(events.volume_value*100)), 3, 100, 40.8333, 37.5, 18.3333, 10, events.color_scheme, color_scheme.Minecraft, 15, events, sublist, "volume", self.batch)
+        self.volume = ui_elements.BorderedRectangle("Lautstärke:", 2.5, 42.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8.5, events, sublist, self.batch)
+        self.volume_picker = ui_elements.SettingTextField(str(int(events.volume_value*100)), 3, 100, 40.8333, 42.5, 18.3333, 10, events.color_scheme, color_scheme.Minecraft, 15, events, sublist, "volume", self.batch)
 
         # Fenster-Einstellungen
-        self.window = ui_elements.BorderedRectangle("Fenster:", 2.5, 25, 15, 10, events.color_scheme, color_scheme.Minecraft, 10, events, sublist, self.batch)
-        self.fullscreen_toggle_button = ui_elements.InputButton("", 20, 25, 18.3333, 10, events.color_scheme, color_scheme.Minecraft, 8, events, sublist, self.batch)
+        self.window = ui_elements.BorderedRectangle("Fenster:", 2.5, 30, 15, 10, events.color_scheme, color_scheme.Minecraft, 10, events, sublist, self.batch)
+        self.fullscreen_toggle_button = ui_elements.InputButton("", 20, 30, 18.3333, 10, events.color_scheme, color_scheme.Minecraft, 8, events, sublist, self.batch)
         if self.fullscreen is False: self.fullscreen_toggle_button.label.text = "Vollbild an"
         else: self.fullscreen_toggle_button.label.text = "Vollbild aus"
-        self.window_x = ui_elements.SettingTextField("", 4, 9999, 40.8333, 25, 18.3333, 10, events.color_scheme, color_scheme.Minecraft, 10, events, sublist, "x", self.batch)
-        self.window_y = ui_elements.SettingTextField("", 4, 9999, 61.6666, 25, 18.3333, 10, events.color_scheme, color_scheme.Minecraft, 10, events, sublist, "y", self.batch)
+        self.window_x = ui_elements.SettingTextField("Breite", 4, 9999, 40.8333, 30, 18.3333, 10, events.color_scheme, color_scheme.Minecraft, 10, events, sublist, "x", self.batch)
+        self.window_y = ui_elements.SettingTextField("Höhe", 4, 9999, 61.6666, 30, 18.3333, 10, events.color_scheme, color_scheme.Minecraft, 10, events, sublist, "y", self.batch)
 
         # Menü-Buttons
         self.back = ui_elements.InputButton("Zurück", 20, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 8, events, sublist, self.batch)
@@ -53,9 +54,10 @@ class SettingsScreen:
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
         sublist.extend((self.back.clicked.subscribe(lambda _: self.go_back(previous_controller, save)),
                         self.fullscreen_toggle_button.clicked.subscribe(lambda _: self.toggle_fullscreen(self.fullscreen)),
-                        events.size.subscribe(self.update_screen_size),
                         self.window_x.clicked.subscribe(lambda _: self.set_button_active("x")),
+                        self.window_x.changed.subscribe(self.change_size),
                         self.window_y.clicked.subscribe(lambda _: self.set_button_active("y")),
+                        self.window_y.changed.subscribe(self.change_size),
                         self.apply_button.clicked.subscribe(lambda _: self.apply_changes(previous_controller, save)),
                         self.color_picker_red.changed.subscribe(self.change_color),
                         self.color_picker_red.clicked.subscribe(lambda _: self.set_button_active("red")),
@@ -88,10 +90,12 @@ class SettingsScreen:
         """
         self.event.on_next(("ChangeColorScheme", self.preview_color_scheme))
         self.event.on_next(("ChangeVolume", self.volume_value))
-        if not self.fullscreen: self.event.on_next(("ChangeScreenSize", self.window_x.label.text, self.window_y.label.text))
+        if not self.fullscreen and self.new_screen_size:
+            logging.warning("on_next called")
+            self.event.on_next(("ChangeScreenSize", self.new_screen_size[0], self.new_screen_size[1]))
         self.change_controller.on_next(("ReloadSettings", previous_controller, data))
 
-    def change_color(self, data):
+    def change_color(self):
         """
         Ändert das Farbschema des gesamten Spiels und aktualisiert die Preview-Box
         """
@@ -142,12 +146,17 @@ class SettingsScreen:
 
         self.event.on_next(("ToggleFullscreen", fullscreen_state))
 
-    def update_screen_size(self, data):
-        """
-        Aktualisiert die beiden Eingabefelder mit der aktuellen Fenstergröße
-        """
-        self.window_x.label.text = str(data[0])
-        self.window_y.label.text = str(data[1])
+    def change_size(self, data):
+        x = y = None
+        if self.window_x.label.text.isnumeric(): x = int(self.window_x.label.text)
+        elif self.window_x.label.text != "Höhe" and self.window_x.label.text != "": x = 300
+        if self.window_y.label.text.isnumeric(): y = int(self.window_y.label.text)
+        elif self.window_y.label.text != "Höhe" and self.window_y.label.text != "": y = 300
+        if x and x < 300: x = 300
+        if y and y < 300: y = 300  # sorgt dafür, dass es nicht zu dunkel wird
+        if str(x).isnumeric() and str(y).isnumeric():
+            self.new_screen_size = (x, y)
+            logging.warning(self.new_screen_size)
 
     def dispose_subs(self):  # Muss getriggert werden, wenn der Screen gewechselt wird.
         self.disposable.dispose()

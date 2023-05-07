@@ -4,7 +4,6 @@ import pyglet
 from reactivex.subject import BehaviorSubject, Subject
 from reactivex.disposable import CompositeDisposable
 import color_scheme
-
 from controller.settings import SettingsScreen
 from controller.statistics import StatisticsScreen
 from controller.start_screen import StartScreen
@@ -13,6 +12,9 @@ from controller.error_screen import ErrorScreen
 from controller.delete_save_screen import DeleteSaveScreen
 from controller.pause_screen import PauseScreen
 from controller.story_mode.level2_screen import Level2Screen
+from controller.story_mode.main_screen import MainStoryScreen
+from controller.learning_mode.main_screen import MainLearningScreen
+from controller.sandbox_mode.main_screen import MainSandboxScreen
 
 # Beispiel-Bildschirm
 from controller.template_screen import TemplateScreen
@@ -76,6 +78,7 @@ def on_resize(w, h):
     Events.size.on_next((w, h))
 
 
+
 '''
 ab hier beginnt der zentrale Controller.
 Jeder Controller zeigt eine "Seite", siehe SiteMap.
@@ -83,7 +86,7 @@ Es darf also nur ein Controller gleichzeitig aktiv sein
 '''
 
 logging.warning("Oben bei Events muss das Color_scheme aus der Datenbank importiert werden")
-controller = Level2Screen(Events)  # Setzt StartBildschirm als initialen Controller
+controller = StartScreen(Events)  # Setzt StartBildschirm als initialen Controller
 sublist = []  # erstellte eine sublist, die ermöglicht Subscriptions wieder aufzuheben
 
 
@@ -117,6 +120,9 @@ def load_controller(data):
     elif new_controller == "HomeScreen": controller = HomeScreen(Events, parameter)
     elif new_controller == "StartScreen": controller = StartScreen(Events)
     elif new_controller == "DeleteSaveScreen": controller = DeleteSaveScreen(Events, parameter)
+    elif new_controller == "MainLearningScreen": controller = MainLearningScreen(Events, parameter)
+    elif new_controller == "MainStoryScreen": controller = MainStoryScreen(Events, parameter)
+    elif new_controller == "MainSandboxScreen": controller = MainSandboxScreen(Events, parameter)
     else: controller = ErrorScreen(Events)  # falls auf eine nicht existente Seite verwiesen wird, wird ein Error-Screen aufgerufen
 
     # ermöglicht es, aus dem neuen Controller diese Methode aufzurufen
