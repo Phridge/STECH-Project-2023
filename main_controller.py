@@ -150,10 +150,14 @@ class GameWindow(pyglet.window.Window, Disposable):
         self.events.size.on_next((w, h))
 
 
+def main():
+    window = GameWindow()
 
-window = GameWindow()
+    # startet das Spiel
+    pyglet.app.run(1/30)
 
-# startet das Spiel
-pyglet.app.run(1/30)
+    window.dispose()
 
-window.dispose()
+
+if __name__ == "__main__":
+    main()
