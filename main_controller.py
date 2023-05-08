@@ -11,7 +11,9 @@ from controller.home_screen import HomeScreen
 from controller.error_screen import ErrorScreen
 from controller.delete_save_screen import DeleteSaveScreen
 from controller.pause_screen import PauseScreen
+from controller.story_mode.level1_screen import Level1Screen
 from controller.story_mode.level2_screen import Level2Screen
+from controller.story_mode.level3_screen import Level3Screen
 from controller.story_mode.main_screen import MainStoryScreen
 from controller.learning_mode.main_screen import MainLearningScreen
 from controller.sandbox_mode.main_screen import MainSandboxScreen
@@ -86,7 +88,7 @@ Es darf also nur ein Controller gleichzeitig aktiv sein
 '''
 
 logging.warning("Oben bei Events muss das Color_scheme aus der Datenbank importiert werden")
-controller = StartScreen(Events)  # Setzt StartBildschirm als initialen Controller
+controller = Level3Screen(Events)  # Setzt StartBildschirm als initialen Controller
 sublist = []  # erstellte eine sublist, die ermöglicht Subscriptions wieder aufzuheben
 
 

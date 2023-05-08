@@ -25,9 +25,7 @@ class Level2Screen:
         # Liste, die sämtliche subscriptions fängt, um sie beim Wechseln des Controllers wieder freizugeben
         self.sublist = []
 
-        # im folgenden Block können Elemente eingefügt werden. Die Elemente die schon da sind dienen nur als Beispiele
         self.gif = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, self.events, self.sublist, self.batch, background)
-        # hier Problem: wie mehrere Gifs in mehreren Ebenen anzeigen?
         self.mech = ui_elements.GifButton("assets/images/mech_walk.gif", 30, 12, 13, 20, 0.75, True, self.events, self.sublist, self.batch)
         self.header = ui_elements.BorderedRectangle("Level 2: Der Wald des Widerstands", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.sublist, self.batch)
 

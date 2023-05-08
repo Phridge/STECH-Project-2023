@@ -13,6 +13,7 @@ Lasst euch dieses Template anzeigen, indem ihr es im main_controller als initial
 
 class TemplateScreen:
     def __init__(self, events):
+        self.events = events
         self.batch = pyglet.graphics.Batch()
         # dient, um Objekte manuell nach vorne und hinten zu schieben. Je weniger er genutzt wird, umso performanter ist alles.
         # Standardmäßig ist alles im Mittelgrund zwischen Vorder- und Hintergrund
