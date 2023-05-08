@@ -28,7 +28,7 @@ class Level2Screen:
         # im folgenden Block können Elemente eingefügt werden. Die Elemente die schon da sind dienen nur als Beispiele
         self.gif = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, self.events, self.sublist, self.batch, background)
         # hier Problem: wie mehrere Gifs in mehreren Ebenen anzeigen?
-        self.mech = ui_elements.GifButton("assets/images/mech_walk.gif", 30, 12, 20, 20, 3, True, self.events, self.sublist, self.batch)
+        self.mech = ui_elements.GifButton("assets/images/mech_walk.gif", 30, 12, 13, 20, 0.75, True, self.events, self.sublist, self.batch)
         self.header = ui_elements.BorderedRectangle("Level 2: Der Wald des Widerstands", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.sublist, self.batch)
 
         # Hier muss für jeden Button eine Subscription erstellt werden.
@@ -46,11 +46,11 @@ class Level2Screen:
         if data:
             logging.warning("AUA")
             self.mech.delete()
-            self.mech = ui_elements.GifButton("assets/images/mech_hurt.gif", 30, 12, 20, 20, 1, False, self.events, self.sublist, self.batch)
+            self.mech = ui_elements.GifButton("assets/images/mech_hurt.gif", 30, 12, 13, 20, 0.25, True, self.events, self.sublist, self.batch)
             self.sublist.append(self.mech.loop_finished.subscribe(lambda _: self.mech_hurt(False)))
         else:
             self.mech.delete()
-            self.mech = ui_elements.GifButton("assets/images/mech_walk.gif", 30, 12, 20, 20, 3, True, self.events, self.sublist, self.batch)
+            self.mech = ui_elements.GifButton("assets/images/mech_walk.gif", 30, 12, 13, 20, 0.75, True, self.events, self.sublist, self.batch)
             self.sublist.append(self.mech.loop_finished.subscribe(lambda _: self.mech_hurt(False)))
 
     def button_clicked(self, data):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
