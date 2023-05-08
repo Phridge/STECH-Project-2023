@@ -9,7 +9,6 @@ from reactivex.disposable import CompositeDisposable
 
 class SettingsScreen:
     def __init__(self, events, previous_controller, save):
-        if type(save) == list: save = save[0]
         self.batch = pyglet.graphics.Batch()
         # dient, um Objekte manuell nach vorne und hinten zu schieben. Je weniger er genutzt wird, umso performanter ist alles.
         # Standardmäßig ist alles im Mittelgrund zwischen Vorder- und Hintergrund
@@ -95,7 +94,7 @@ class SettingsScreen:
             self.event.on_next(("ChangeScreenSize", self.new_screen_size[0], self.new_screen_size[1]))
         self.change_controller.on_next(("ReloadSettings", previous_controller, data))
 
-    def change_color(self):
+    def change_color(self, _):
         """
         Ändert das Farbschema des gesamten Spiels und aktualisiert die Preview-Box
         """
@@ -106,6 +105,7 @@ class SettingsScreen:
         if self.color_picker_blue.text.isnumeric(): blue = int(self.color_picker_blue.text)
         else: blue = 0
         if red < 100 and green < 100 and blue < 100: red = green = blue = 100  # sorgt dafür, dass es nicht zu dunkel wird
+        print(red, green, blue)
         self.preview_color_scheme = color_scheme.EditableColorScheme((red, green, blue))
         self.color_preview.rectangle.color = self.preview_color_scheme.color
         self.color_preview.borderRectangle.color = self.preview_color_scheme.border

@@ -1,3 +1,4 @@
+import dataclasses
 import logging
 
 import pyglet

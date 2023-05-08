@@ -236,6 +236,7 @@ class InputBox:
                                                  color_scheme.color,  # Style wird mitgegeben
                                                  batch=batch, group=group)
 
+
         # Zeichnet den Text in die Mitte des Rechteckes
         self.label = pyglet.text.Label(text, x=x_px + width_px // 2, y=y_px + height_px // 2,
                                        # Text wird in die Mitte des Buttons gezeichnet
@@ -243,6 +244,7 @@ class InputBox:
                                        # Text wird in die Mitte des Buttons gezeichnet
                                        batch=batch, font_name=font_scheme.font_name,
                                        font_size=width_px // (100 / font_size), color=color_scheme.text, group=group)
+
 
         def resize(data):
             """

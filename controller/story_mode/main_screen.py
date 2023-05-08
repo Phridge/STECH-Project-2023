@@ -7,7 +7,6 @@ from reactivex.disposable import CompositeDisposable
 
 class MainStoryScreen:
     def __init__(self, events, save):
-        save_file = save[0]
         self.batch = pyglet.graphics.Batch()
         # dient, um Objekte manuell nach vorne und hinten zu schieben. Je weniger er genutzt wird, umso performanter ist alles.
         # Standardmäßig ist alles im Mittelgrund zwischen Vorder- und Hintergrund
@@ -26,9 +25,9 @@ class MainStoryScreen:
         self.statistics = ui_elements.InputButton("Statistiken", 85, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, sublist, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
-        sublist.extend((self.back.clicked.subscribe(lambda _: self.change_screen("HomeScreen", save_file)),
-                        self.settings.clicked.subscribe(lambda _: self.change_screen("Settings", save_file)),
-                        self.statistics.clicked.subscribe(lambda _: self.change_screen("Statistics", save_file))))
+        sublist.extend((self.back.clicked.subscribe(lambda _: self.change_screen("HomeScreen", save)),
+                        self.settings.clicked.subscribe(lambda _: self.change_screen("Settings", save)),
+                        self.statistics.clicked.subscribe(lambda _: self.change_screen("Statistics", save))))
 
         self.disposable = CompositeDisposable(sublist)
 

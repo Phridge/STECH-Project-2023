@@ -7,7 +7,6 @@ from reactivex.disposable import CompositeDisposable
 
 class HomeScreen:
     def __init__(self, events, save_file):
-        save_file = save_file[0]
         self.batch = pyglet.graphics.Batch()
         # dient, um Objekte manuell nach vorne und hinten zu schieben. Je weniger er genutzt wird, umso performanter ist alles.
         # Standardmäßig ist alles im Mittelgrund zwischen Vorder- und Hintergrund
