@@ -3,6 +3,7 @@ import os
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, Session
 from sqlalchemy import String, ForeignKey, create_engine, select, delete
 from typing import *
+from sqlite3 import Time
 from datetime import timedelta
 
 
@@ -29,7 +30,6 @@ class GamePrinciple(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
 
 
-# Habe mal hier nen Autoincrement reingemacht, da dass ja 1 zu N ist
 class Run(Base):
     __tablename__ = "run"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -40,24 +40,23 @@ class Run(Base):
     game_principle_id: Mapped[int] = mapped_column(ForeignKey("game_principle.id"))
     game_principle: Mapped[GamePrinciple] = relationship()
 
-    characters_used: Mapped[str]
-    preset_text: Mapped[str]
-    typed_text: Mapped[str]
-    time_taken: Mapped[timedelta]
-    accuracy: Mapped[float]
-    real_avg_speed: Mapped[float]
-    logical_avg_speed: Mapped[float]
-    chars: Mapped[List["Char"]] = relationship(back_populates="run")
+    preset_text: Mapped[Text]
+    typed_text: Mapped[Text]
+    time_taken_for_level: Mapped[Time]
 
 
+# Speicherverbrauch evtl. Optimieren
 class Char(Base):
     __tablename__ = "char"
-    run_id: Mapped[int] = mapped_column(ForeignKey("run.id"), primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    run_id: Mapped[int] = mapped_column(ForeignKey("run.id"))
     run: Mapped[Run] = relationship(back_populates="chars")
-    char: Mapped[int] = mapped_column(primary_key=True)
 
+    char: Mapped[str]
+    preset_char_count: Mapped[int]
+    typed_char_count: Mapped[int]
+    avg_time_per_char: Mapped[timedelta]
     accuracy: Mapped[float]
-    speed: Mapped[float]
 
 
 os.makedirs("data", exist_ok=True)

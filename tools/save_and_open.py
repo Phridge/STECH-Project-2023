@@ -1,5 +1,5 @@
 import json
-from database import new_session, Save
+from database import new_session, Save, Run, Char
 from sqlalchemy import update, select
 import input_tracker
 
@@ -46,31 +46,50 @@ def assign_game_saves(game_save_nr, language, keyboard_layout, level_progress):
                 keyboard_layout = select(Save.keyboard_layout).where(Save.id == game_save_nr)
 
             session.execute(update(Save).
-                            where(Save.id == game_save_nr).
-                            values(
-                                level_progress=level_progress,
-                                language=language,
-                                keyboard_layout=keyboard_layout
-                            ))
+            where(Save.id == game_save_nr).
+            values(
+                level_progress=level_progress,
+                language=language,
+                keyboard_layout=keyboard_layout
+            ))
             session.commit()
 
 
 # ------------Under Construction------------
-"""def save_game(game_save_nr, language, keyboard_layout, level_progress):
-    with new_session()as session:
-    s = Table(
-      Column_name=Wert,
-    )
+def save_game(game_save_nr, level_id, preset_text, written_text, time_needed_for_game, char_array):
+    with new_session() as session:
+        r = Run(
+            save_id=game_save_nr,
+            level_id=level_id,
+            preset_text=preset_text,
+            typed_text=written_text,
+            time_taken_for_level=time_needed_for_game,
+        )
 
-    session.add(s)
-    session.commit()
+        session.add(r)
+        id_run = session.get(Run.id)  # Nicht wirklich sicher ob das geht
+        session.commit()
 
-    result = session.execute(select(Table))
+    for data in char_array:
+        accuracy = 0  # 0-1 --> 1==100%
+        if data[2] >= data[1]:
+            # sinnvoll ob über 100% genauigkeit = 100% genauigkeit sind? 110% sind ja auch fehler no?
+            accuracy = 1
+        else:
+            accuracy = data[2] - data[1]
 
-    print(select(Table).where(Table.Column_name == Vergleichsparameter))
-    print(result.all())
+        with new_session() as session:
+            c = Char(
+                run_id=id_run,
+                char=data[0],
+                preset_char_count=data[1],
+                typed_char_count=data[2],
+                avg_time_per_char=data[3],
+                accuracy=accuracy,
+            )
 
-    session.execute(delete(Table))
-    session.commit()
+            session.add(c)
+            session.commit()
 
-pass#Das hier nötig?"""
+
+pass  # Das hier nötig?
