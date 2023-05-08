@@ -6,7 +6,7 @@ class Events:
     def __init__(self, **kwargs):
         vars(self).update(kwargs)
 
-    def override(self, **kwargs):
+    def extend(self, **kwargs):
         return Events(**vars(self), **kwargs)
 
 

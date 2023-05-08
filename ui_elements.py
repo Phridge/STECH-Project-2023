@@ -3,18 +3,19 @@ from reactivex.subject import Subject
 import pyglet
 from pyglet.gui.widgets import Slider
 from pyglet.text import Label, HTMLLabel, DocumentLabel
+
+from events import Event, Var, Disposable
+
+
 # Erweitert die Pyglet-Klassen, um daraus Buttons, Banner und Formen zu machen
 
 
-class Disposable:
-    def dispose(self):
-        for attr, value in vars(self).items():
-            if hasattr(value, "dispose"):
-                value.dispose()
+class UIElement(Disposable):
+    pass
 
 
-class BorderedRectangle:
-    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
+class BorderedRectangle(UIElement):
+    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechtecktiges Element mit einer Border. Nicht klickbar. Nutzung für einfache Überschriften oder Textkästen.
         Es wird keine Klasse erweitert, damit man die Objekte in der Runtime neu zeichnen kann.
@@ -33,7 +34,7 @@ class BorderedRectangle:
         """
 
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
-        x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -63,7 +64,7 @@ class BorderedRectangle:
             :param data: Aktuelle Breite und Höhe des Fensters (w, h)
             """
             # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
+            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
 
             # skaliert das Hintergrund-Rechteck
             self.borderRectangle.x = self.x_px
@@ -83,11 +84,11 @@ class BorderedRectangle:
             self.label.font_size = self.width_px // (100 / font_size)
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        sublist.append(events.size.subscribe(resize))
+        self._sub = events.size.subscribe(resize)
 
 
-class BorderedRectangleButton:
-    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
+class BorderedRectangleButton(UIElement):
+    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechtecktiger Button mit einer Border. Er kann gehovert und geclickt werden.
         Es wird keine Klasse erweitert, damit man die Objekte in der Runtime neu zeichnen kann.
@@ -101,12 +102,11 @@ class BorderedRectangleButton:
         :param font_scheme: Schrift-Klasse der Datei color_scheme.py
         :param font_size: Schrift-Größe
         :param events: events des games
-        :param sublist: Liste an subscriptions des aktuellen Controllers
         :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
         """
 
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
-        x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -171,7 +171,7 @@ class BorderedRectangleButton:
             :param data: Aktuelle Breite und Höhe des Fensters (w, h)
             """
             # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
+            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
 
             # skaliert das Hintergrund-Rechteck
             self.borderRectangle.x = self.x_px
@@ -191,16 +191,18 @@ class BorderedRectangleButton:
             self.label.font_size = self.width_px//(100/font_size)
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        sublist.append(events.size.subscribe(resize))
-        sublist.append(events.mouse.subscribe(is_hovered))
-        sublist.append(events.mouse_button.subscribe(button_clicked))
+        self._subs = CompositeDisposable([
+            events.size.subscribe(resize),
+            events.mouse.subscribe(is_hovered),
+            events.mouse_button.subscribe(button_clicked)
+        ])
 
         # eigenes Event des Buttons, welches abfängt, wenn der Button gedrückt wird
         self.clicked = Subject()
 
 
-class InputBox:
-    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist,
+class InputBox(UIElement):
+    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events,
                  batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechtecktiges Element mit einer Border. Nicht klickbar. Nutzung für einfache Überschriften oder Textkästen.
@@ -216,12 +218,11 @@ class InputBox:
         :param font_scheme: Schrift-Klasse der Datei color_scheme.py
         :param font_size: Schrift-Größe
         :param events: events des games
-        :param sublist: Liste an subscriptions des aktuellen Controllers
         :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
         """
 
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
-        x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -253,7 +254,7 @@ class InputBox:
             :param data: Aktuelle Breite und Höhe des Fensters (w, h)
             """
             # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height,
+            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height,
                                                                                             data)
 
             # skaliert das Hintergrund-Rechteck
@@ -279,15 +280,17 @@ class InputBox:
                 self.clicked.on_next(None)  # gibt dem clicked-event mit, dass der Button geklickt wurde
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        sublist.append(events.size.subscribe(resize))
-        sublist.append(events.text.subscribe(update_text))
+        self._subs = CompositeDisposable([
+            events.size.subscribe(resize),
+            events.text.subscribe(update_text)
+        ])
 
         # eigenes Event des Buttons, welches abfängt, wenn der Button gedrückt wird
         self.clicked = Subject()
 
 
 class InputButton:
-    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
+    def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechtecktiger Button mit einer Border. Er kann gehovert und geclickt werden.
         Zudem kann der im Button angezeigte Text vollständig eingegeben werden, um ihn ebenfalls zu aktivieren.
@@ -302,12 +305,11 @@ class InputButton:
         :param font_scheme: Schrift-Klasse der Datei color_scheme.py
         :param font_size: Schrift-Größe
         :param events: events des games
-        :param sublist: Liste an subscriptions des aktuellen Controllers
         :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
         """
 
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
-        x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -374,7 +376,7 @@ class InputButton:
             :param data: Aktuelle Breite und Höhe des Fensters (w, h)
             """
             # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
+            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
 
             # skaliert das Hintergrund-Rechteck
             self.borderRectangle.x = self.x_px
@@ -399,17 +401,19 @@ class InputButton:
                 self.clicked.on_next(None)  # gibt dem clicked-event mit, dass der Button geklickt wurde
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        sublist.append(events.size.subscribe(resize))
-        sublist.append(events.mouse.subscribe(is_hovered))
-        sublist.append(events.mouse_button.subscribe(button_clicked))
-        sublist.append(events.text.subscribe(update_text))
+        self._subs = CompositeDisposable([
+            events.size.subscribe(resize),
+            events.mouse.subscribe(is_hovered),
+            events.mouse_button.subscribe(button_clicked),
+            events.text.subscribe(update_text),
+        ])
 
         # eigenes Event des Buttons, welches abfängt, wenn der Button gedrückt wird
         self.clicked = Subject()
 
 
 class SettingTextField:
-    def __init__(self, text, number_of_chars, limit, x, y, width, height, color_scheme, font_scheme, font_size, events, sublist, name,
+    def __init__(self, text, number_of_chars, limit, x, y, width, height, color_scheme, font_scheme, font_size, events, name,
                  batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechtecktiges Element mit einer Border. Nicht klickbar. Zahl von 0 bis limit kann eingegeben werden.
@@ -425,7 +429,6 @@ class SettingTextField:
         :param font_scheme: Schrift-Klasse der Datei color_scheme.py
         :param font_size: Schrift-Größe
         :param events: events des games
-        :param sublist: Liste an subscriptions des aktuellen Controllers
         :param name: Name of the element, needed to identify it inside class
         :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
         """
@@ -433,7 +436,7 @@ class SettingTextField:
         self.color_scheme = color_scheme
 
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
-        x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
         self.active = False
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
@@ -465,7 +468,7 @@ class SettingTextField:
             :param data: Aktuelle Breite und Höhe des Fensters (w, h)
             """
             # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height,
+            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height,
                                                                                             data)
 
             # skaliert das Hintergrund-Rechteck
@@ -534,10 +537,12 @@ class SettingTextField:
                 self.changed.on_next((name, str(self.text)))  # gibt dem clicked-event mit, dass der Button geklickt wurde
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        sublist.append(events.size.subscribe(resize))
-        sublist.append(events.mouse.subscribe(is_hovered))
-        sublist.append(events.mouse_button.subscribe(button_clicked))
-        sublist.append(events.text.subscribe(update_text))
+        self._subs = CompositeDisposable([
+            events.size.subscribe(resize),
+            events.mouse.subscribe(is_hovered),
+            events.mouse_button.subscribe(button_clicked),
+            events.text.subscribe(update_text),
+        ])
 
         # eigenes Event des Buttons, welches abfängt, wenn der Button gedrückt wird
         self.clicked = Subject()
@@ -573,7 +578,7 @@ class SpriteButton(pyglet.sprite.Sprite):
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet das Bild in der richtigen Größe
         image = pyglet.image.load(path)
@@ -621,23 +626,25 @@ class SpriteButton(pyglet.sprite.Sprite):
             :param data: Aktuelle Breite und Höhe des Fensters (w, h)
             """
             # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
+            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
 
             # skaliert das Bild auf die angegebene Prozentgröße des Fensters
             self.scale_x = self.width_px / normal_width  # skaliert das Bild auf die angegebene Pixelzahl
             self.scale_y = self.height_px / normal_height
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        sublist.append(events.size.subscribe(resize))
-        sublist.append(events.mouse.subscribe(is_hovered))
-        sublist.append(events.mouse_button.subscribe(button_clicked))
+        self._subs = CompositeDisposable([
+            events.size.subscribe(resize),
+            events.mouse.subscribe(is_hovered),
+            events.mouse_button.subscribe(button_clicked),
+        ])
 
         # eigenes Event des Buttons, welches abfängt, wenn der Button gedrückt wird
         self.clicked = Subject()
 
 
 class Sprite(pyglet.sprite.Sprite):
-    def __init__(self, path, x, y, width, height, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
+    def __init__(self, path, x, y, width, height, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiges Element mit einem Bild als Fläche. Nicht klckbar.
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
@@ -648,12 +655,11 @@ class Sprite(pyglet.sprite.Sprite):
         :param width: Breite des Elements in %
         :param height: Höhe des Elements in %
         :param events: events des games
-        :param sublist: Liste an subscriptions des aktuellen Controllers
         :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet das Bild in der richtigen Größe
         image = pyglet.image.load(path)
@@ -674,14 +680,14 @@ class Sprite(pyglet.sprite.Sprite):
             :param data: Aktuelle Breite und Höhe des Fensters (w, h)
             """
             # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
+            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
 
             # skaliert das Bild auf die angegebene Prozentgröße des Fensters
             self.scale_x = self.width_px / normal_width  # skaliert das Bild auf die angegebene Pixelzahl
             self.scale_y = self.height_px / normal_height
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        sublist.append(events.size.subscribe(resize))
+        self._sub = events.size.subscribe(resize)
 
 
 class BorderedSpriteButton(pyglet.sprite.Sprite):
@@ -702,7 +708,7 @@ class BorderedSpriteButton(pyglet.sprite.Sprite):
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -762,7 +768,7 @@ class BorderedSpriteButton(pyglet.sprite.Sprite):
             :param data: Aktuelle Breite und Höhe des Fensters (w, h)
             """
             # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
+            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
 
             # skaliert das Bild auf die angegebene Prozentgröße des Fensters abzüglich der Border
             self.scale_x = (self.width_px - 2 * color_scheme.border_thickness) / normal_width  # skaliert das Bild auf die angegebene Pixelzahl
@@ -773,9 +779,11 @@ class BorderedSpriteButton(pyglet.sprite.Sprite):
             self.borderRectangle.height = self.height_px
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        sublist.append(events.size.subscribe(resize))
-        sublist.append(events.mouse.subscribe(is_hovered))
-        sublist.append(events.mouse_button.subscribe(button_clicked))
+        self._sub = CompositeDisposable([
+            events.size.subscribe(resize),
+            events.mouse.subscribe(is_hovered),
+            events.mouse_button.subscribe(button_clicked),
+        ])
 
         # eigenes Event des Buttons, welches abfängt, wenn der Button gedrückt wird
         self.clicked = Subject()
@@ -799,7 +807,7 @@ class BorderedSprite(pyglet.sprite.Sprite):
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -827,7 +835,7 @@ class BorderedSprite(pyglet.sprite.Sprite):
             :param data: Aktuelle Breite und Höhe des Fensters (w, h)
             """
             # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
+            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
 
             # skaliert das Bild auf die angegebene Prozentgröße des Fensters abzüglich der Border
             self.scale_x = (self.width_px - 2 * color_scheme.border_thickness) / normal_width
@@ -860,7 +868,7 @@ class Gif(pyglet.sprite.Sprite):  # lädt ein Gif
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
 
         # erstellt eine Liste der einzelnen Bilder des Gifs
         image = pyglet.image.load_animation(path)
@@ -887,14 +895,14 @@ class Gif(pyglet.sprite.Sprite):  # lädt ein Gif
             :param data: Aktuelle Breite und Höhe des Fensters (w, h)
             """
             # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
+            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
 
             # skaliert das Bild auf die angegebene Prozentgröße des Fensters
             self.scale_x = self.width_px / normal_width
             self.scale_y = self.height_px / normal_height
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        sublist.append(events.size.subscribe(resize))
+        self._sub = events.size.subscribe(resize)
 
 
 
@@ -917,7 +925,7 @@ class GifButton(pyglet.sprite.Sprite):
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = Refactor.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
 
         # erstellt eine Liste der einzelnen Bilder des Gifs
         image = pyglet.image.load_animation(path)
@@ -957,15 +965,17 @@ class GifButton(pyglet.sprite.Sprite):
             :param data: Aktuelle Breite und Höhe des Fensters (w, h)
             """
             # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = Refactor.percent_to_pixel(x, y, width, height, data)
+            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
 
             # skaliert das Bild auf die angegebene Prozentgröße des Fensters
             self.scale_x = self.width_px / normal_width  # skaliert das Bild auf die angegebene Pixelzahl
             self.scale_y = self.height_px / normal_height
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        sublist.append(events.size.subscribe(resize))
-        sublist.append(events.mouse_button.subscribe(button_clicked))
+        self._sub = CompositeDisposable([
+            events.size.subscribe(resize),
+            events.mouse_button.subscribe(button_clicked),
+        ])
 
         # eigenes Event des Buttons, welches abfängt, wenn der Button gedrückt wird
         self.clicked = Subject()
@@ -975,24 +985,24 @@ class GifButton(pyglet.sprite.Sprite):
         self.loop_finished.on_next(True)
 
 
-class Refactor:
-    @classmethod
-    def percent_to_pixel(cls, x, y, width, height, window_data):
-        """
-        Ermöglicht die Umrechnung von Prozentangaben in Pixel, damit die ui-elements die Werte nutzen können
-        :param x: X-Koordinate in %
-        :param y: Y-Koordinate in %
-        :param width: Breite des Elements in %
-        :param height: Höhe des Elements in %
-        :param window_data: Event-Daten, die die aktuelle Höhe und Breite des Fensters beinhalten
-        :return: X, Y, Breite und Höhe in Pixeln
-        """
-        screen_width, screen_height = window_data
-        x_px = x * screen_width // 100
-        y_px = y * screen_height // 100
-        width_px = width * screen_width // 100
-        height_px = height * screen_height // 100
-        return x_px, y_px, width_px, height_px
+def percent_to_pixel(x, y, width, height, window_data):
+    """
+    Ermöglicht die Umrechnung von Prozentangaben in Pixel, damit die ui-elements die Werte nutzen können
+    :param x: X-Koordinate in %
+    :param y: Y-Koordinate in %
+    :param width: Breite des Elements in %
+    :param height: Höhe des Elements in %
+    :param window_data: Event-Daten, die die aktuelle Höhe und Breite des Fensters beinhalten
+    :return: X, Y, Breite und Höhe in Pixeln
+    """
+    screen_width, screen_height = window_data
+    x_px = x * screen_width // 100
+    y_px = y * screen_height // 100
+    width_px = width * screen_width // 100
+    height_px = height * screen_height // 100
+    return x_px, y_px, width_px, height_px
+
+
 
 
 

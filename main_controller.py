@@ -18,13 +18,13 @@ from controller.sandbox_mode.main_screen import MainSandboxScreen
 
 # Beispiel-Bildschirm
 from controller.template_screen import TemplateScreen
-from events import Events as EVENTS, Event, Var, Disposable
+from events import Events, Event, Var, Disposable
 
 
 class GameWindow(pyglet.window.Window, Disposable):
     def __init__(self):
         super().__init__(resizable=False)
-        self.events = EVENTS(
+        self.events = Events(
             key=Event(),
             text=Event(),
             mouse=Var((0, 0, 0)),
@@ -59,8 +59,7 @@ class GameWindow(pyglet.window.Window, Disposable):
         self.sublist = []  # leert die sublist
 
 
-        # löscht die subscriptions des alten Controllers
-        self.controller.dispose_subs()  # und den controller selbst.
+        # löscht die subscriptions des alten Controllers und den controller selbst.
         self.controller_subs.dispose()
         self.controller_subs = None
 
@@ -81,7 +80,7 @@ class GameWindow(pyglet.window.Window, Disposable):
                 self.controller = SettingsScreen(self.events, prev_controller, save)  # gibt den Klassennamen mit, damit man zurück zum letzten Screen gehen kann
             case ("HomeScreen", save):
                 self.controller = HomeScreen(self.events, save)
-            case ("StartScreen",):
+            case ("StartScreen", save):
                 self.controller = StartScreen(self.events)
             case ("DeleteSaveScreen", save):
                 self.controller = DeleteSaveScreen(self.events, save)
@@ -91,7 +90,8 @@ class GameWindow(pyglet.window.Window, Disposable):
                 self.controller = MainStoryScreen(self.events, save)
             case ("MainSandboxScreen", save):
                 self.controller = MainSandboxScreen(self.events, save)
-            case _:
+            case other:
+                print(other)
                 self.controller = ErrorScreen(self.events)  # falls auf eine nicht existente Seite verwiesen wird, wird ein Error-Screen aufgerufen
 
 
