@@ -6,7 +6,6 @@ from typing import *
 from datetime import timedelta
 
 
-
 class Base(DeclarativeBase):
     pass
 
@@ -14,8 +13,9 @@ class Base(DeclarativeBase):
 class Save(Base):
     __tablename__ = "save"
     id: Mapped[int] = mapped_column(primary_key=True)
-    settings: Mapped[str]
     level_progress: Mapped[int | None]
+    language: Mapped[str]
+    keyboard_layout: Mapped[str]
 
 
 class Level(Base):
@@ -29,9 +29,10 @@ class GamePrinciple(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
 
 
+# Habe mal hier nen Autoincrement reingemacht, da dass ja 1 zu N ist
 class Run(Base):
     __tablename__ = "run"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     save_id: Mapped[int] = mapped_column(ForeignKey("save.id"))
     save: Mapped[Save] = relationship()
     level_id: Mapped[int] = mapped_column(ForeignKey("level.id"))
@@ -71,7 +72,7 @@ def new_session():
 
 with Session(engine) as session:
     s = Save(
-        settings="bruh",
+        language="German",
     )
 
     session.add(s)
@@ -85,9 +86,3 @@ with Session(engine) as session:
     session.commit()
 
 pass
-
-
-
-
-
-
