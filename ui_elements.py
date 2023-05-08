@@ -289,7 +289,7 @@ class InputBox(UIElement):
         self.clicked = Subject()
 
 
-class InputButton:
+class InputButton(UIElement):
     def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechtecktiger Button mit einer Border. Er kann gehovert und geclickt werden.
@@ -412,7 +412,7 @@ class InputButton:
         self.clicked = Subject()
 
 
-class SettingTextField:
+class SettingTextField(UIElement):
     def __init__(self, text, number_of_chars, limit, x, y, width, height, color_scheme, font_scheme, font_size, events, name,
                  batch=None, group=pyglet.graphics.Group(order=0)):
         """
@@ -560,8 +560,8 @@ class SettingTextField:
             self.label.color = self.color_scheme.text
 
 
-class SpriteButton(pyglet.sprite.Sprite):
-    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
+class SpriteButton(pyglet.sprite.Sprite, UIElement):
+    def __init__(self, path, x, y, width, height, color_scheme, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiger Button mit einem Bild als Fläche. Er kann gehovert und geclickt werden.
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
@@ -573,7 +573,6 @@ class SpriteButton(pyglet.sprite.Sprite):
         :param height: Höhe des Elements in %
         :param color_scheme: Style-Klasse der Datei color_scheme.py
         :param events: events des games
-        :param sublist: Liste an subscriptions des aktuellen Controllers
         :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
         """
 
@@ -643,7 +642,7 @@ class SpriteButton(pyglet.sprite.Sprite):
         self.clicked = Subject()
 
 
-class Sprite(pyglet.sprite.Sprite):
+class Sprite(pyglet.sprite.Sprite, UIElement):
     def __init__(self, path, x, y, width, height, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiges Element mit einem Bild als Fläche. Nicht klckbar.
@@ -690,8 +689,8 @@ class Sprite(pyglet.sprite.Sprite):
         self._sub = events.size.subscribe(resize)
 
 
-class BorderedSpriteButton(pyglet.sprite.Sprite):
-    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
+class BorderedSpriteButton(pyglet.sprite.Sprite, UIElement):
+    def __init__(self, path, x, y, width, height, color_scheme, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiger Button mit einem Bild als Fläche und einer Border. Er kann gehovert und geclickt werden.
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
@@ -703,7 +702,6 @@ class BorderedSpriteButton(pyglet.sprite.Sprite):
         :param height: Höhe des Elements in %
         :param color_scheme: Style-Klasse der Datei color_scheme.py
         :param events: events des games
-        :param sublist: Liste an subscriptions des aktuellen Controllers
         :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
         """
 
@@ -789,8 +787,8 @@ class BorderedSpriteButton(pyglet.sprite.Sprite):
         self.clicked = Subject()
 
 
-class BorderedSprite(pyglet.sprite.Sprite):
-    def __init__(self, path, x, y, width, height, color_scheme, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
+class BorderedSprite(pyglet.sprite.Sprite, UIElement):
+    def __init__(self, path, x, y, width, height, color_scheme, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiges Element mit einem Bild als Fläche und einer Border. Nicht klickbar.
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
@@ -802,7 +800,6 @@ class BorderedSprite(pyglet.sprite.Sprite):
         :param height: Höhe des Elements in %
         :param color_scheme: Style-Klasse der Datei color_scheme.py
         :param events: events des games
-        :param sublist: Liste an subscriptions des aktuellen Controllers
         :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
         """
 
@@ -846,11 +843,11 @@ class BorderedSprite(pyglet.sprite.Sprite):
             self.borderRectangle.height = self.height_px
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        sublist.append(events.size.subscribe(resize))
+        self._sub = events.size.subscribe(resize)
 
 
-class Gif(pyglet.sprite.Sprite):  # lädt ein Gif
-    def __init__(self, path, x, y, width, height, duration, loop, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
+class Gif(pyglet.sprite.Sprite, UIElement):  # lädt ein Gif
+    def __init__(self, path, x, y, width, height, duration, loop, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiges Element mit einem Gif als Fläche. Nicht klickbar.
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
@@ -863,7 +860,6 @@ class Gif(pyglet.sprite.Sprite):  # lädt ein Gif
         :param duration: Dauer in Sekunden, die ein Durchlauf des Gifs dauern soll.
         :param loop: boolean, der angibt, ob das Gif nach dem ersten Durchlauf stoppt oder neu startet
         :param events: events des games
-        :param sublist: Liste an subscriptions des aktuellen Controllers
         :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
         """
 
@@ -906,7 +902,7 @@ class Gif(pyglet.sprite.Sprite):  # lädt ein Gif
 
 
 
-class GifButton(pyglet.sprite.Sprite):
+class GifButton(pyglet.sprite.Sprite, UIElement):
     def __init__(self, path, x, y, width, height, duration, loop, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiger Button mit einem Gif als Fläche. Kann geklickt werden..
