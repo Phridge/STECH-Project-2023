@@ -64,14 +64,21 @@ os.makedirs("data", exist_ok=True)
 engine = create_engine("sqlite:///data/database.sqlite", echo=True)
 Base.metadata.create_all(engine)
 
+
+def new_session():
+    return Session(engine)
+
+
 with Session(engine) as session:
     s = Save(
         settings="bruh",
     )
+
     session.add(s)
     session.commit()
 
     result = session.execute(select(Save))
+    print(select(Save).where(Save.level_progress == 1))
     print(result.all())
 
     session.execute(delete(Save))
