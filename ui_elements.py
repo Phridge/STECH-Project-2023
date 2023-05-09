@@ -3,15 +3,72 @@ from reactivex.subject import Subject
 import pyglet
 from pyglet.gui.widgets import Slider
 from pyglet.text import Label, HTMLLabel, DocumentLabel
-
 from events import Event, Var, Disposable
-
 
 # Erweitert die Pyglet-Klassen, um daraus Buttons, Banner und Formen zu machen
 
 
 class UIElement(Disposable):
-    pass
+
+    def percent_to_pixel(self, x, y, width, height, window_data):
+        """
+        Ermöglicht die Umrechnung von Prozentangaben in Pixel, damit die ui-elements die Werte nutzen können
+        :param x: X-Koordinate in %
+        :param y: Y-Koordinate in %
+        :param width: Breite des Elements in %
+        :param height: Höhe des Elements in %
+        :param window_data: Event-Daten, die die aktuelle Höhe und Breite des Fensters beinhalten
+        :return: X, Y, Breite und Höhe in Pixeln
+        """
+        screen_width, screen_height = window_data
+        x_px = x * screen_width // 100
+        y_px = y * screen_height // 100
+        width_px = width * screen_width // 100
+        height_px = height * screen_height // 100
+        return x_px, y_px, width_px, height_px
+
+    def resize(self, x, y, width, height, window_size, color_scheme=None, font_size=None):
+        """
+        Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
+
+        :param x: gewünschte x-Koordinate des linken Element-Randes in %
+        :param y: gewünschte y-Koordinate des unteren Element-Randes in %
+        :param width: gewünschte Breite des Elements in %
+        :param height: gewünschte Höhe des Elements in %
+        :param window_size: aktuelle Größe des Fensters
+        :param color_scheme: aktuelles Farbschema
+        :param font_size: Schriftgröße des Elements
+        """
+        # konvertiert die Prozentangaben zu Pixeln
+        self.x_px, self.y_px, self.width_px, self.height_px = self.percent_to_pixel(x, y, width, height, window_size)
+
+        border = 0
+
+        # skaliert das Hintergrund-Rechteck, falls es eins gibt
+        if 'borderRectangle' in locals():
+            self.borderRectangle.x = self.x_px
+            self.borderRectangle.y = self.y_px
+            self.borderRectangle.width = self.width_px
+            self.borderRectangle.height = self.height_px
+            border = color_scheme.border_thickness
+
+        # skaliert das Vordergrund-Rechteck, falls es eins gibt
+        if 'rectangle' in locals():
+            self.rectangle.x = self.x_px + border
+            self.rectangle.y = self.y_px + border
+            self.rectangle.width = self.width_px - 2 * border
+            self.rectangle.height = self.height_px - 2 * border
+
+        # skaliert den Text, falls es ihn gibt
+        if 'label' in locals():
+            self.label.x = self.x_px + self.width_px // 2
+            self.label.y = self.y_px + self.height_px // 2
+            self.label.font_size = self.width_px // (100 / font_size)
+
+        # skaliert Bilder und Gifs, falls es welche gibt
+        if self.__class__.__name__.find("Sprite") >= 0 or self.__class__.__name__.find("Gif") >= 0:
+            self.scale_x = (self.width_px - 2 * border) / self.normal_width  # skaliert das Bild auf die angegebene Pixelzahl
+            self.scale_y = (self.height_px - 2 * border) / self.normal_height
 
 
 class BorderedRectangle(UIElement):
@@ -34,7 +91,7 @@ class BorderedRectangle(UIElement):
         """
 
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
-        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -57,34 +114,8 @@ class BorderedRectangle(UIElement):
                                        batch=batch, font_name=font_scheme.font_name,
                                        font_size=width_px // (100 / font_size), color=color_scheme.text, group=group)
 
-        def resize(data):
-            """
-            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
-
-            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
-            """
-            # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
-
-            # skaliert das Hintergrund-Rechteck
-            self.borderRectangle.x = self.x_px
-            self.borderRectangle.y = self.y_px
-            self.borderRectangle.width = self.width_px
-            self.borderRectangle.height = self.height_px
-
-            # skaliert das Vordergrund-Rechteck
-            self.rectangle.x = self.x_px + color_scheme.border_thickness
-            self.rectangle.y = self.y_px + color_scheme.border_thickness
-            self.rectangle.width = self.width_px - 2 * color_scheme.border_thickness
-            self.rectangle.height = self.height_px - 2 * color_scheme.border_thickness
-
-            # skaliert den Text
-            self.label.x = self.x_px + self.width_px // 2
-            self.label.y = self.y_px + self.height_px // 2
-            self.label.font_size = self.width_px // (100 / font_size)
-
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        self._sub = events.size.subscribe(resize)
+        self._sub = events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value, color_scheme, font_size))
 
 
 class BorderedRectangleButton(UIElement):
@@ -106,7 +137,7 @@ class BorderedRectangleButton(UIElement):
         """
 
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
-        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -164,35 +195,9 @@ class BorderedRectangleButton(UIElement):
                 is_hovered((mouse_x, mouse_y, mouse_state))
                 return False
 
-        def resize(data):
-            """
-            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
-
-            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
-            """
-            # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
-
-            # skaliert das Hintergrund-Rechteck
-            self.borderRectangle.x = self.x_px
-            self.borderRectangle.y = self.y_px
-            self.borderRectangle.width = self.width_px
-            self.borderRectangle.height = self.height_px
-
-            # skaliert das Vordergrund-Rechteck
-            self.rectangle.x = self.x_px + color_scheme.border_thickness
-            self.rectangle.y = self.y_px + color_scheme.border_thickness
-            self.rectangle.width = self.width_px - 2 * color_scheme.border_thickness
-            self.rectangle.height = self.height_px - 2 * color_scheme.border_thickness
-
-            # skaliert den Text
-            self.label.x = self.x_px+self.width_px//2
-            self.label.y = self.y_px+self.height_px//2
-            self.label.font_size = self.width_px//(100/font_size)
-
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         self._subs = CompositeDisposable([
-            events.size.subscribe(resize),
+            events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value, color_scheme, font_size)),
             events.mouse.subscribe(is_hovered),
             events.mouse_button.subscribe(button_clicked)
         ])
@@ -222,7 +227,7 @@ class InputBox(UIElement):
         """
 
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
-        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -246,34 +251,6 @@ class InputBox(UIElement):
                                        batch=batch, font_name=font_scheme.font_name,
                                        font_size=width_px // (100 / font_size), color=color_scheme.text, group=group)
 
-
-        def resize(data):
-            """
-            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
-
-            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
-            """
-            # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height,
-                                                                                            data)
-
-            # skaliert das Hintergrund-Rechteck
-            self.borderRectangle.x = self.x_px
-            self.borderRectangle.y = self.y_px
-            self.borderRectangle.width = self.width_px
-            self.borderRectangle.height = self.height_px
-
-            # skaliert das Vordergrund-Rechteck
-            self.rectangle.x = self.x_px + color_scheme.border_thickness
-            self.rectangle.y = self.y_px + color_scheme.border_thickness
-            self.rectangle.width = self.width_px - 2 * color_scheme.border_thickness
-            self.rectangle.height = self.height_px - 2 * color_scheme.border_thickness
-
-            # skaliert den Text
-            self.label.x = self.x_px + self.width_px // 2
-            self.label.y = self.y_px + self.height_px // 2
-            self.label.font_size = self.width_px // (100 / font_size)
-
         def update_text(data):
             if self.label.text and data == self.label.text[0]: self.label.text = self.label.text[1:]
             if not self.label.text:
@@ -281,7 +258,7 @@ class InputBox(UIElement):
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         self._subs = CompositeDisposable([
-            events.size.subscribe(resize),
+            events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value, color_scheme, font_size)),
             events.text.subscribe(update_text)
         ])
 
@@ -309,7 +286,7 @@ class InputButton(UIElement):
         """
 
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
-        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -369,32 +346,6 @@ class InputButton(UIElement):
                 is_hovered((mouse_x, mouse_y, mouse_state))
                 return False
 
-        def resize(data):
-            """
-            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
-
-            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
-            """
-            # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
-
-            # skaliert das Hintergrund-Rechteck
-            self.borderRectangle.x = self.x_px
-            self.borderRectangle.y = self.y_px
-            self.borderRectangle.width = self.width_px
-            self.borderRectangle.height = self.height_px
-
-            # skaliert das Vordergrund-Rechteck
-            self.rectangle.x = self.x_px + color_scheme.border_thickness
-            self.rectangle.y = self.y_px + color_scheme.border_thickness
-            self.rectangle.width = self.width_px - 2 * color_scheme.border_thickness
-            self.rectangle.height = self.height_px - 2 * color_scheme.border_thickness
-
-            # skaliert den Text
-            self.label.x = self.x_px + self.width_px // 2
-            self.label.y = self.y_px + self.height_px // 2
-            self.label.font_size = self.width_px // (100 / font_size)
-
         def update_text(data):
             if self.label.text and data == self.label.text[0]: self.label.text = self.label.text[1:]
             if not self.label.text:
@@ -402,7 +353,7 @@ class InputButton(UIElement):
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         self._subs = CompositeDisposable([
-            events.size.subscribe(resize),
+            events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value, color_scheme, font_size)),
             events.mouse.subscribe(is_hovered),
             events.mouse_button.subscribe(button_clicked),
             events.text.subscribe(update_text),
@@ -436,7 +387,7 @@ class SettingTextField(UIElement):
         self.color_scheme = color_scheme
 
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
-        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
         self.active = False
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
@@ -460,33 +411,6 @@ class SettingTextField(UIElement):
                                        # Text wird in die Mitte des Buttons gezeichnet
                                        batch=batch, font_name=font_scheme.font_name,
                                        font_size=width_px // (100 / font_size), color=color_scheme.text, group=group)
-
-        def resize(data):
-            """
-            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
-
-            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
-            """
-            # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height,
-                                                                                            data)
-
-            # skaliert das Hintergrund-Rechteck
-            self.borderRectangle.x = self.x_px
-            self.borderRectangle.y = self.y_px
-            self.borderRectangle.width = self.width_px
-            self.borderRectangle.height = self.height_px
-
-            # skaliert das Vordergrund-Rechteck
-            self.rectangle.x = self.x_px + color_scheme.border_thickness
-            self.rectangle.y = self.y_px + color_scheme.border_thickness
-            self.rectangle.width = self.width_px - 2 * color_scheme.border_thickness
-            self.rectangle.height = self.height_px - 2 * color_scheme.border_thickness
-
-            # skaliert den Text
-            self.label.x = self.x_px + self.width_px // 2
-            self.label.y = self.y_px + self.height_px // 2
-            self.label.font_size = self.width_px // (100 / font_size)
 
         def is_hovered(data):
             """
@@ -538,7 +462,7 @@ class SettingTextField(UIElement):
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         self._subs = CompositeDisposable([
-            events.size.subscribe(resize),
+            events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value, color_scheme, font_size)),
             events.mouse.subscribe(is_hovered),
             events.mouse_button.subscribe(button_clicked),
             events.text.subscribe(update_text),
@@ -577,7 +501,7 @@ class SpriteButton(pyglet.sprite.Sprite, UIElement):
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet das Bild in der richtigen Größe
         image = pyglet.image.load(path)
@@ -586,8 +510,8 @@ class SpriteButton(pyglet.sprite.Sprite, UIElement):
         self.scale_y = height_px / self.height
 
         # speichert die Standard-Maße des Bildes ab
-        normal_width = self.width
-        normal_height = self.height
+        self.normal_width = self.width
+        self.normal_height = self.height
 
         def is_hovered(data):
             """
@@ -618,22 +542,9 @@ class SpriteButton(pyglet.sprite.Sprite, UIElement):
                 is_hovered((mouse_x, mouse_y, mouse_state))
                 return False
 
-        def resize(data):
-            """
-            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
-
-            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
-            """
-            # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
-
-            # skaliert das Bild auf die angegebene Prozentgröße des Fensters
-            self.scale_x = self.width_px / normal_width  # skaliert das Bild auf die angegebene Pixelzahl
-            self.scale_y = self.height_px / normal_height
-
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         self._subs = CompositeDisposable([
-            events.size.subscribe(resize),
+            events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value, color_scheme)),
             events.mouse.subscribe(is_hovered),
             events.mouse_button.subscribe(button_clicked),
         ])
@@ -658,35 +569,22 @@ class Sprite(pyglet.sprite.Sprite, UIElement):
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet das Bild in der richtigen Größe
         image = pyglet.image.load(path)
         pyglet.sprite.Sprite.__init__(self, image, x_px, y_px, batch=batch, group=group)
 
         # speichert die Standard-Maße des Bildes ab
-        normal_width = self.width
-        normal_height = self.height
+        self.normal_width = self.width
+        self.normal_height = self.height
 
         # skaliert das Bild auf die angegebene Prozentgröße des Fensters
-        self.scale_x = width_px / normal_width
-        self.scale_y = height_px / normal_height
-
-        def resize(data):
-            """
-            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
-
-            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
-            """
-            # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
-
-            # skaliert das Bild auf die angegebene Prozentgröße des Fensters
-            self.scale_x = self.width_px / normal_width  # skaliert das Bild auf die angegebene Pixelzahl
-            self.scale_y = self.height_px / normal_height
+        self.scale_x = width_px / self.normal_width
+        self.scale_y = height_px / self.normal_height
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        self._sub = events.size.subscribe(resize)
+        self._sub = events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value))
 
 
 class BorderedSpriteButton(pyglet.sprite.Sprite, UIElement):
@@ -706,7 +604,7 @@ class BorderedSpriteButton(pyglet.sprite.Sprite, UIElement):
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -720,8 +618,8 @@ class BorderedSpriteButton(pyglet.sprite.Sprite, UIElement):
                                       y_px + color_scheme.border_thickness, batch=batch, group=group)
 
         # speichert die Standard-Maße des Bildes ab
-        normal_width = self.width
-        normal_height = self.height
+        self.normal_width = self.width
+        self.normal_height = self.height
 
         # skaliert das Bild auf die angegebene Prozentgröße des Fensters abzüglich der Border
         self.scale_x = (width_px - 2 * color_scheme.border_thickness) / self.width  # skaliert das Bild auf die angegebene Pixelzahl
@@ -759,30 +657,6 @@ class BorderedSpriteButton(pyglet.sprite.Sprite, UIElement):
                 is_hovered((mouse_x, mouse_y, mouse_state))
                 return False
 
-        def resize(data):
-            """
-            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
-
-            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
-            """
-            # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
-
-            # skaliert das Bild auf die angegebene Prozentgröße des Fensters abzüglich der Border
-            self.scale_x = (self.width_px - 2 * color_scheme.border_thickness) / normal_width  # skaliert das Bild auf die angegebene Pixelzahl
-            self.scale_y = (self.height_px - 2 * color_scheme.border_thickness) / normal_height
-
-            # skaliert die Border auf die angegebene Prozentgröße des Fensters
-            self.borderRectangle.width = self.width_px
-            self.borderRectangle.height = self.height_px
-
-        # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        self._sub = CompositeDisposable([
-            events.size.subscribe(resize),
-            events.mouse.subscribe(is_hovered),
-            events.mouse_button.subscribe(button_clicked),
-        ])
-
         # eigenes Event des Buttons, welches abfängt, wenn der Button gedrückt wird
         self.clicked = Subject()
 
@@ -804,7 +678,7 @@ class BorderedSprite(pyglet.sprite.Sprite, UIElement):
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -818,32 +692,15 @@ class BorderedSprite(pyglet.sprite.Sprite, UIElement):
                                       y_px + color_scheme.border_thickness, batch=batch, group=group)
 
         # speichert die Standard-Maße des Bildes ab
-        normal_width = self.width
-        normal_height = self.height
+        self.normal_width = self.width
+        self.normal_height = self.height
 
         # skaliert das Bild auf die angegebene Prozentgröße des Fensters abzüglich der Border
         self.scale_x = (width_px - 2 * color_scheme.border_thickness) / self.width  # skaliert das Bild auf die angegebene Pixelzahl
         self.scale_y = (height_px - 2 * color_scheme.border_thickness) / self.height
 
-        def resize(data):
-            """
-            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
-
-            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
-            """
-            # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
-
-            # skaliert das Bild auf die angegebene Prozentgröße des Fensters abzüglich der Border
-            self.scale_x = (self.width_px - 2 * color_scheme.border_thickness) / normal_width
-            self.scale_y = (self.height_px - 2 * color_scheme.border_thickness) / normal_height
-
-            # skaliert die Border auf die angegebene Prozentgröße des Fensters
-            self.borderRectangle.width = self.width_px
-            self.borderRectangle.height = self.height_px
-
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        self._sub = events.size.subscribe(resize)
+        self._sub = events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value, color_scheme))
 
 
 class Gif(pyglet.sprite.Sprite, UIElement):  # lädt ein Gif
@@ -864,7 +721,7 @@ class Gif(pyglet.sprite.Sprite, UIElement):  # lädt ein Gif
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
 
         # erstellt eine Liste der einzelnen Bilder des Gifs
         image = pyglet.image.load_animation(path)
@@ -877,33 +734,19 @@ class Gif(pyglet.sprite.Sprite, UIElement):  # lädt ein Gif
         pyglet.sprite.Sprite.__init__(self, animation, x_px, y_px, batch=batch, group=group)
 
         # speichert die Standard-Maße des Gifs
-        normal_width = self.width
-        normal_height = self.height
+        self.normal_width = self.width
+        self.normal_height = self.height
 
         # skaliert das Bild auf die angegebene Prozentgröße des Fensters
-        self.scale_x = width_px / normal_width
-        self.scale_y = height_px / normal_height
-
-        def resize(data):
-            """
-            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
-
-            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
-            """
-            # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
-
-            # skaliert das Bild auf die angegebene Prozentgröße des Fensters
-            self.scale_x = self.width_px / normal_width
-            self.scale_y = self.height_px / normal_height
+        self.scale_x = width_px / self.normal_width
+        self.scale_y = height_px / self.normal_height
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        self._sub = events.size.subscribe(resize)
+        self._sub = events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value))
         self.loop_finished = Subject()
 
     def on_animation_end(self):
         self.loop_finished.on_next(True)
-
 
 
 class GifButton(pyglet.sprite.Sprite, UIElement):
@@ -925,7 +768,7 @@ class GifButton(pyglet.sprite.Sprite, UIElement):
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
 
         # erstellt eine Liste der einzelnen Bilder des Gifs
         image = pyglet.image.load_animation(path)
@@ -938,12 +781,12 @@ class GifButton(pyglet.sprite.Sprite, UIElement):
         pyglet.sprite.Sprite.__init__(self, animation, x_px, y_px, batch=batch, group=group)
 
         # speichert die Standard-Maße des Gifs
-        normal_width = self.width
-        normal_height = self.height
+        self.normal_width = self.width
+        self.normal_height = self.height
 
         # skaliert das Bild auf die angegebene Prozentgröße des Fensters
-        self.scale_x = width_px / normal_width
-        self.scale_y = height_px / normal_height
+        self.scale_x = width_px / self.normal_width
+        self.scale_y = height_px / self.normal_height
 
         def button_clicked(data):
             """
@@ -958,22 +801,9 @@ class GifButton(pyglet.sprite.Sprite, UIElement):
             else:  # falls nicht geklickt
                 return False
 
-        def resize(data):
-            """
-            Wird aufgerufen, wenn sich die Größe des Fensters verändert. Skaliert alle Elemente auf ihre relativen Größen
-
-            :param data: Aktuelle Breite und Höhe des Fensters (w, h)
-            """
-            # konvertiert die Prozentangaben zu Pixeln
-            self.x_px, self.y_px, self.width_px, self.height_px = percent_to_pixel(x, y, width, height, data)
-
-            # skaliert das Bild auf die angegebene Prozentgröße des Fensters
-            self.scale_x = self.width_px / normal_width  # skaliert das Bild auf die angegebene Pixelzahl
-            self.scale_y = self.height_px / normal_height
-
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         self._sub = CompositeDisposable([
-            events.size.subscribe(resize),
+            events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value)),
             events.mouse_button.subscribe(button_clicked),
         ])
 
@@ -983,26 +813,3 @@ class GifButton(pyglet.sprite.Sprite, UIElement):
 
     def on_animation_end(self):
         self.loop_finished.on_next(True)
-
-
-def percent_to_pixel(x, y, width, height, window_data):
-    """
-    Ermöglicht die Umrechnung von Prozentangaben in Pixel, damit die ui-elements die Werte nutzen können
-    :param x: X-Koordinate in %
-    :param y: Y-Koordinate in %
-    :param width: Breite des Elements in %
-    :param height: Höhe des Elements in %
-    :param window_data: Event-Daten, die die aktuelle Höhe und Breite des Fensters beinhalten
-    :return: X, Y, Breite und Höhe in Pixeln
-    """
-    screen_width, screen_height = window_data
-    x_px = x * screen_width // 100
-    y_px = y * screen_height // 100
-    width_px = width * screen_width // 100
-    height_px = height * screen_height // 100
-    return x_px, y_px, width_px, height_px
-
-
-
-
-
