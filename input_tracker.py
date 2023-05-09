@@ -79,6 +79,7 @@ class InputAnalysis:
 
         return is_correct
 
+    """Mögliche Verbesserung Median stat arithmetisches Mittel für Durchschnitt"""
     # Funktion, welche den vom User geschriebenen Text durchgeht und ein durchschnittswert der dafür gebrauchten zeiten
     # aus self.time_per_char ermittelt
     def tag_average_time_per_Char(self):
