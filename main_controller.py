@@ -16,6 +16,7 @@ from controller.story_mode.main_screen import MainStoryScreen
 from controller.learning_mode.main_screen import MainLearningScreen
 from controller.sandbox_mode.main_screen import MainSandboxScreen
 
+
 # Beispiel-Bildschirm
 from controller.template_screen import TemplateScreen
 from events import Events, Event, Var, Disposable
@@ -157,6 +158,9 @@ def main():
     pyglet.app.run(1/30)
 
     window.dispose()
+
+
+
 
 
 if __name__ == "__main__":
