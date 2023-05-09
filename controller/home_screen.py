@@ -50,5 +50,4 @@ class HomeScreen(Screen):
         mixer.init()
         mixer.music.load("assets/sounds/02 Start Menu.mp3")
         mixer.music.play()
-        while mixer.music.get_busy():
-            pass
+        mixer.music.play(-1)

@@ -59,5 +59,4 @@ class StartScreen(Screen):
         mixer.music.load("assets/sounds/02 Start Menu.mp3")
         mixer.music.play()
         mixer.music.play(-1)
-        while mixer.music.get_busy():
-            pass
+
