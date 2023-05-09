@@ -1,5 +1,3 @@
-import logging
-
 import pyglet
 from reactivex.subject import BehaviorSubject, Subject
 from reactivex.disposable import CompositeDisposable
@@ -121,7 +119,6 @@ class GameWindow(pyglet.window.Window, Disposable):
                 self.set_fullscreen(fullscreen)
             case ("ChangeScreenSize", int(w), int(h)):
                 self.set_size(w, h)
-                self.events.size.on_next((w, h))
 
 
     def on_draw(self, *args):

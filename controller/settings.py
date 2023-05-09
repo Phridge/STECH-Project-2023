@@ -1,5 +1,3 @@
-import logging
-
 import pyglet
 
 import color_scheme
@@ -86,7 +84,6 @@ class SettingsScreen(Screen):
         self.event.on_next(("ChangeColorScheme", self.preview_color_scheme))
         self.event.on_next(("ChangeVolume", self.volume_value))
         if not self.fullscreen and self.new_screen_size:
-            logging.warning("on_next called")
             self.event.on_next(("ChangeScreenSize", self.new_screen_size[0], self.new_screen_size[1]))
         self.change_controller.on_next(("ReloadSettings", previous_controller, data))
 
@@ -160,7 +157,6 @@ class SettingsScreen(Screen):
         if y and y < 300: y = 300  # sorgt dafür, dass es nicht zu dunkel wird
         if str(x).isnumeric() and str(y).isnumeric():
             self.new_screen_size = (x, y)
-            logging.warning(self.new_screen_size)
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
