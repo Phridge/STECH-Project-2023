@@ -900,6 +900,9 @@ class Gif(pyglet.sprite.Sprite, UIElement):  # lädt ein Gif
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         self._sub = events.size.subscribe(resize)
 
+    def on_animation_end(self):
+        self.loop_finished.on_next(True)
+
 
 
 class GifButton(pyglet.sprite.Sprite, UIElement):
