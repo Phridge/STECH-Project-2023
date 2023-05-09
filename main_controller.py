@@ -11,7 +11,9 @@ from controller.home_screen import HomeScreen
 from controller.error_screen import ErrorScreen
 from controller.delete_save_screen import DeleteSaveScreen
 from controller.pause_screen import PauseScreen
+from controller.story_mode.level1_screen import Level1Screen
 from controller.story_mode.level2_screen import Level2Screen
+from controller.story_mode.level3_screen import Level3Screen
 from controller.story_mode.main_screen import MainStoryScreen
 from controller.learning_mode.main_screen import MainLearningScreen
 from controller.sandbox_mode.main_screen import MainSandboxScreen
