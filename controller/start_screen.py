@@ -3,6 +3,7 @@ import color_scheme
 import ui_elements
 from reactivex.subject import Subject
 from reactivex.disposable import CompositeDisposable
+from pygame import mixer
 
 from controller import Screen
 
@@ -43,9 +44,20 @@ class StartScreen(Screen):
         self._subs.add(self.statistics.clicked.subscribe(lambda _: self.change_screen("Statistics", 0)))
         self._subs.add(self.leave.clicked.subscribe(lambda _: self.change_screen("Restart", False)))
 
+        self.play_music()
+
     def change_screen(self, new_screen, save):  # Wird getriggert, wenn man zurück zum Hauptmenü will
         # save suchen und auswählen
         self.change_controller.on_next((new_screen, save))
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
+
+
+    def play_music(self):
+        mixer.init()
+        mixer.music.load("assets/sounds/02 Start Menu.mp3")
+        mixer.music.play()
+        mixer.music.play(-1)
+        while mixer.music.get_busy():
+            pass
