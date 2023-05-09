@@ -13,5 +13,5 @@ class Events:
 class Disposable:
     def dispose(self) -> None:
         for value in vars(self).values():
-            if hasattr(value, "dispose"):
+            if isinstance(value, (Disposable, DisposableBase)):
                 value.dispose()

@@ -52,7 +52,7 @@ class SettingsScreen(Screen):
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
         self._subs.add(self.back.clicked.subscribe(lambda _: self.go_back(previous_controller, save)))
-        self._subs.add(self.fullscreen_toggle_button.clicked.subscribe(lambda _: self.toggle_fullscreen(self.fullscreen)))
+        self._subs.add(self.fullscreen_toggle_button.clicked.subscribe(lambda _: self.set_fullscreen(not self.fullscreen)))
         self._subs.add(self.window_x.clicked.subscribe(lambda _: self.set_button_active("x")))
         self._subs.add(self.window_x.changed.subscribe(self.change_size))
         self._subs.add(self.window_y.clicked.subscribe(lambda _: self.set_button_active("y")))
@@ -135,20 +135,16 @@ class SettingsScreen(Screen):
         else:
             self.volume_value = 0
 
-    def toggle_fullscreen(self, fullscreen_state):
+    def set_fullscreen(self, state):
         """
         Ändert zu Fullscreen bzw zu Fenstermodus
 
         :param fullscreen_state: Bool, ob das Fenster momentan im Fullscreen-Modus ist
         """
-        if fullscreen_state is True:
-            self.fullscreen = False
-            self.fullscreen_toggle_button.label.text = "Vollbild an"
-        else:
-            self.fullscreen = True
-            self.fullscreen_toggle_button.label.text = "Vollbild aus"
+        self.fullscreen = state
+        self.fullscreen_toggle_button.label.text = "Vollbild an" if not state else "Vollbild aus"
 
-        self.event.on_next(("ToggleFullscreen", fullscreen_state))
+        self.event.on_next(("ToggleFullscreen", state))
 
     def change_size(self, data):
         x = y = None

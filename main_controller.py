@@ -114,8 +114,8 @@ class GameWindow(pyglet.window.Window, Disposable):
             case ("ChangeVolume", volume):
                 self.events.volume = volume
             case ("ToggleFullscreen", fullscreen):
-                self.set_fullscreen(fullscreen)
                 self.events.fullscreen = fullscreen
+                self.set_fullscreen(fullscreen)
             case ("ChangeScreenSize", int(w), int(h)):
                 self.set_size(w, h)
                 self.events.size.on_next((w, h))
