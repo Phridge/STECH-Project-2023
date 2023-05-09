@@ -5,6 +5,7 @@ from reactivex.subject import Subject
 from reactivex.disposable import CompositeDisposable
 from pygame import mixer
 
+
 from controller import Screen
 
 
@@ -44,7 +45,7 @@ class StartScreen(Screen):
         self._subs.add(self.statistics.clicked.subscribe(lambda _: self.change_screen("Statistics", 0)))
         self._subs.add(self.leave.clicked.subscribe(lambda _: self.change_screen("Restart", False)))
 
-        self.play_music()
+        self.play_music(events.volume)
 
     def change_screen(self, new_screen, save):  # Wird getriggert, wenn man zurück zum Hauptmenü will
         # save suchen und auswählen
@@ -54,9 +55,10 @@ class StartScreen(Screen):
         return self.batch
 
 
-    def play_music(self):
+    def play_music(self, volume):
         mixer.init()
         mixer.music.load("assets/sounds/02 Start Menu.mp3")
         mixer.music.play()
         mixer.music.play(-1)
+        mixer.music.set_volume(volume)
 
