@@ -12,11 +12,6 @@ Gespeicherte Parameter:
 
 Warum JSON File? Ich fande diese Idee in sicht auf "persisted settings" sinnvoll
 
-Kommt noch: 
---> Average time for specific char
---> show last Game results
---> open JSON File to get Account settings
-
 
 Noch zu machen:
 --> Tests auf Funktionsweise!!!
@@ -27,6 +22,12 @@ Noch zu machen:
 def save_to_json_file(red, blue, green, volume, windowsize, screenfull):
     with open('settings.json', 'w', encoding='utf-8') as f:
         json.dump([red, green, blue, volume, windowsize, screenfull], f, ensure_ascii=False, indent=5)
+
+
+# returns an array with the information's in the JSON file
+def get_info_from_json_file():
+    data = json.load(open('settings.json'))
+    return data
 
 
 # Setzt alle game Saves auf ein Preset, sollten keine Parameter übergeben werden
@@ -76,8 +77,8 @@ def save_game(game_save_nr, level_id, preset_text, written_text, time_needed_for
         )
 
         session.add(r)
-        # Nicht wirklich sicher, ob das geht, da das MySQL statt SQL code ist
-        id_run = session.execute("SELECT id FROM Run ORDER BY id DESC LIMIT 1")
+
+        id_run = get_last_run_id(game_save_nr)
         session.commit()
 
     for data in char_array:
@@ -100,6 +101,17 @@ def save_game(game_save_nr, level_id, preset_text, written_text, time_needed_for
 
             session.add(c)
             session.commit()
+
+
+# Nicht wirklich sicher, ob das geht, da das MySQL statt SQL code ist
+def get_last_run_id(game_save):
+    with new_session() as session:
+        return session.execute("SELECT id FROM Run WHERE save_id = " + game_save + "ORDER BY id DESC LIMIT 1")
+
+
+def get_specific_run_id(game_save, run_id):
+    with new_session() as session:
+        return session.execute("SELECT id FROM Run WHERE id =" + run_id + " AND save_id =" + game_save)
 
 
 def get_current_level(game_save):
@@ -127,3 +139,75 @@ def get_game_save_average_accuracy(game_save):
         )
         average_accuracy = value_of_accuracy_sum / count_of_runs
     return average_accuracy
+
+
+def get_avg_time_for_specific_char(game_save, char_name):
+    with new_session() as session:
+        summed_time_for_char = session.execute(
+            "SELECT COUNT(avg_time_per_char) FROM Char WHERE char = " +
+            char_name + "and run_id = (SELECT save_id FROM Run WHERE save_id =" +
+            game_save + ")"
+        )
+    return summed_time_for_char / get_last_run_id(game_save)
+
+
+# Rückgabewert ist ein array (ohne das 2 dimensionale Array mit den Chars)
+def show_last_run_results(game_save):
+    last_run_id = get_last_run_id(game_save)
+    with new_session() as session:
+        last_level_played = session.execute(
+            "SELECT level_id FROM Run WHERE id =" + last_run_id
+        )
+        last_preset_text = session.execute(
+            "SELECT preset_text FROM Run WHERE id =" + last_run_id
+        )
+        last_typed_text = session.execute(
+            "SELECT typed_text FROM Run WHERE id =" + last_run_id
+        )
+        last_time_taken_for_level = session.execute(
+            "SELECT time_taken_for_level FROM Run WHERE id =" + last_run_id
+        )
+    return [last_level_played, last_preset_text, last_typed_text, last_time_taken_for_level]
+
+
+def show_last_char_results(game_save):
+    result_array = []
+    last_run_id = get_last_run_id(game_save)
+    with new_session() as session:
+        char_list = session.execute(
+            "SELECT char, preset_char_count, typed_char_count, vg_time_per_char FROM Char WHERE run_id =" +
+            last_run_id +
+            ")"
+        )
+    for data_row in char_list:
+        result_array.append(data_row)
+
+    return result_array
+
+
+def show_three_best_chars(game_save, search_filter):
+    result_array = []
+    last_run_id = get_last_run_id(game_save)
+    with new_session() as session:
+        char_list = session.execute(
+            "SELECT char, preset_char_count, typed_char_count, vg_time_per_char FROM Char WHERE run_id =" +
+            last_run_id + " ORDER BY " + search_filter + " ASC LIMIT 3)"
+        )
+    for data_row in char_list:
+        result_array.append(data_row)
+
+    return result_array
+
+
+def show_three_worst_chars(game_save, search_filter):
+    result_array = []
+    last_run_id = get_last_run_id(game_save)
+    with new_session() as session:
+        char_list = session.execute(
+            "SELECT char, preset_char_count, typed_char_count, vg_time_per_char FROM Char WHERE run_id =" +
+            last_run_id + " ORDER BY " + search_filter + "DESC LIMIT 3)"
+        )
+    for data_row in char_list:
+        result_array.append(data_row)
+
+    return result_array
