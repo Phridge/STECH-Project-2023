@@ -36,7 +36,7 @@ class Level3Screen(Screen):
         self.header = ui_elements.BorderedRectangle("Level 3: Die dampfbetriebene Brücke", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.batch)
 
         # Hier muss für jeden Button eine Subscription erstellt werden.
-        player.subs.add(self.mech.clicked.subscribe(lambda _: self.mech_hurt(True)))
+        player.subs.add(player.gif.clicked.subscribe(player.jump))
 
         self.change_controller = Subject()
         self.event = Subject()  # separates Subject für eventuelle Events die in diesem Screen stattfinden
@@ -45,9 +45,6 @@ class Level3Screen(Screen):
 
     def button_clicked(self, data):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
         self.change_controller.on_next(("HomeScreen", data))
-
-    def dispose_subs(self):  # Muss getriggert werden, wenn der Screen gewechselt wird.
-        self.disposable.dispose()
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch

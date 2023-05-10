@@ -1,4 +1,5 @@
 import pyglet
+from reactivex.disposable import CompositeDisposable
 
 import ui_elements
 import time
@@ -6,7 +7,7 @@ import color_scheme
 from ui_elements import Gif
 
 
-class Player(ui_elements.GifButton):
+class Player:
     def __init__(self, events, batch, fx, fy, fwidth, fheight):
         self.x = fx
         self.y = fy
@@ -16,7 +17,7 @@ class Player(ui_elements.GifButton):
         self.events = events
 
         self.gif = ui_elements.GifButton("assets/images/mech_idle.gif", self.x, self.y, self.own_width, self.own_height, 0.75, True, self.events, self.batch)
-        self.subs = None
+        self.subs = CompositeDisposable()
 
     def idle(self):
         self.gif = ui_elements.Gif("assets/images/mech_idle.gif", self.x, self.y, self.own_width, self.own_height, 0.75, True, self.events, self.batch)
@@ -29,7 +30,7 @@ class Player(ui_elements.GifButton):
         if data:
             self.gif.delete()
             self.gif = ui_elements.GifButton("assets/images/mech_hurt.gif", 30, 12, 13, 20, 0.25, True, self.events, self.batch)
-            self.subs = self.gif.loop_finished.subscribe(lambda _: self.mech_hurt(False))
+            self.subs = self.gif.loop_finished.subscribe(lambda _: self.hurt(False))
         else:
             self.gif.delete()
             self.gif = ui_elements.GifButton("assets/images/mech_walk.gif", 30, 12, 13, 20, 0.75, True, self.events, self.batch)
@@ -42,7 +43,7 @@ class Player(ui_elements.GifButton):
             self.gif.delete()
             self.gif = ui_elements.GifButton("assets/images/mech_hurt.gif", 30, 12, 13, 20, 0.25, True, self.events,
                                              self.batch)
-            self.subs = self.gif.loop_finished.subscribe(lambda _: self.mech_hurt(False))
+            self.subs = self.gif.loop_finished.subscribe(lambda _: self.hurt(False))
         else:
             self.gif.delete()
             self.gif = ui_elements.GifButton("assets/images/mech_walk.gif", 30, 12, 13, 20, 0.75, True, self.events,
