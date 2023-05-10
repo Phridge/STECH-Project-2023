@@ -8,6 +8,8 @@ from reactivex.subject import Subject
 from reactivex.disposable import CompositeDisposable
 
 from controller import Screen
+from controller.actors import Player
+from controller.actors import Enemy
 
 """
 Eine Vorlage für einen Screen. ab Zeile 22 können Elemente eingefügt werde. Ein paar der ui-Elements sind als Beispiel gezeigt.
@@ -27,14 +29,19 @@ class Level2Screen(Screen):
 
         # im folgenden Block können Elemente eingefügt werden. Die Elemente die schon da sind dienen nur als Beispiele
         self.gif = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, background)
-        # hier Problem: wie mehrere Gifs in mehreren Ebenen anzeigen?
-        self.mech = ui_elements.GifButton("assets/images/mech_walk.gif", 30, 12, 13, 20, 0.75, True, self.events, self.batch)
+
+        # Player-Objekt
+        player = Player(self.events, self.batch, 40, 12, 20, 30)
+
+        # Test Enemy-Objekt
+        enemy = Enemy(self.events, self.batch, 70, 12, 7.5, 15)
+
         self.header = ui_elements.BorderedRectangle("Level 2: Der Wald des Widerstands", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.batch)
 
         # Hier muss für jeden Button eine Subscription erstellt werden.
         # In der Lambda-Funktion wird dann die Funktion angebgeben, die aufgerufen werden soll wenn der jeweilige Button gedrückt wird
-        self._subs.add(self.mech.clicked.subscribe(lambda _: self.mech_hurt(True)))
-        self.mech_sub = None
+        # self._subs.add(self.mech.clicked.subscribe(lambda _: self.mech_hurt(True)))
+        # self.mech_sub = None
 
     #  Falls die Funktionen namentlich nicht passen erstellte einfach neue!
 

@@ -1,5 +1,3 @@
-import logging
-
 import pyglet
 from reactivex.subject import BehaviorSubject, Subject
 from reactivex.disposable import CompositeDisposable
@@ -11,7 +9,9 @@ from controller.home_screen import HomeScreen
 from controller.error_screen import ErrorScreen
 from controller.delete_save_screen import DeleteSaveScreen
 from controller.pause_screen import PauseScreen
+from controller.story_mode.level1_screen import Level1Screen
 from controller.story_mode.level2_screen import Level2Screen
+from controller.story_mode.level3_screen import Level3Screen
 from controller.story_mode.main_screen import MainStoryScreen
 from controller.learning_mode.main_screen import MainLearningScreen
 from controller.sandbox_mode.main_screen import MainSandboxScreen
@@ -119,7 +119,6 @@ class GameWindow(pyglet.window.Window, Disposable):
                 self.set_fullscreen(fullscreen)
             case ("ChangeScreenSize", int(w), int(h)):
                 self.set_size(w, h)
-                self.events.size.on_next((w, h))
 
 
     def on_draw(self, *args):

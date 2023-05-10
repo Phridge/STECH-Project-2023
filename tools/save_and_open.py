@@ -1,7 +1,6 @@
 import json
 from database import new_session, Save, Run, Char
 from sqlalchemy import update, select
-import input_tracker
 
 """
 Funktion, die die Usersettings speichert und local in einer Datei speichert. 
@@ -12,6 +11,16 @@ Gespeicherte Parameter:
 --> Ist das Spei lFenster auf Vollbild (boolean)
 
 Warum JSON File? Ich fande diese Idee in sicht auf "persisted settings" sinnvoll
+
+Kommt noch: 
+--> Average time for specific char
+--> show last Game results
+--> open JSON File to get Account settings
+
+
+Noch zu machen:
+--> Tests auf Funktionsweise!!!
+
 """
 
 
@@ -55,7 +64,7 @@ def assign_game_saves(game_save_nr, language, keyboard_layout, level_progress):
             session.commit()
 
 
-# ------------Under Construction------------
+# -----------------Noch testen---------------------
 def save_game(game_save_nr, level_id, preset_text, written_text, time_needed_for_game, char_array):
     with new_session() as session:
         r = Run(
@@ -67,7 +76,8 @@ def save_game(game_save_nr, level_id, preset_text, written_text, time_needed_for
         )
 
         session.add(r)
-        id_run = session.get(Run.id)  # Nicht wirklich sicher ob das geht
+        # Nicht wirklich sicher, ob das geht, da das MySQL statt SQL code ist
+        id_run = session.execute("SELECT id FROM Run ORDER BY id DESC LIMIT 1")
         session.commit()
 
     for data in char_array:
@@ -92,4 +102,28 @@ def save_game(game_save_nr, level_id, preset_text, written_text, time_needed_for
             session.commit()
 
 
-pass  # Das hier nötig?
+def get_current_level(game_save):
+    with new_session() as session:
+        return session.execute("SELECT level_progress FROM Save WHERE id =" + game_save)
+
+
+def get_game_save_language(game_save):
+    with new_session() as session:
+        return session.execute("SELECT language FROM Save WHERE id =" + game_save)
+
+
+def get_game_save_keyboard_layout(game_save):
+    with new_session() as session:
+        return session.execute("SELECT keyboard_layout FROM Save WHERE id =" + game_save)
+
+
+def get_game_save_average_accuracy(game_save):
+    with new_session() as session:
+        value_of_accuracy_sum = session.execute(
+            "SELECT SUM(accuracy) FROM Char WHERE run_id = (SELECT save_id FROM Run WHERE save_id =" + game_save + ")"
+        )
+        count_of_runs = session.execute(
+            "SELECT COUNT(accuracy) FROM Char WHERE run_id = (SELECT save_id FROM Run WHERE save_id =" + game_save + ")"
+        )
+        average_accuracy = value_of_accuracy_sum / count_of_runs
+    return average_accuracy
