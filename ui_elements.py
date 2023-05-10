@@ -86,7 +86,6 @@ class BorderedRectangle(UIElement):
         :param font_scheme: Schrift-Klasse der Datei color_scheme.py
         :param font_size: Schrift-Größe
         :param events: events des games
-        :param sublist: Liste an subscriptions des aktuellen Controllers
         :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
         """
 
@@ -757,7 +756,7 @@ class Gif(pyglet.sprite.Sprite, UIElement):  # lädt ein Gif
 
 
 class GifButton(pyglet.sprite.Sprite, UIElement):
-    def __init__(self, path, x, y, width, height, duration, loop, events, sublist, batch=None, group=pyglet.graphics.Group(order=0)):
+    def __init__(self, path, x, y, width, height, duration, loop, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiger Button mit einem Gif als Fläche. Kann geklickt werden..
         pyglet.sprite.Sprite wird erweitert, da es Skalierungs-Methoden hat.
@@ -770,7 +769,6 @@ class GifButton(pyglet.sprite.Sprite, UIElement):
         :param duration: Dauer in Sekunden, die ein Durchlauf des Gifs dauern soll.
         :param loop: boolean, der angibt, ob das Gif nach dem ersten Durchlauf stoppt oder neu startet
         :param events: events des games
-        :param sublist: Liste an subscriptions des aktuellen Controllers
         :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
         """
 
