@@ -37,7 +37,7 @@ class GameWindow(pyglet.window.Window, Disposable):
             fullscreen=False,
         )
 
-        self.controller = StartScreen(self.events)
+        self.controller = Level3Screen(self.events)
 
 
         self.controller_subs = CompositeDisposable([

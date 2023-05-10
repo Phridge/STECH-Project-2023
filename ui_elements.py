@@ -660,6 +660,13 @@ class BorderedSpriteButton(pyglet.sprite.Sprite, UIElement):
         # eigenes Event des Buttons, welches abfängt, wenn der Button gedrückt wird
         self.clicked = Subject()
 
+        # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
+        self._subs = CompositeDisposable([
+            events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value, color_scheme)),
+            events.mouse.subscribe(is_hovered),
+            events.mouse_button.subscribe(button_clicked),
+        ])
+
 
 class BorderedSprite(pyglet.sprite.Sprite, UIElement):
     def __init__(self, path, x, y, width, height, color_scheme, events, batch=None, group=pyglet.graphics.Group(order=0)):

@@ -36,26 +36,12 @@ class Level3Screen(Screen):
         self.header = ui_elements.BorderedRectangle("Level 3: Die dampfbetriebene Brücke", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.batch)
 
         # Hier muss für jeden Button eine Subscription erstellt werden.
-        # In der Lambda-Funktion wird dann die Funktion angebgeben, die aufgerufen werden soll wenn der jeweilige Button gedrückt wird
-        # self.sublist.append(self.mech.clicked.subscribe(lambda _: self.mech_hurt(True)))
-
-        # self.disposable = CompositeDisposable(self.sublist)
+        player.subs.add(self.mech.clicked.subscribe(lambda _: self.mech_hurt(True)))
 
         self.change_controller = Subject()
         self.event = Subject()  # separates Subject für eventuelle Events die in diesem Screen stattfinden
 
     #  Falls die Funktionen namentlich nicht passen erstellte einfach neue!
-
-    def mech_hurt(self, data):
-        if data:
-            logging.warning("AUA")
-            self.mech.delete()
-            self.mech = ui_elements.GifButton("assets/images/mech_hurt.gif", 30, 12, 13, 20, 0.25, True, self.events, self.batch)
-            self.sublist.append(self.mech.loop_finished.subscribe(lambda _: self.mech_hurt(False)))
-        else:
-            self.mech.delete()
-            self.mech = ui_elements.GifButton("assets/images/mech_walk.gif", 30, 12, 13, 20, 0.75, True, self.events, self.batch)
-            self.sublist.append(self.mech.loop_finished.subscribe(lambda _: self.mech_hurt(False)))
 
     def button_clicked(self, data):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
         self.change_controller.on_next(("HomeScreen", data))
