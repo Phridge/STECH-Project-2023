@@ -29,11 +29,11 @@ class Player:
         # von Janek übernommen, funktioniert hier noch nicht, wollte mir den schnipsel nur aufheben
         if data:
             self.gif.delete()
-            self.gif = ui_elements.GifButton("assets/images/mech_hurt.gif", 30, 12, 13, 20, 0.25, True, self.events, self.batch)
+            self.gif = ui_elements.GifButton("assets/images/mech_jump.gif", self.x, self.y, self.own_width, self.own_height, 1, True, self.events, self.batch)
             self.subs = self.gif.loop_finished.subscribe(lambda _: self.hurt(False))
         else:
             self.gif.delete()
-            self.gif = ui_elements.GifButton("assets/images/mech_walk.gif", 30, 12, 13, 20, 0.75, True, self.events, self.batch)
+            self.gif = ui_elements.GifButton("assets/images/mech_walk.gif", self.x, self.y, self.own_width, self.own_height, 0.75, True, self.events, self.batch)
             if self.subs:
                 self.subs.dispose()
 

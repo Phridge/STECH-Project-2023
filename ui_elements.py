@@ -188,7 +188,7 @@ class BorderedRectangleButton(UIElement):
                 self.rectangle.color = color_scheme.click
                 self.borderRectangle.color = color_scheme.click_border
                 self.label.color = color_scheme.click_text
-                self.clicked.on_next(None)  # gibt dem clicked-event mit, dass der Button geklickt wurde
+                self.clicked.on_next(True)  # gibt dem clicked-event mit, dass der Button geklickt wurde
                 return True
             else:  # falls nicht geclickt wird wird getestet, ob gehovert wird
                 is_hovered((mouse_x, mouse_y, mouse_state))
@@ -253,7 +253,7 @@ class InputBox(UIElement):
         def update_text(data):
             if self.label.text and data == self.label.text[0]: self.label.text = self.label.text[1:]
             if not self.label.text:
-                self.clicked.on_next(None)  # gibt dem clicked-event mit, dass der Button geklickt wurde
+                self.clicked.on_next(True)  # gibt dem clicked-event mit, dass der Button geklickt wurde
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         self._subs = CompositeDisposable([
@@ -339,7 +339,7 @@ class InputButton(UIElement):
                 self.rectangle.color = color_scheme.click
                 self.borderRectangle.color = color_scheme.click_border
                 self.label.color = color_scheme.click_text
-                self.clicked.on_next(None)  # gibt dem clicked-event mit, dass der Button geklickt wurde
+                self.clicked.on_next(True)  # gibt dem clicked-event mit, dass der Button geklickt wurde
                 return True
             else:  # falls nicht geclickt wird wird getestet, ob gehovert wird
                 is_hovered((mouse_x, mouse_y, mouse_state))
@@ -348,7 +348,7 @@ class InputButton(UIElement):
         def update_text(data):
             if self.label.text and data == self.label.text[0]: self.label.text = self.label.text[1:]
             if not self.label.text:
-                self.clicked.on_next(None)  # gibt dem clicked-event mit, dass der Button geklickt wurde
+                self.clicked.on_next(True)  # gibt dem clicked-event mit, dass der Button geklickt wurde
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         self._subs = CompositeDisposable([
@@ -443,7 +443,7 @@ class SettingTextField(UIElement):
                 self.borderRectangle.color = color_scheme.click_border
                 self.label.color = color_scheme.click_text
                 self.text = self.label.text = ""
-                self.clicked.on_next(None)  # gibt dem clicked-event mit, dass der Button geklickt wurde
+                self.clicked.on_next(True)  # gibt dem clicked-event mit, dass der Button geklickt wurde
                 return True
             elif self.active is False:  # falls nicht geclickt wird wird getestet, ob gehovert wird
                 is_hovered((mouse_x, mouse_y, mouse_state))
@@ -535,7 +535,7 @@ class SpriteButton(pyglet.sprite.Sprite, UIElement):
             mouse_state, mouse_x, mouse_y, buttons = data  # buttons zeigt den gedrückten knopf: Links=1, Rad=2, Rechts=4
             if mouse_state is True and buttons == 1 and x_px <= int(mouse_x) <= x_px+width_px and y_px <= int(mouse_y) <= y_px+height_px:
                 self.color = color_scheme.img_click
-                self.clicked.on_next(None)  # gibt dem clicked-event mit, dass der Button geklickt wurde
+                self.clicked.on_next(True)  # gibt dem clicked-event mit, dass der Button geklickt wurde
                 return True
             else:  # falls nicht geclickt wird wird getestet, ob gehovert wird
                 is_hovered((mouse_x, mouse_y, mouse_state))
@@ -650,7 +650,7 @@ class BorderedSpriteButton(pyglet.sprite.Sprite, UIElement):
             if mouse_state is True and buttons == 1 and x_px <= int(mouse_x) <= x_px+width_px and y_px <= int(mouse_y) <= y_px+height_px:
                 self.color = color_scheme.img_click
                 self.borderRectangle.color = color_scheme.click_border
-                self.clicked.on_next(None)  # gibt dem clicked-event mit, dass der Button geklickt wurde
+                self.clicked.on_next(True)  # gibt dem clicked-event mit, dass der Button geklickt wurde
                 return True
             else:  # falls nicht geclickt wird wird getestet ob gehovert wird
                 is_hovered((mouse_x, mouse_y, mouse_state))
@@ -801,7 +801,7 @@ class GifButton(pyglet.sprite.Sprite, UIElement):
             """
             mouse_state, mouse_x, mouse_y, buttons = data  # buttons zeigt den gedrückten knopf: Links=1, Rad=2, Rechts=4
             if mouse_state is True and buttons == 1 and self.x_px <= int(mouse_x) <= self.x_px+self.width_px and self.y_px <= int(mouse_y) <= self.y_px+self.height_px:
-                self.clicked.on_next(None)  # gibt dem clicked-event mit, dass der Button geklickt wurde
+                self.clicked.on_next(True)  # gibt dem clicked-event mit, dass der Button geklickt wurde
                 return True
             else:  # falls nicht geklickt
                 return False
