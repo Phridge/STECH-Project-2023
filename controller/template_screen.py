@@ -33,7 +33,7 @@ class TemplateScreen(Screen):
         # Hier muss für jeden Button eine Subscription erstellt werden.
         # In der Lambda-Funktion wird dann die Funktion angebgeben, die aufgerufen werden soll wenn der jeweilige Button gedrückt wird
         self._subs.add(self.button1.clicked.subscribe(lambda _: self.button_clicked(1)))
-        self._subs.add(self.button2.clicked.subscribe(lambda _: self.button_clicked(2)),)
+        # self._subs.add(self.button2.clicked.subscribe(lambda _: self.button_clicked(2)),)
         self._subs.add(self.header.clicked.subscribe(lambda _: self.button_clicked(2)))
         self._subs.add(self.button3.clicked.subscribe(lambda _: self.button_clicked(3)))
 

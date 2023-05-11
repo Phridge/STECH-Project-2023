@@ -17,3 +17,7 @@ class Screen(Controller):
         super().__init__()
         self.change_controller = Event()
         self.event = Event()  # separates Subject für eventuelle Events die in diesem Screen stattfinden
+
+
+    def get_view(self):
+        raise NotImplementedError

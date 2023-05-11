@@ -1,3 +1,6 @@
+from collections import namedtuple
+
+import reactivex
 from reactivex.disposable import CompositeDisposable
 from reactivex.subject import Subject
 import pyglet
@@ -45,7 +48,7 @@ class UIElement(Disposable):
         border = 0
 
         # skaliert das Hintergrund-Rechteck, falls es eins gibt
-        if 'borderRectangle' in locals():
+        if 'borderRectangle' in vars(self):
             self.borderRectangle.x = self.x_px
             self.borderRectangle.y = self.y_px
             self.borderRectangle.width = self.width_px
@@ -53,20 +56,20 @@ class UIElement(Disposable):
             border = color_scheme.border_thickness
 
         # skaliert das Vordergrund-Rechteck, falls es eins gibt
-        if 'rectangle' in locals():
+        if 'rectangle' in vars(self):
             self.rectangle.x = self.x_px + border
             self.rectangle.y = self.y_px + border
             self.rectangle.width = self.width_px - 2 * border
             self.rectangle.height = self.height_px - 2 * border
 
         # skaliert den Text, falls es ihn gibt
-        if 'label' in locals():
+        if 'label' in vars(self):
             self.label.x = self.x_px + self.width_px // 2
             self.label.y = self.y_px + self.height_px // 2
             self.label.font_size = self.width_px // (100 / font_size)
 
         # skaliert Bilder und Gifs, falls es welche gibt
-        if self.__class__.__name__.find("Sprite") >= 0 or self.__class__.__name__.find("Gif") >= 0:
+        if isinstance(self, (Sprite, BorderedSprite, BorderedSpriteButton, GifButton, Gif)):
             self.scale_x = (self.width_px - 2 * border) / self.normal_width  # skaliert das Bild auf die angegebene Pixelzahl
             self.scale_y = (self.height_px - 2 * border) / self.normal_height
 
@@ -818,3 +821,47 @@ class GifButton(pyglet.sprite.Sprite, UIElement):
 
     def on_animation_end(self):
         self.loop_finished.on_next(True)
+
+
+
+
+class Rect(namedtuple("Rect", ["x", "y", "w", "h"])):
+    def border(self, width):
+        return Rect(self.x + width, self.y + width, max(0, self.w - 2 * width), max(0, self.h - 2 * width))
+
+    def get_inner_perc(self, p_x, p_y, p_w, p_h):
+        return Rect(self.x + (p_x / 100) * self.w, self.y + (p_y / 100) * self.h, self.w * (p_w / 100), self.h * (p_h / 100))
+
+    def center_anchor(self):
+        return Rect(self.x + self.w / 2, self.y + self.h / 2, self.w, self.h)
+
+    @staticmethod
+    def zero():
+        return Rect(0, 0, 0, 0)
+
+
+from reactivex.operators import map as rmap
+
+
+def border(width):
+    return rmap(lambda r: r.border(width))
+
+
+def get_inner_perc(p_x, p_y, p_w, p_h):
+    return rmap(lambda r: r.get_inner_perc(p_x, p_y, p_w, p_h))
+
+
+def center_anchor():
+    return rmap(Rect.center_anchor)
+
+
+def rx(v):
+    return v if isinstance(v, reactivex.Observable) else reactivex.just(v)
+
+
+def position_pyglet_shape(shape, rect):
+    shape.x, shape.y, shape.width, shape.height = rect
+
+
+def position_pyglet_text(text, rect):
+    text.x, text.y = rect.x, rect.y

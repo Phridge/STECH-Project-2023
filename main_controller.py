@@ -24,7 +24,7 @@ from events import Events, Event, Var, Disposable
 
 class GameWindow(pyglet.window.Window, Disposable):
     def __init__(self):
-        super().__init__(resizable=False)
+        super().__init__(resizable=True)
         self.events = Events(
             key=Event(),
             text=Event(),
@@ -37,7 +37,8 @@ class GameWindow(pyglet.window.Window, Disposable):
             fullscreen=False,
         )
 
-        self.controller = Level3Screen(self.events)
+        # self.controller = TestScreen(self.events)
+        self.controller = StartScreen(self.events)
 
 
         self.controller_subs = CompositeDisposable([
@@ -147,6 +148,7 @@ class GameWindow(pyglet.window.Window, Disposable):
         self.events.mouse_button.on_next((False, x, y, button))
 
     def on_resize(self, w, h):
+        super().on_resize(w, h)
         self.events.size.on_next((w, h))
 
 
