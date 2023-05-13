@@ -36,7 +36,7 @@ class InputBox(Controller):
         def update_text(data):
             text, typed_text = data
 
-            text_correct = text.startswith(typed_text)
+            text_correct = len(typed_text) > 0 and text[len(typed_text)-1] == typed_text[-1]
 
             document.text = text
 
