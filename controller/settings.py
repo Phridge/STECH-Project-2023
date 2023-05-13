@@ -117,7 +117,6 @@ class SettingsScreen(Screen):
 
         :param data: String mit Button, der Aktiv gesetzt werden soll
         """
-        print(data)
         if data[0] == 65289 and data[1] == 16:  # falls tab gedrückt wird
             if self.color_picker_red.active: data = "green"
             elif self.color_picker_green.active: data = "blue"
@@ -126,7 +125,7 @@ class SettingsScreen(Screen):
             elif self.window_x.active: data = "y"
             else: data = "red"
 
-        if data[0] == 65289 and data[1] == 17:  # falls tab gedrückt wird
+        if data[0] == 65289 and data[1] == 17:  # falls shift + tab gedrückt wird
             if self.color_picker_red.active: data = "y"
             elif self.color_picker_green.active: data = "red"
             elif self.color_picker_blue.active: data = "green"

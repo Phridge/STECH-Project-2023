@@ -1,3 +1,4 @@
+import math
 from collections import namedtuple
 
 import reactivex
@@ -287,6 +288,9 @@ class InputButton(UIElement):
         :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
         """
 
+        self.color_scheme = color_scheme
+        self.font_size = font_size
+
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
         x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
 
@@ -303,13 +307,17 @@ class InputButton(UIElement):
                                                  color_scheme.color,  # Style wird mitgegeben
                                                  batch=batch, group=group)
 
+        self.pulse = 0
+
         # Zeichnet den Text in die Mitte des Rechteckes
         self.label = pyglet.text.Label(text, x=x_px + width_px // 2, y=y_px + height_px // 2,
                                        # Text wird in die Mitte des Buttons gezeichnet
                                        anchor_x="center", anchor_y="center",
                                        # Text wird in die Mitte des Buttons gezeichnet
                                        batch=batch, font_name=font_scheme.font_name,
-                                       font_size=width_px // (100 / font_size), color=color_scheme.text, group=group)
+                                       font_size=(width_px // (100 / font_size))+ self.pulse, color=color_scheme.text, group=group)
+
+        pyglet.clock.schedule_interval_soft(self.pulse_label, 0.05)
 
         def is_hovered(data):
             """
@@ -327,7 +335,6 @@ class InputButton(UIElement):
             elif buttons is False:  # elif verhindert, dass gehaltene Knöpfe überschrieben werden
                 self.rectangle.color = color_scheme.color
                 self.borderRectangle.color = color_scheme.border
-                self.label.color = color_scheme.text
                 return False
 
         def button_clicked(data):
@@ -363,6 +370,13 @@ class InputButton(UIElement):
 
         # eigenes Event des Buttons, welches abfängt, wenn der Button gedrückt wird
         self.clicked = Subject()
+
+    def pulse_label(self, data):
+        self.pulse += 0.05
+        if self.pulse >= 2: self.pulse = 0
+        if math.sin(self.pulse*math.pi) > 0: text_increase = math.sin(self.pulse*math.pi)/3
+        else: text_increase = 0
+        self.label.color = (int(self.color_scheme.text[0]*(1-text_increase)), int(self.color_scheme.text[1]*(1-text_increase)), int(self.color_scheme.text[2]*(1-text_increase)), 255)
 
 
 class SettingTextField(UIElement):
