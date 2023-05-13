@@ -2,6 +2,7 @@ import pyglet
 from reactivex.subject import BehaviorSubject, Subject
 from reactivex.disposable import CompositeDisposable
 import color_scheme
+import controller.sandbox_mode.sandbox_level
 from controller.settings import SettingsScreen
 from controller.statistics import StatisticsScreen
 from controller.start_screen import StartScreen
@@ -37,8 +38,8 @@ class GameWindow(pyglet.window.Window, Disposable):
             fullscreen=False,
         )
 
-        # self.controller = TestScreen(self.events)
-        self.controller = StartScreen(self.events)
+        # self.controller = StartScreen(self.events)
+        self.controller = controller.sandbox_mode.sandbox_level.SandboxLevel(self.events)
 
 
         self.controller_subs = CompositeDisposable([
