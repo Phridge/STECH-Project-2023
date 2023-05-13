@@ -93,7 +93,6 @@ class GameWindow(pyglet.window.Window, Disposable):
             case ("MainSandboxScreen", save):
                 self.controller = MainSandboxScreen(self.events, save)
             case other:
-                print(other)
                 self.controller = ErrorScreen(self.events)  # falls auf eine nicht existente Seite verwiesen wird, wird ein Error-Screen aufgerufen
 
 

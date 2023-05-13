@@ -64,6 +64,7 @@ class SettingsScreen(Screen):
         self._subs.add(self.color_picker_blue.clicked.subscribe(lambda _: self.set_button_active("blue")))
         self._subs.add(self.volume_picker.changed.subscribe(self.change_volume))
         self._subs.add(self.volume_picker.clicked.subscribe(lambda _: self.set_button_active("volume")))
+        self._subs.add(events.key.subscribe(self.set_button_active))
 
     def go_back(self, previous_controller, save):
         """
@@ -116,12 +117,30 @@ class SettingsScreen(Screen):
 
         :param data: String mit Button, der Aktiv gesetzt werden soll
         """
-        self.color_picker_red.set_active(True if data == "red" else False)
-        self.color_picker_green.set_active(True if data == "green" else False)
-        self.color_picker_blue.set_active(True if data == "blue" else False)
-        self.volume_picker.set_active(True if data == "volume" else False)
-        self.window_x.set_active(True if data == "x" else False)
-        self.window_y.set_active(True if data == "y" else False)
+        print(data)
+        if data[0] == 65289 and data[1] == 16:  # falls tab gedrückt wird
+            if self.color_picker_red.active: data = "green"
+            elif self.color_picker_green.active: data = "blue"
+            elif self.color_picker_blue.active: data = "volume"
+            elif self.volume_picker.active: data = "x"
+            elif self.window_x.active: data = "y"
+            else: data = "red"
+
+        if data[0] == 65289 and data[1] == 17:  # falls tab gedrückt wird
+            if self.color_picker_red.active: data = "y"
+            elif self.color_picker_green.active: data = "red"
+            elif self.color_picker_blue.active: data = "green"
+            elif self.volume_picker.active: data = "blue"
+            elif self.window_x.active: data = "volume"
+            else: data = "x"
+
+        if type(data) != tuple:
+            self.color_picker_red.set_active(True if data == "red" else False)
+            self.color_picker_green.set_active(True if data == "green" else False)
+            self.color_picker_blue.set_active(True if data == "blue" else False)
+            self.volume_picker.set_active(True if data == "volume" else False)
+            self.window_x.set_active(True if data == "x" else False)
+            self.window_y.set_active(True if data == "y" else False)
 
     def change_volume(self, data):
         """
