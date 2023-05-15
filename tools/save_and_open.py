@@ -40,7 +40,7 @@ def assign_game_saves(game_save_nr, language, keyboard_layout, level_progress):
                     id=x + 1,
                     level_progress=None,
                     language="German",
-                    keyboard_layout="QERTZ",
+                    keyboard_layout="QWERTZ",
                 )
                 session.add(s)
                 session.commit()
