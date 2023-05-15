@@ -1,6 +1,12 @@
 import json
-from database import new_session, Save, Run, Char
+from datetime import timedelta
+
+from sqlalchemy.exc import NoResultFound
+
+from database import new_session, Save, Run, Char, Level
 from sqlalchemy import update, select
+
+from input_tracker import TextTracker
 
 """
 Funktion, die die Usersettings speichert und local in einer Datei speichert. 
@@ -20,50 +26,63 @@ Noch zu machen:
 
 
 def save_to_json_file(red, blue, green, volume, windowsize, screenfull):
-    with open('settings.json', 'w', encoding='utf-8') as f:
+    with open('data/settings.json', 'w', encoding='utf-8') as f:
         json.dump([red, green, blue, volume, windowsize, screenfull], f, ensure_ascii=False, indent=5)
 
 
 # returns an array with the information's in the JSON file
 def get_info_from_json_file():
-    data = json.load(open('settings.json'))
+    data = json.load(open('data/settings.json'))
     return data
 
 
 # Setzt alle game Saves auf ein Preset, sollten keine Parameter übergeben werden
 # aktualisiert die Settings des Game Saves, in dem man Werte übergibt
-def assign_game_saves(game_save_nr, language, keyboard_layout, level_progress):
-    if game_save_nr & language & keyboard_layout & level_progress is None:
-        for x in range(2):
-            with new_session() as session:
-                s = Save(
-                    id=x + 1,
-                    level_progress=None,
-                    language="German",
-                    keyboard_layout="QWERTZ",
-                )
-                session.add(s)
-                session.commit()
-            x += 1
-    else:
-        with new_session() as session:
-
-            if level_progress is None:
-                level_progress = select(Save.level_progress).where(Save.id == game_save_nr)
-            if language is None:
-                language = select(Save.language).where(Save.id == game_save_nr)
-            if keyboard_layout is None:
-                keyboard_layout = select(Save.keyboard_layout).where(Save.id == game_save_nr)
-
-            session.execute(update(Save).
-            where(Save.id == game_save_nr).
-            values(
-                level_progress=level_progress,
-                language=language,
-                keyboard_layout=keyboard_layout
-            ))
+def get_game_save(save_id):
+    with new_session() as session:
+        try:
+            save = session.execute(select(Save).where(Save.id == save_id)).one()
+        except NoResultFound:
+            save = Save(
+                id=save_id
+            )
+            session.add(save)
             session.commit()
+        return save
 
+def save_text_tracker(game_save_nr: int, level_id: int, level_name: str, text_tracker: TextTracker):
+    with new_session() as session:
+        try:
+            session.execute(select(Level).where(Level.id == level_id)).one()
+        except NoResultFound:
+            level = Level(
+                id=level_id,
+                name=level_name,
+            )
+            session.add(level)
+        run = Run(
+            save_id=game_save_nr,
+            level_id=level_id,
+            preset_text=text_tracker.current_text,
+            typed_text=text_tracker.written_text,
+            time_taken_for_level=(text_tracker.input_analysis.end_time - text_tracker.input_analysis.start_time).total_seconds()
+        )
+        session.add(run)
+        session.commit()
+        session.refresh(run)
+
+        for key, count, wrong, time in text_tracker.input_analysis.char_list:
+            if count == 0:
+                continue
+            session.add(Char(
+                run_id=run.id,
+                char=key,
+                preset_char_count=count,
+                typed_char_count=count - wrong,
+                avg_time_per_char=time / count,
+                accuracy=(count - wrong) / count,
+            ))
+        session.commit()
 
 # -----------------Noch testen---------------------
 def save_game(game_save_nr, level_id, preset_text, written_text, time_needed_for_game, char_array):

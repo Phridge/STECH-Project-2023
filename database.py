@@ -15,14 +15,13 @@ class Save(Base):
     __tablename__ = "save"
     id: Mapped[int] = mapped_column(primary_key=True)
     level_progress: Mapped[int | None]
-    language: Mapped[str]
-    keyboard_layout: Mapped[str]
+    settings: Mapped[bytes | None]
 
 
 class Level(Base):
     __tablename__ = "level"
     id: Mapped[int] = mapped_column(primary_key=True)
-    type: Mapped[str | None]
+    name: Mapped[str | None]
 
 
 class GamePrinciple(Base):
@@ -37,12 +36,13 @@ class Run(Base):
     save: Mapped[Save] = relationship()
     level_id: Mapped[int] = mapped_column(ForeignKey("level.id"))
     level: Mapped[Level] = relationship()
-    game_principle_id: Mapped[int] = mapped_column(ForeignKey("game_principle.id"))
-    game_principle: Mapped[GamePrinciple] = relationship()
+    # game_principle_id: Mapped[int] = mapped_column(ForeignKey("game_principle.id"))
+    # game_principle: Mapped[GamePrinciple] = relationship()
 
     preset_text: Mapped[Text]
     typed_text: Mapped[Text]
-    time_taken_for_level: Mapped[Time]
+    time_taken_for_level: Mapped[float]
+    chars: Mapped[List["Char"]] = relationship()
 
 
 # Speicherverbrauch evtl. Optimieren
@@ -55,7 +55,7 @@ class Char(Base):
     char: Mapped[str]
     preset_char_count: Mapped[int]
     typed_char_count: Mapped[int]
-    avg_time_per_char: Mapped[timedelta]
+    avg_time_per_char: Mapped[float]
     accuracy: Mapped[float]
 
 
@@ -69,19 +69,19 @@ def new_session():
     return Session(engine)
 
 
-with Session(engine) as session:
-    s = Save(
-        language="German",
-    )
-
-    session.add(s)
-    session.commit()
-
-    result = session.execute(select(Save))
-    print(select(Save).where(Save.level_progress == 1))
-    print(result.all())
-
-    session.execute(delete(Save))
-    session.commit()
-
-pass
+# with Session(engine) as session:
+#     s = Save(
+#         level_progress=1,
+#     )
+#
+#     session.add(s)
+#     session.commit()
+#
+#     result = session.execute(select(Save))
+#     print(select(Save).where(Save.level_progress == 1))
+#     print(result.all())
+#
+#     session.execute(delete(Save))
+#     session.commit()
+#
+# pass

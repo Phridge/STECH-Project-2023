@@ -18,7 +18,7 @@ class SandboxLevel(Screen):
 
         self.text_provider = textprovider.statistical.StatisticalTextProvider.from_pickle("assets/text_statistics/stats_1.pickle")
 
-        self.generation_args = textprovider.TextProviderArgs(100, 200, textprovider.Charset.ALPHA)
+        self.generation_args = textprovider.TextProviderArgs(10, 20, textprovider.Charset.ALPHA)
         text = self.text_provider.get_text(self.generation_args)
         self.input_box = InputBox(text, pos.pipe(map_inner_perc(15, 5, 70, 30)), style, events, batch)
 

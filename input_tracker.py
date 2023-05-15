@@ -60,12 +60,12 @@ class InputAnalysis:
         if is_correct:
             self.chars_typed_correctly += 1
 
-        for key, *data in self.char_list:
-            if key == char:
-                data[0] += 1
+        for entry in self.char_list:
+            if entry[0] == char:
+                entry[1] += 1
                 if not is_correct:
-                    data[1] += 1
-                data[2] += time_taken.total_seconds()
+                    entry[2] += 1
+                entry[3] += time_taken.total_seconds()
 
     def set_level_text(self, level_text):
         self.level_text = level_text
@@ -144,11 +144,9 @@ class TextTracker:
         :return:
         """
         # nix machen wenn schon fertig
-        if len(self.written_text) >= len(self.current_text):
-            if not self.string_finished:
-                self.input_analysis.end_timer()
-                self.string_finished = True
+        if self.string_finished:
             return
+
 
         # zeit messen
         current_time = datetime.datetime.now()
@@ -165,6 +163,12 @@ class TextTracker:
             self.input_analysis.track_input(char, is_correct, time_taken)
 
         self.last_input = current_time
+        # check ob fertig
+        if len(self.written_text) >= len(self.current_text):
+            if not self.string_finished:
+                self.input_analysis.end_timer()
+                self.string_finished = True
+            return
 
     # fügt den geschriebenen Buchstaben zum text hinzu, welcher vom Benutzer geschrieben wurde
     def update_written_text(self, user_input):
