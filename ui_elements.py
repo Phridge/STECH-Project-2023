@@ -373,8 +373,8 @@ class InputButton(UIElement):
 
     def pulse_label(self, data):
         self.pulse += 0.05
-        if self.pulse >= 2: self.pulse = 0
-        if math.sin(self.pulse*math.pi) > 0: text_increase = math.sin(self.pulse*math.pi)/3
+        if self.pulse >= 4: self.pulse = 0
+        if math.sin(self.pulse*math.pi) > 0 and self.pulse <= 2: text_increase = math.sin(self.pulse*math.pi)/3
         else: text_increase = 0
         self.label.color = (int(self.color_scheme.text[0]*(1-text_increase)), int(self.color_scheme.text[1]*(1-text_increase)), int(self.color_scheme.text[2]*(1-text_increase)), 255)
 
