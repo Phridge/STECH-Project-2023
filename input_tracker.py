@@ -14,6 +14,8 @@ To do:
 """
 import datetime
 import time
+from collections import namedtuple
+from dataclasses import dataclass
 
 
 # Klasse welche für die Datensammlung da ist.
@@ -21,7 +23,7 @@ import time
 # Array besteht aus:
 # [<Zeichen>, <Anzahl wie oft es vorkam>, <Anzahl wie oft anderes Zeichen gedrückt wurde>, <average Time needed>]
 class InputAnalysis:
-    def __init__(self, level):
+    def __init__(self):
         self.char_list = [
             ['0', 0, 0, 0], ['1', 0, 0, 0], ['2', 0, 0, 0], ['3', 0, 0, 0], ['4', 0, 0, 0], ['5', 0, 0, 0],
             ['6', 0, 0, 0], ['7', 0, 0, 0], ['8', 0, 0, 0], ['9', 0, 0, 0], ['a', 0, 0, 0], ['b', 0, 0, 0],
@@ -42,12 +44,28 @@ class InputAnalysis:
             ['°', 0, 0, 0], ['²', 0, 0, 0], ['³', 0, 0, 0], ['€', 0, 0, 0], ['@', 0, 0, 0], ['{', 0, 0, 0],
             ['[', 0, 0, 0], [']', 0, 0, 0], ['}', 0, 0, 0], ['\\', 0, 0, 0], ['\'', 0, 0, 0]
         ]
-        self.level = level
+        self.start_time = None
+        self.end_time = None
+        self.chars_typed = 0
+        self.chars_typed_correctly = 0
+
+    def start_timer(self):
         self.start_time = datetime.datetime.now()
-        self.end_time = 0
-        self.level_text = ''
-        self.time_per_char = [0]
-        self.written_text_by_user = ''
+
+    def end_timer(self):
+        self.end_time = datetime.datetime.now()
+
+    def track_input(self, char, is_correct, time_taken: datetime.timedelta):
+        self.chars_typed += 1
+        if is_correct:
+            self.chars_typed_correctly += 1
+
+        for key, *data in self.char_list:
+            if key == char:
+                data[0] += 1
+                if not is_correct:
+                    data[1] += 1
+                data[2] += time_taken.total_seconds()
 
     def set_level_text(self, level_text):
         self.level_text = level_text
@@ -104,22 +122,49 @@ class TextTracker:
         self.current_text = current_text
         self.written_text = ''
         self.time_per_char = [0]
-        self.current_position = 0
         self.string_finished = False
-        self.write_time_start = current_milli_time()
-        self.write_time_end = 0
+        self.write_time_start = None
+        self.write_time_end = None
+        self.last_input_correct = True
+        self.last_input = None
+        self.input_analysis = InputAnalysis()
 
-    # setzt die neue Position um eins weiter bzw. setzt den text auf finished, sobald man das Ende erreicht hat
-    def set_new_position(self):
-        if self.current_position < len(self.current_text):
-            self.current_position += 1
-        elif self.current_position == len(self.current_text):
-            self.string_finished = True
-        else:
-            print('Fehler bei der Bestimmung der Position im Text. Position größer als länge des Textes')
+    @property
+    def current_position(self):
+        return len(self.written_text)
 
-        self.write_time_start = current_milli_time()
-        return self.string_finished
+    def start_timer(self):
+        self.input_analysis.start_timer()
+
+    def accept_char(self, char):
+        """
+        Akzeptiert eine Eingabe des Nutzers.
+        ACHTUNG: start_timer davor starten!
+        :param char: der Buchstabe, der gedrückt wurde
+        :return:
+        """
+        # nix machen wenn schon fertig
+        if len(self.written_text) >= len(self.current_text):
+            if not self.string_finished:
+                self.input_analysis.end_timer()
+                self.string_finished = True
+            return
+
+        # zeit messen
+        current_time = datetime.datetime.now()
+        time_taken = current_time - self.last_input if self.last_input else None  # keine zeitangabe wenn nicht gestartet vorher
+
+        is_correct = char == self.current_text[self.current_position]
+
+        if is_correct:
+            self.written_text += char
+
+        self.last_input_correct = is_correct
+
+        if time_taken:
+            self.input_analysis.track_input(char, is_correct, time_taken)
+
+        self.last_input = current_time
 
     # fügt den geschriebenen Buchstaben zum text hinzu, welcher vom Benutzer geschrieben wurde
     def update_written_text(self, user_input):
