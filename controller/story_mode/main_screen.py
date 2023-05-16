@@ -24,6 +24,12 @@ class MainStoryScreen(Screen):
         self.settings = ui_elements.InputButton("Einstellungen", 2.5, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
         self.statistics = ui_elements.InputButton("Statistiken", 85, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, self.batch)
 
+        self.level1_button = ui_elements.GifButton("assets/images/port.gif", 2.5, 40, 15, 15, 3, True, events, self.batch, foreground)
+        self.level2_button = ui_elements.GifButton("assets/images/forest.gif", 22.5, 40, 15, 15, 4, True, events, self.batch, foreground)
+        self.level3_button = ui_elements.GifButton("assets/images/bridge.gif", 42.5, 40, 15, 15, 2, True, events, self.batch, foreground)
+        self.level4_button = ui_elements.GifButton("assets/images/city.gif", 62.5, 40, 15, 15, 3, True, events, self.batch, foreground)
+        self.level5_button = ui_elements.GifButton("assets/images/city.gif", 82.5, 40, 15, 15, 3, True, events, self.batch, foreground)
+
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
         self._subs.add(self.back.clicked.subscribe(lambda _: self.change_screen("HomeScreen", save)))
         self._subs.add(self.settings.clicked.subscribe(lambda _: self.change_screen("Settings", save)))
