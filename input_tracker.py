@@ -66,6 +66,7 @@ class InputAnalysis:
                 if not is_correct:
                     entry[2] += 1
                 entry[3] += time_taken.total_seconds()
+                break
 
     def set_level_text(self, level_text):
         self.level_text = level_text
@@ -135,6 +136,7 @@ class TextTracker:
 
     def start_timer(self):
         self.input_analysis.start_timer()
+        self.last_input = datetime.datetime.now()
 
     def accept_char(self, char):
         """

@@ -39,8 +39,8 @@ class GameWindow(pyglet.window.Window, Disposable):
             fullscreen=False,
         )
 
-        # self.controller = StartScreen(self.events)
-        self.controller = controller.sandbox_mode.sandbox_level.SandboxLevel(self.events)
+        self.controller = StartScreen(self.events)
+        # self.controller = controller.sandbox_mode.sandbox_level.SandboxLevel(self.events)
 
 
         self.controller_subs = CompositeDisposable([

@@ -5,9 +5,10 @@ from typing import Any
 
 import pyglet.shapes
 import reactivex
+from reactivex import Observer
 from reactivex.disposable import CompositeDisposable
 
-from events import Disposable
+from events import Disposable, Var
 
 
 class Rect(namedtuple("Rect", ["x", "y", "w", "h"])):
@@ -69,7 +70,6 @@ class BorderedLabel(UIElement):
         super().__init__()
         text, pos = rx(text), rx(pos)
 
-
         # Rand
         border = pyglet.shapes.Rectangle(*Rect.zero(), style.color.border, batch, group)
         self._subs.add(pos.subscribe(partial(position_pyglet_shape, border)))
@@ -84,5 +84,130 @@ class BorderedLabel(UIElement):
         self._subs.add(text.subscribe(partial(setattr, text_layout, "text")))
 
 
+class Button(UIElement):
+    def __init__(self, text, pos, style, events, on_click: Observer, batch=None, group=None):
+        super().__init__()
+        text, pos = rx(text), rx(pos)
 
+        # Rand
+        border = pyglet.shapes.Rectangle(*Rect.zero(), style.color.border, batch, group)
+        self._subs.add(pos.subscribe(partial(position_pyglet_shape, border)))
+
+        # innere füllung
+        fill = pyglet.shapes.Rectangle(*Rect.zero(), style.color.color, batch, group)
+        self._subs.add(pos.pipe(map_border(style.color.border_thickness)).subscribe(partial(position_pyglet_shape, fill)))
+
+        # Text
+        text_layout = pyglet.text.Label("", style.font, style.font_size, color=style.color.text, anchor_x="center", anchor_y="center", batch=batch, group=group)
+        self._subs.add(pos.pipe(map_center_anchor()).subscribe(partial(position_pyglet_text, text_layout)))
+        self._subs.add(text.subscribe(partial(setattr, text_layout, "text")))
+
+        self.down = False
+        self.hover = False
+
+
+        def update_style():
+            if self.down:
+                fill.color = style.color.click
+                border.color = style.color.click_border
+                text_layout.color = style.color.click_text
+            elif self.hover:
+                fill.color = style.color.hover
+                border.color = style.color.hover_border
+                text_layout.color = style.color.hover_text
+            else:
+                fill.color = style.color.color
+                border.color = style.color.hover_border
+                text_layout.color = style.color.hover_text
+
+        def handle_mouse(data):
+            x, y, *_ = data
+            if border.x <= x < border.x + border.width and border.y <= y < border.y + border.height:
+                if not self.hover:
+                    self.hover = True
+                    update_style()
+            else:
+                if self.hover:
+                    self.hover = False
+                    update_style()
+
+        def handle_mouse_button(data):
+            down, x, y, button = data
+            if down and self.hover and button & 1:
+                if not self.down:
+                    self.down = True
+                    update_style()
+            else:
+                if self.down:
+                    if self.hover:
+                        on_click.on_next(None)
+                    self.down = False
+                    update_style()
+
+        self._subs.add(events.mouse.subscribe(handle_mouse))
+        self._subs.add(events.mouse_button.subscribe(handle_mouse_button))
+
+
+class ToggleButton(UIElement):
+    def __init__(self, text, pos, style, events, batch=None, group=None):
+        super().__init__()
+        text, pos = rx(text), rx(pos)
+
+        # Rand
+        border = pyglet.shapes.Rectangle(*Rect.zero(), style.color.border, batch, group)
+        self._subs.add(pos.subscribe(partial(position_pyglet_shape, border)))
+
+        # innere füllung
+        fill = pyglet.shapes.Rectangle(*Rect.zero(), style.color.color, batch, group)
+        self._subs.add(pos.pipe(map_border(style.color.border_thickness)).subscribe(partial(position_pyglet_shape, fill)))
+
+        # Text
+        text_layout = pyglet.text.Label("", style.font, style.font_size, color=style.color.text, anchor_x="center", anchor_y="center", batch=batch, group=group)
+        self._subs.add(pos.pipe(map_center_anchor()).subscribe(partial(position_pyglet_text, text_layout)))
+        self._subs.add(text.subscribe(partial(setattr, text_layout, "text")))
+
+        def update_style():
+            if self.toggle.value:
+                fill.color = style.color.click
+                border.color = style.color.click_border
+                text_layout.color = style.color.click_text
+            elif self.hover:
+                fill.color = style.color.hover
+                border.color = style.color.hover_border
+                text_layout.color = style.color.hover_text
+            else:
+                fill.color = style.color.color
+                border.color = style.color.hover_border
+                text_layout.color = style.color.hover_text
+
+        def handle_mouse(data):
+            x, y, *_ = data
+            if border.x <= x < border.x + border.width and border.y <= y < border.y + border.height:
+                if not self.hover:
+                    self.hover = True
+                    update_style()
+            else:
+                if self.hover:
+                    self.hover = False
+                    update_style()
+
+        def handle_mouse_button(data):
+            down, x, y, button = data
+            if down and self.hover and button & 1:
+                if not self.down:
+                    self.down = True
+                    update_style()
+            else:
+                if self.down:
+                    self.toggle.on_next(not self.toggle.value)
+                    self.down = False
+                    update_style()
+
+        self.down = False
+        self.hover = False
+        self.toggle = Var(False)
+
+        self._subs.add(self.toggle.subscribe(lambda _: update_style()))
+        self._subs.add(events.mouse.subscribe(handle_mouse))
+        self._subs.add(events.mouse_button.subscribe(handle_mouse_button))
 

@@ -32,6 +32,14 @@ class Charset(str, Enum):
     ALL_PUNCT = ",.-!\"§$%&/()=?^#+;:_*'~°´`€@[]{}\\<>|"
     EVERYTHING = ALPHA + UPPER + NUMBERS + ALL_PUNCT
 
+ALL_CHARSETS = (
+    Charset.ALPHA,
+    Charset.UPPER,
+    Charset.NUMBERS,
+    Charset.EASY_PUNCT,
+    Charset.ALL_PUNCT,
+)
+
 
 
 class CannotGenerateText(Exception):

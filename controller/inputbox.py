@@ -1,9 +1,10 @@
 from functools import partial
+from typing import Optional
 
 import pyglet
 from pyglet.graphics import Group
 from reactivex import Observable, concat, just
-from reactivex.operators import scan, combine_latest, map as rmap, filter as rfilter, merge, do_action
+from reactivex.operators import scan, combine_latest, map as rmap, filter as rfilter, merge, do_action, share
 from reactivex.disposable import MultipleAssignmentDisposable as MAD, CompositeDisposable
 
 import events
@@ -36,10 +37,12 @@ class InputBox(Controller):
         text_layout_pos = fill_pos.pipe(map_border(5))
         self._subs.add(text_layout_pos.subscribe(partial(position_pyglet_shape, text_layout)))
 
+        # cursor
         caret = pyglet.shapes.Rectangle(*Rect.zero(), style.color.text, batch, foreground)
         caret.height, caret.width = style.font_size * 1.4, 2
         caret_off = np.array((-3, -3))
 
+        # ob die der textracker zustand gespeichert wurde
         has_saved = False
 
         def display_text_tracker(tt: input_tracker.TextTracker):
@@ -93,15 +96,15 @@ class InputBox(Controller):
                 just(tt),
                 events.text.pipe(
                     rmap(accept_char),
+                    share()
                 )
             )
-
 
             tt_sub.disposable = CompositeDisposable([
                 tt_obs.subscribe(display_text_tracker),
                 tt_obs.pipe(
                     combine_latest(text_layout_pos),
-                ).subscribe(update_caret_pos)
+                ).subscribe(update_caret_pos),
             ])
 
         self._subs.add(text.subscribe(init_text_tracker))
