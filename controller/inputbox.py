@@ -5,7 +5,7 @@ import pyglet
 from pyglet.graphics import Group
 from reactivex import Observable, concat, just
 from reactivex.operators import scan, combine_latest, map as rmap, filter as rfilter, merge, do_action, share
-from reactivex.disposable import MultipleAssignmentDisposable as MAD, CompositeDisposable
+from reactivex.disposable import SerialDisposable, CompositeDisposable
 
 import events
 import input_tracker
@@ -69,7 +69,7 @@ class InputBox(Controller):
             tt, rect = data
             caret.position = np.array(text_layout.get_point_from_position(tt.current_position)) + np.array((rect.x, rect.y)) + np.array((0, rect.h)) + caret_off
 
-        tt_sub = MAD()
+        tt_sub = SerialDisposable()
         self._subs.add(tt_sub)
 
         def init_text_tracker(text):

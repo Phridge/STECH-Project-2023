@@ -6,7 +6,7 @@ from controller import Screen
 
 
 class SettingsScreen(Screen):
-    def __init__(self, events, previous_controller, save):
+    def __init__(self, events, save):
         super().__init__()
         self.batch = pyglet.graphics.Batch()
         # dient, um Objekte manuell nach vorne und hinten zu schieben. Je weniger er genutzt wird, umso performanter ist alles.
@@ -49,13 +49,15 @@ class SettingsScreen(Screen):
         self.apply_button = ui_elements.InputButton("Anwenden", 60, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
-        self._subs.add(self.back.clicked.subscribe(lambda _: self.go_back(previous_controller, save)))
+        from main_controller import PopScreen
+
+        self._subs.add(self.back.clicked.subscribe(lambda _: self.game_command.on_next(PopScreen())))
         self._subs.add(self.fullscreen_toggle_button.clicked.subscribe(lambda _: self.set_fullscreen(not self.fullscreen)))
         self._subs.add(self.window_x.clicked.subscribe(lambda _: self.set_button_active("x")))
         self._subs.add(self.window_x.changed.subscribe(self.change_size))
         self._subs.add(self.window_y.clicked.subscribe(lambda _: self.set_button_active("y")))
         self._subs.add(self.window_y.changed.subscribe(self.change_size))
-        self._subs.add(self.apply_button.clicked.subscribe(lambda _: self.apply_changes(previous_controller, save)))
+        self._subs.add(self.apply_button.clicked.subscribe(lambda _: self.apply_changes(save)))
         self._subs.add(self.color_picker_red.changed.subscribe(self.change_color))
         self._subs.add(self.color_picker_red.clicked.subscribe(lambda _: self.set_button_active("red")))
         self._subs.add(self.color_picker_green.changed.subscribe(self.change_color))
@@ -66,27 +68,25 @@ class SettingsScreen(Screen):
         self._subs.add(self.volume_picker.clicked.subscribe(lambda _: self.set_button_active("volume")))
         self._subs.add(events.key.subscribe(self.set_button_active))
 
-    def go_back(self, previous_controller, save):
-        """
-        Routet zurück zum letzten Controller
 
-        :param previous_controller: Name des letzten Controllers --> Wechsel-Ziel
-        :param save: aktuelle Save-File
-        """
-        self.change_controller.on_next((previous_controller, save))
-
-    def apply_changes(self, previous_controller, data):
+    def apply_changes(self, save):
         """
         Lädt den SettingsScreen neu, nachdem die Einstellungen angewandt wurden
-
-        :param previous_controller: Voriger Controller, um Zurück gehen zu können
-        :param data: aktuelle Save-File
         """
-        self.event.on_next(("ChangeColorScheme", self.preview_color_scheme))
-        self.event.on_next(("ChangeVolume", self.volume_value))
+        from main_controller import ChangeSetting, SwitchScreen, SetFullscreen
+
+        # self.event.on_next(("ChangeColorScheme", self.preview_color_scheme))
+        self.game_command.on_next(ChangeSetting("color_scheme", self.preview_color_scheme))
+
+        # self.event.on_next(("ChangeVolume", self.volume_value))
+        self.game_command.on_next(ChangeSetting("volume", self.volume_value))
+
         if not self.fullscreen and self.new_screen_size:
-            self.event.on_next(("ChangeScreenSize", self.new_screen_size[0], self.new_screen_size[1]))
-        self.change_controller.on_next(("ReloadSettings", previous_controller, data))
+            # self.event.on_next(("ChangeScreenSize", self.new_screen_size[0], self.new_screen_size[1]))
+            self.game_command.on_next(ChangeSetting("size", self.new_screen_size))
+
+        # self.change_controller.on_next(("ReloadSettings", previous_controller, data))
+        self.game_command.on_next(SwitchScreen(SettingsScreen.init_fn(save)))
 
     def change_color(self, _):
         """
@@ -174,7 +174,7 @@ class SettingsScreen(Screen):
         if x and x < 300: x = 300
         if y and y < 300: y = 300  # sorgt dafür, dass es nicht zu dunkel wird
         if str(x).isnumeric() and str(y).isnumeric():
-            self.new_screen_size = (x, y)
+            self.new_screen_size = (int(x), int(y))
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch

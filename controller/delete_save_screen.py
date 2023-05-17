@@ -26,15 +26,16 @@ class DeleteSaveScreen(Screen):
 
         # erstellt Sublist, damit der Screen vollständig verworfen wird
         self._subs.add(self.button1.clicked.subscribe(lambda _: self.delete_save(save)))
-        self._subs.add(self.button2.clicked.subscribe(lambda _: self.back_to_menu(0)))
+        self._subs.add(self.button2.clicked.subscribe(lambda _: self.back_to_menu()))
 
     def delete_save(self, data):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
         # Hier muss der Save gelöscht werden
         logging.warning("SAVE WIRD NOCH NICHT GELÖSCHT")
-        self.change_controller.on_next(("StartScreen", data))
+        self.back_to_menu()
 
-    def back_to_menu(self, data):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
-        self.change_controller.on_next(("StartScreen", data))
+    def back_to_menu(self):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
+        from main_controller import PopScreen
+        self.game_command.on_next(PopScreen())
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch

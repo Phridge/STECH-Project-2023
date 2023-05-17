@@ -5,6 +5,8 @@ from reactivex.subject import Subject
 from reactivex.disposable import CompositeDisposable
 
 from controller import Controller, Screen
+from controller.settings import SettingsScreen
+from controller.statistics import StatisticsScreen
 
 
 class MainSandboxScreen(Screen):
@@ -25,13 +27,9 @@ class MainSandboxScreen(Screen):
         self.statistics = ui_elements.InputButton("Statistiken", 85, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
-        self._subs.add(self.back.clicked.subscribe(lambda _: self.change_screen("HomeScreen", save)))
-        self._subs.add(self.settings.clicked.subscribe(lambda _: self.change_screen("Settings", save)))
-        self._subs.add(self.statistics.clicked.subscribe(lambda _: self.change_screen("Statistics", save)))
-
-    def change_screen(self, new_screen, save):  # Wird getriggert, wenn man zurück zum Hauptmenü will
-        # save suchen und auswählen
-        self.change_controller.on_next((new_screen, save))
+        self._subs.add(self.back.clicked.subscribe(lambda _: self.go_back()))
+        self._subs.add(self.settings.clicked.subscribe(lambda _: self.push_screen(SettingsScreen.init_fn(save))))
+        self._subs.add(self.statistics.clicked.subscribe(lambda _: self.push_screen(StatisticsScreen.init_fn(save))))
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch

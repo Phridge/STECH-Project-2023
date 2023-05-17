@@ -57,8 +57,5 @@ class Level2Screen(Screen):
             if self.mech_sub:
                 self.mech_sub.dispose()
 
-    def button_clicked(self, data):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
-        self.change_controller.on_next(("HomeScreen", data))
-
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch

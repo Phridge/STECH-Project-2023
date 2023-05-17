@@ -1,3 +1,6 @@
+import contextlib
+
+import pygame
 import pyglet
 import color_scheme
 import ui_elements
@@ -6,6 +9,11 @@ from reactivex.disposable import CompositeDisposable
 from pygame import mixer
 
 from controller import Screen
+from controller.learning_mode.main_screen import MainLearningScreen
+from controller.sandbox_mode.sandbox_level import SandboxLevel
+from controller.settings import SettingsScreen
+from controller.statistics import StatisticsScreen
+from controller.story_mode.main_screen import MainStoryScreen
 
 
 class HomeScreen(Screen):
@@ -30,24 +38,25 @@ class HomeScreen(Screen):
         self.back = ui_elements.InputButton("Zurück", 40, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 10, events, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
-        self._subs.add(self.back.clicked.subscribe(lambda _: self.change_screen("StartScreen", save_file)))
-        self._subs.add(self.learning_mode.clicked.subscribe(lambda _: self.change_screen("MainLearningScreen", save_file)))
-        self._subs.add(self.story_mode.clicked.subscribe(lambda _: self.change_screen("MainStoryScreen", save_file)))
-        self._subs.add(self.sandbox_mode.clicked.subscribe(lambda _: self.change_screen("MainSandboxScreen", save_file)))
-        self._subs.add(self.settings.clicked.subscribe(lambda _: self.change_screen("Settings", save_file)))
-        self._subs.add(self.statistics.clicked.subscribe(lambda _: self.change_screen("Statistics", save_file)))
+        from main_controller import PushScreen, PopScreen
+        def goto(screen_init):
+            return lambda _: self.game_command.on_next(PushScreen(screen_init))
+        self._subs.add(self.back.clicked.subscribe(lambda _: self.game_command.on_next(PopScreen())))
+        self._subs.add(self.learning_mode.clicked.subscribe(goto(MainLearningScreen.init_fn(save_file))))
+        self._subs.add(self.story_mode.clicked.subscribe(goto(MainStoryScreen.init_fn(save_file))))
+        self._subs.add(self.sandbox_mode.clicked.subscribe(goto(SandboxLevel.init_fn(save_file))))
+        self._subs.add(self.settings.clicked.subscribe(goto(SettingsScreen.init_fn(save_file))))
+        self._subs.add(self.statistics.clicked.subscribe(goto(StatisticsScreen.init_fn(save_file))))
 
         self.play_music()
 
-    def change_screen(self, new_screen, save):  # Wird getriggert, wenn man zurück zum Hauptmenü will
-        # save suchen und auswählen
-        self.change_controller.on_next((new_screen, save))
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
 
     def play_music(self):
-        mixer.init()
-        mixer.music.load("assets/sounds/02 Start Menu.mp3")
-        mixer.music.play()
-        mixer.music.play(-1)
+        with contextlib.suppress(pygame.error):
+            mixer.init()
+            mixer.music.load("assets/sounds/02 Start Menu.mp3")
+            mixer.music.play()
+            mixer.music.play(-1)

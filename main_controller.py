@@ -1,8 +1,15 @@
+from dataclasses import dataclass
+from collections import namedtuple
+from typing import Any, Callable
+
 import pyglet
+import reactivex
+from reactivex import Observer
 from reactivex.subject import BehaviorSubject, Subject
-from reactivex.disposable import CompositeDisposable
+from reactivex.disposable import CompositeDisposable, MultipleAssignmentDisposable, SerialDisposable
 import color_scheme
-import controller.sandbox_mode.sandbox_level
+from controller.sandbox_mode.sandbox_level import SandboxLevel
+from controller import Screen
 from controller.settings import SettingsScreen
 from controller.statistics import StatisticsScreen
 from controller.start_screen import StartScreen
@@ -24,6 +31,40 @@ from controller.template_screen import TemplateScreen
 from events import Events, Event, Var, Disposable
 
 
+ScreenInit = Callable[[Events], Screen]
+
+
+@dataclass
+class SwitchScreen:
+    screen_init: ScreenInit
+
+
+@dataclass
+class PushScreen:
+    screen_init: ScreenInit
+
+
+@dataclass
+class PopScreen:
+    pass
+
+
+@dataclass
+class Exit:
+    restart: bool = False
+
+
+@dataclass
+class SetFullscreen:
+    state: bool
+
+
+@dataclass
+class ChangeSetting:
+    setting: str
+    value: Any
+
+
 class GameWindow(pyglet.window.Window, Disposable):
     def __init__(self):
         super().__init__(resizable=True)
@@ -39,89 +80,55 @@ class GameWindow(pyglet.window.Window, Disposable):
             fullscreen=False,
         )
 
-        self.controller = StartScreen(self.events)
-        # self.controller = controller.sandbox_mode.sandbox_level.SandboxLevel(self.events)
+        self.history = []
+
+        self.controller = None
+
+        self.controller_subs = SerialDisposable()
+
+        self.push_screen(StartScreen)
 
 
-        self.controller_subs = CompositeDisposable([
+    def push_screen(self, screen_init):
+        self.history.append(screen_init)
+        self.controller = screen_init(self.events)
+        self._reset_subs()
+
+    def switch_screen(self, screen_init):
+        self.history.clear()
+        self.push_screen(screen_init)
+
+    def pop_screen(self):
+        self.history.pop()
+        self.push_screen(self.history.pop())
+
+    def _reset_subs(self):
+        self.controller_subs.disposable = CompositeDisposable([
             self.controller.change_controller.subscribe(self.load_controller),
-            self.controller.event.subscribe(self.decode_event)  # ermöglicht das Auslesen von Events aus dem aktuellen Screen
+            self.controller.event.subscribe(self.decode_event),
+            # ermöglicht das Auslesen von Events aus dem aktuellen Screen
+            self.controller.game_command.subscribe(self._handle_command),
+            self.controller,
         ])
 
-        self.sublist = []
-
-
-    def load_controller(self, data):
-        """
-        Wird aufgerufen, wenn ein Controller zu einem anderen Controller wechseln will. Trennt auch alle Subscriptions zum alten Controller.
-
-        :param data: der Name des neuen Controllers als string, und eventuell ein parameter (new_controller, *parameter)
-        """
-
-        # löscht alle subscriptions im main_controller
-        CompositeDisposable(self.sublist).dispose()
-        self.sublist = []  # leert die sublist
-
-
-        # löscht die subscriptions des alten Controllers und den controller selbst.
-        self.controller_subs.dispose()
-        self.controller_subs = None
-
-        # jetzt ist erstmal aufgeräumt.
-
-        # matchen, was gemacht werden soll
-        match data:
-            case ("Restart", restart):  # Handelt Rückgabe des ErrorScreens
-                if restart:
-                    self.controller = StartScreen(self.events)
-                else:
-                    pyglet.app.exit()
-            case ("Statistics", save):
-                self.controller = StatisticsScreen(self.events, self.controller.__class__.__name__, save)
-            case ("Settings", save):
-                self.controller = SettingsScreen(self.events, self.controller.__class__.__name__, save)  # gibt den Klassennamen mit, damit man zurück zum letzten Screen gehen kann
-            case ("ReloadSettings", prev_controller, save):
-                self.controller = SettingsScreen(self.events, prev_controller, save)  # gibt den Klassennamen mit, damit man zurück zum letzten Screen gehen kann
-            case ("HomeScreen", save):
-                self.controller = HomeScreen(self.events, save)
-            case ("StartScreen", save):
-                self.controller = StartScreen(self.events)
-            case ("DeleteSaveScreen", save):
-                self.controller = DeleteSaveScreen(self.events, save)
-            case ("MainLearningScreen", save):
-                self.controller = MainLearningScreen(self.events, save)
-            case ("MainStoryScreen", save):
-                self.controller = MainStoryScreen(self.events, save)
-            case ("MainSandboxScreen", save):
-                self.controller = MainSandboxScreen(self.events, save)
-            case other:
-                self.controller = ErrorScreen(self.events)  # falls auf eine nicht existente Seite verwiesen wird, wird ein Error-Screen aufgerufen
-
-
-        self.controller_subs = CompositeDisposable([
-            self.controller.change_controller.subscribe(self.load_controller),
-            self.controller.event.subscribe(self.decode_event)  # ermöglicht das Auslesen von Events aus dem aktuellen Screen
-        ])
-
-
-    def decode_event(self, data):
-        """
-        Wird aufgerufen falls Screens ein Event haben, was zurückgegeben wird (außer Screen-Wechsel)
-
-        :param data: Name des Events als String, und Parameter als ein Tupel (event, *parameter)
-        """
-
-        match data:
-            case ("ChangeColorScheme", c):
-                self.events.color_scheme = c
-            case ("ChangeVolume", volume):
-                self.events.volume = volume
-            case ("ToggleFullscreen", fullscreen):
+    def _handle_command(self, cmd):
+        match cmd:
+            case SwitchScreen(screen_init):
+                self.switch_screen(screen_init)
+            case PushScreen(screen_init):
+                self.push_screen(screen_init)
+            case PopScreen():
+                self.pop_screen()
+            case SetFullscreen(state=fullscreen):
                 self.events.fullscreen = fullscreen
                 self.set_fullscreen(fullscreen)
-            case ("ChangeScreenSize", int(w), int(h)):
-                self.set_size(w, h)
-
+            case ChangeSetting(name, value):
+                match name:
+                    case "volume": self.events.volume = value
+                    case "size": self.set_size(*value)
+                    case "color_scheme": self.events.color_scheme = value
+            case Exit():
+                pyglet.app.exit()
 
     def on_draw(self, *args):
         self.clear()
@@ -166,4 +173,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    print("bitte main.py laufen lassen! danke")
+    exit(1)

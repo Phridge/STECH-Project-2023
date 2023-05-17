@@ -1,3 +1,6 @@
+import contextlib
+
+import pygame
 import pyglet
 import color_scheme
 import ui_elements
@@ -7,6 +10,10 @@ from pygame import mixer
 
 
 from controller import Screen
+from controller.delete_save_screen import DeleteSaveScreen
+from controller.home_screen import HomeScreen
+from controller.settings import SettingsScreen
+from controller.statistics import StatisticsScreen
 
 
 class StartScreen(Screen):
@@ -17,7 +24,7 @@ class StartScreen(Screen):
         # Standardmäßig ist alles im Mittelgrund zwischen Vorder- und Hintergrund
         # einfach foreground oder background als zusätzliche Variable ans Element packen
         background = pyglet.graphics.Group(order=-1)
-        foreground= pyglet.graphics.Group(order=1)
+        foreground = pyglet.graphics.Group(order=1)
 
         # Erstes Layout für den Hauptbildschirm
         self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, self.batch)
@@ -35,30 +42,33 @@ class StartScreen(Screen):
         self.statistics = ui_elements.InputButton("Statistiken", 85, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
-        self._subs.add(self.save1.clicked.subscribe(lambda _: self.change_screen("HomeScreen", 1)))
-        self._subs.add(self.save2.clicked.subscribe(lambda _: self.change_screen("HomeScreen", 2)))
-        self._subs.add(self.save3.clicked.subscribe(lambda _: self.change_screen("HomeScreen", 3)))
-        self._subs.add(self.delete_save1.clicked.subscribe(lambda _: self.change_screen("DeleteSaveScreen", 1)))
-        self._subs.add(self.delete_save2.clicked.subscribe(lambda _: self.change_screen("DeleteSaveScreen", 2)))
-        self._subs.add(self.delete_save3.clicked.subscribe(lambda _: self.change_screen("DeleteSaveScreen", 3)))
-        self._subs.add(self.settings.clicked.subscribe(lambda _: self.change_screen("Settings", 0)))
-        self._subs.add(self.statistics.clicked.subscribe(lambda _: self.change_screen("Statistics", 0)))
-        self._subs.add(self.leave.clicked.subscribe(lambda _: self.change_screen("Restart", False)))
+        from main_controller import PushScreen, Exit
+
+        def goto(screen_init):
+            return lambda _: self.game_command.on_next(PushScreen(screen_init))
+        self._subs.add(self.save1.clicked.subscribe(goto(HomeScreen.init_fn(1))))
+        self._subs.add(self.save2.clicked.subscribe(goto(HomeScreen.init_fn(2))))
+        self._subs.add(self.save3.clicked.subscribe(goto(HomeScreen.init_fn(3))))
+        self._subs.add(self.delete_save1.clicked.subscribe(goto(DeleteSaveScreen.init_fn(1))))
+        self._subs.add(self.delete_save2.clicked.subscribe(goto(DeleteSaveScreen.init_fn(2))))
+        self._subs.add(self.delete_save3.clicked.subscribe(goto(DeleteSaveScreen.init_fn(3))))
+        self._subs.add(self.settings.clicked.subscribe(goto(SettingsScreen.init_fn(0))))
+        self._subs.add(self.statistics.clicked.subscribe(goto(StatisticsScreen.init_fn("Settings", 0))))
+        self._subs.add(self.leave.clicked.subscribe(lambda _: self.game_command.on_next(Exit())))
 
         self.play_music(events.volume)
 
-    def change_screen(self, new_screen, save):  # Wird getriggert, wenn man zurück zum Hauptmenü will
-        # save suchen und auswählen
-        self.change_controller.on_next((new_screen, save))
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
 
 
     def play_music(self, volume):
-        mixer.init()
-        mixer.music.load("assets/sounds/02 Start Menu.mp3")
-        mixer.music.play()
-        mixer.music.play(-1)
-        mixer.music.set_volume(volume)
+        with contextlib.suppress(pygame.error):
+            mixer.init()
+            mixer.music.load("assets/sounds/02 Start Menu.mp3")
+            mixer.music.play()
+            mixer.music.play(-1)
+            self.events.volume.on_next(lambda v: mixer.music.set_volume(v))
+            mixer.music.set_volume(volume)
 

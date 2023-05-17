@@ -8,7 +8,7 @@ from controller import Screen
 
 
 class StatisticsScreen(Screen):
-    def __init__(self, events, previous_controller, save):
+    def __init__(self, events, save):
         super().__init__()
         if save == 0: save_text = "Alle Spielstände"
         else: save_text = "Spielstand " + str(save)
@@ -26,10 +26,8 @@ class StatisticsScreen(Screen):
         self.back = ui_elements.InputButton("Zurück", 20, 50, 60, 10, events.color_scheme, color_scheme.Minecraft, 4, events, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
-        self._subs.add(self.back.clicked.subscribe(lambda _: self.go_back(previous_controller, save)))
-
-    def go_back(self, previous_controller, save):  # Wird getriggert, wenn Buttons geklickt werden
-        self.change_controller.on_next((previous_controller, save))
+        from main_controller import PopScreen
+        self._subs.add(self.back.clicked.subscribe(lambda _: self.game_command.on_next(PopScreen())))
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch

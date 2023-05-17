@@ -32,21 +32,12 @@ class Level1Screen(Screen):
 
         self.header = ui_elements.BorderedRectangle("Level 1: Der Hafen der Freiheit", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.batch)
 
-        # Hier muss für jeden Button eine Subscription erstellt werden.
-        # In der Lambda-Funktion wird dann die Funktion angebgeben, die aufgerufen werden soll wenn der jeweilige Button gedrückt wird
-        # self.sublist.extend()
-
-        # self.disposable = CompositeDisposable(self.sublist)
-
         self.change_controller = Subject()
         self.event = Subject()  # separates Subject für eventuelle Events die in diesem Screen stattfinden
 
     #  Falls die Funktionen namentlich nicht passen erstellte einfach neue!
     def button_clicked(self, data):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
         self.change_controller.on_next(("HomeScreen", data))
-
-    def dispose_subs(self):  # Muss getriggert werden, wenn der Screen gewechselt wird.
-        self.disposable.dispose()
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch

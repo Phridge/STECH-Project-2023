@@ -24,11 +24,11 @@ class ErrorScreen(Screen):
         self.end_button = ui_elements.InputButton("Spiel beenden", 35, 37.5, 30, 10, events.color_scheme, color_scheme.Minecraft, 6, events, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
-        self._subs.add(self.restart_button.clicked.subscribe(lambda _: self.restart(True)))
-        self._subs.add(self.end_button.clicked.subscribe(lambda _: self.restart(False)))
-
-    def restart(self, data):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
-        self.change_controller.on_next(("Restart", data))
+        def restart(restart):
+            from main_controller import Exit
+            return lambda _: self.game_command.on_next(Exit(restart))
+        self._subs.add(self.restart_button.clicked.subscribe(restart(True)))
+        self._subs.add(self.end_button.clicked.subscribe(restart(False)))
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch

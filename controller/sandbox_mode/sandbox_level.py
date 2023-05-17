@@ -12,7 +12,7 @@ from events import Var, Event
 
 class SandboxLevel(Screen):
 
-    def __init__(self, events):
+    def __init__(self, events, save):
         super().__init__()
         pos = events.size.pipe(rmap(lambda size: Rect(0, 0, *size)))
         style = Style(events.color_scheme, "Monocraft", 15)

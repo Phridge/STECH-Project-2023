@@ -835,3 +835,7 @@ class GifButton(pyglet.sprite.Sprite, UIElement):
 
     def on_animation_end(self):
         self.loop_finished.on_next(True)
+
+    def dispose(self) -> None:
+        self.delete()
+        super().dispose()
