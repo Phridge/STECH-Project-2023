@@ -104,9 +104,6 @@ class GameWindow(pyglet.window.Window, Disposable):
 
     def _reset_subs(self):
         self.controller_subs.disposable = CompositeDisposable([
-            self.controller.change_controller.subscribe(self.load_controller),
-            self.controller.event.subscribe(self.decode_event),
-            # ermöglicht das Auslesen von Events aus dem aktuellen Screen
             self.controller.game_command.subscribe(self._handle_command),
             self.controller,
         ])
