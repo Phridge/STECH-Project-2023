@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from collections import namedtuple
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 import pyglet
 import reactivex
@@ -36,16 +36,25 @@ ScreenInit = Callable[[Events], Screen]
 
 @dataclass
 class SwitchScreen:
+    """Befehl für main_controller.switch_screen."""
     screen_init: ScreenInit
 
 
 @dataclass
+class ReloadScreen:
+    """Befehl für main_controller.reload_screen."""
+    screen_init: ScreenInit | None = None
+
+
+@dataclass
 class PushScreen:
+    """Befehl für main_controller.push_screen."""
     screen_init: ScreenInit
 
 
 @dataclass
 class PopScreen:
+    """Befehl für main_controller.pop_screen."""
     pass
 
 
@@ -90,15 +99,34 @@ class GameWindow(pyglet.window.Window, Disposable):
 
 
     def push_screen(self, screen_init):
+        """
+        Wechselt zum angegebenen Screen und behält alle bisherigen Screens in der Historie bei.
+
+        In der Historie kann danach bspw. mit main_controller.pop_screen zurückgesprungen werden
+        """
         self.history.append(screen_init)
         self.controller = screen_init(self.events)
         self._reset_subs()
 
+    def reload_screen(self, screen_init=None):
+        """
+        Lädt den aktuell Screen neu oder ersetzt den aktuellen durch einen neuen.
+        """
+        old = self.history.pop()
+        screen_init = screen_init or old
+        self.push_screen(screen_init)
+
     def switch_screen(self, screen_init):
+        """
+        Wechselt zum angegebenen Screen und LÖSCHT DIE HISTORIE.
+
+        Nach solch einem Befehl ist kein pop_screen() möglich.
+        """
         self.history.clear()
         self.push_screen(screen_init)
 
     def pop_screen(self):
+        """Geht einen Screen in der Historie zurück (lädt den vorangegangen Screen)"""
         self.history.pop()
         self.push_screen(self.history.pop())
 
@@ -114,6 +142,8 @@ class GameWindow(pyglet.window.Window, Disposable):
                 self.switch_screen(screen_init)
             case PushScreen(screen_init):
                 self.push_screen(screen_init)
+            case ReloadScreen(screen_init):
+                self.reload_screen(screen_init)
             case PopScreen():
                 self.pop_screen()
             case SetFullscreen(state=fullscreen):
@@ -124,8 +154,11 @@ class GameWindow(pyglet.window.Window, Disposable):
                     case "volume": self.events.volume = value
                     case "size": self.set_size(*value)
                     case "color_scheme": self.events.color_scheme = value
-            case Exit():
-                pyglet.app.exit()
+            case Exit(restart):
+                if restart:
+                    pyglet.app.exit()
+                else:
+                    exit(0)
 
     def on_draw(self, *args):
         self.clear()

@@ -40,7 +40,7 @@ class SandboxLevel(Screen):
 
         button_region = pos.pipe(map_inner_perc(10, 60, 80, 10))
 
-        self.new_text_button = Button("Neu", button_region.pipe(map_inner_perc(100*(0/6), 0, 100/6, 100)), style, events, Observer(regenerate.on_next), batch)
+        self.new_text_button = Button("Neu", button_region.pipe(map_inner_perc(100*(0/6), 0, 100/6, 100)), style, events, regenerate, batch)
 
         self.lower_case_toggle = ToggleButton("a-z", button_region.pipe(map_inner_perc(100*(1/6), 0, 100/6, 100)), style, events, batch)
         self.upper_case_toggle = ToggleButton("A-Z", button_region.pipe(map_inner_perc(100*(2/6), 0, 100/6, 100)), style, events, batch)

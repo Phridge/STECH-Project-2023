@@ -73,7 +73,7 @@ class SettingsScreen(Screen):
         """
         Lädt den SettingsScreen neu, nachdem die Einstellungen angewandt wurden
         """
-        from main_controller import ChangeSetting, SwitchScreen, SetFullscreen
+        from main_controller import ChangeSetting, SwitchScreen, SetFullscreen, ReloadScreen
 
         # self.event.on_next(("ChangeColorScheme", self.preview_color_scheme))
         self.game_command.on_next(ChangeSetting("color_scheme", self.preview_color_scheme))
@@ -86,7 +86,7 @@ class SettingsScreen(Screen):
             self.game_command.on_next(ChangeSetting("size", self.new_screen_size))
 
         # self.change_controller.on_next(("ReloadSettings", previous_controller, data))
-        self.game_command.on_next(SwitchScreen(SettingsScreen.init_fn(save)))
+        self.game_command.on_next(ReloadScreen())
 
     def change_color(self, _):
         """

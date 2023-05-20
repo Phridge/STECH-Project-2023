@@ -88,6 +88,7 @@ class Button(UIElement):
     def __init__(self, text, pos, style, events, on_click: Observer, batch=None, group=None):
         super().__init__()
         text, pos = rx(text), rx(pos)
+        self._subs.add(on_click)
 
         # Rand
         border = pyglet.shapes.Rectangle(*Rect.zero(), style.color.border, batch, group)
