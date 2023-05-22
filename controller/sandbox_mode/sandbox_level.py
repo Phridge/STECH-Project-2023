@@ -73,6 +73,27 @@ class SandboxLevel(Screen):
             ).subscribe(charsets)
         )
 
+        from ..settings import SettingsScreen
+        from ..home_screen import HomeScreen
+
+        small_style = Style(style.color, style.font, 10)
+        self.settings_button = Button(
+            "Einstellungen",
+            pos.pipe(map_inner_perc(2.5, 85, 12.5, 10)),
+            small_style,
+            events,
+            Observer(lambda _: self.push_screen(SettingsScreen.init_fn(save))),
+            batch
+        )
+        self.leave_button = Button(
+            "Verlassen",
+            pos.pipe(map_inner_perc(85, 85, 12.5, 10)),
+            small_style,
+            events,
+            Observer(lambda _: self.go_to(HomeScreen.init_fn(save))),
+            batch
+        )
+
 
     def get_view(self):
         return self.batch
