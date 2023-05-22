@@ -41,7 +41,7 @@ class SandboxLevel(Screen):
         self._subs.add(
             self.input_box.text_tracker.pipe(
                 rfilter(lambda tt: tt.is_finished),
-                do_action(lambda tt: save_text_tracker(save, 0, "sandbox", tt)),
+                do_action(lambda tt: save_text_tracker(save, "sandbox", tt)),
             ).subscribe(regenerate)
         )
 

@@ -20,13 +20,14 @@ class Save(Base):
 
 class Level(Base):
     __tablename__ = "level"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str | None]
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str]
 
 
 class GamePrinciple(Base):
     __tablename__ = "game_principle"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str]
 
 
 class Run(Base):

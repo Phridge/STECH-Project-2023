@@ -29,7 +29,7 @@ class LearningLevel(Screen):
         def text_for_round(round):
             "Abhängig von der aktuellen runde wird mit dieser funktion ein Text generiert."
             provider = self.focus_text_provider if round == 0 else self.text_provider
-            args = TextProviderArgs(150, 200, focus_chars) if round == 0 else TextProviderArgs(100, 150, all_chars)
+            args = TextProviderArgs(100, 150, focus_chars) if round == 0 else TextProviderArgs(100, 150, all_chars)
             return provider.get_text(args)
 
 
@@ -54,7 +54,7 @@ class LearningLevel(Screen):
         self._subs.add(
             self.input_box.text_tracker.pipe(
                 rfilter(lambda tt: tt.is_finished),
-                do_action(lambda tt: save_text_tracker(save, hash(self.level_name), self.level_name, tt))
+                do_action(lambda tt: save_text_tracker(save, self.level_name, tt))
             ).subscribe(lambda _: round.on_next(round.value + 1))
         )
 

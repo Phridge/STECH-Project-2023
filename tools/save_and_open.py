@@ -50,19 +50,20 @@ def get_game_save(save_id):
             session.commit()
         return save
 
-def save_text_tracker(game_save_nr: int, level_id: int, level_name: str, text_tracker: TextTracker):
+def save_text_tracker(game_save_nr: int, level_name: str, text_tracker: TextTracker):
     with new_session() as session:
         try:
-            session.execute(select(Level).where(Level.id == level_id)).one()
+            level = session.execute(select(Level).where(Level.name == level_name)).one()
         except NoResultFound:
             level = Level(
-                id=level_id,
                 name=level_name,
             )
             session.add(level)
+            session.commit()
+            session.refresh(level)
         run = Run(
             save_id=game_save_nr,
-            level_id=level_id,
+            level_id=level.id,
             preset_text=text_tracker.current_text,
             typed_text=text_tracker.written_text,
             time_taken_for_level=text_tracker.input_analysis.acc_time
