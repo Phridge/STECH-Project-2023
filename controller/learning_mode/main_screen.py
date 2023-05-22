@@ -57,27 +57,29 @@ class MainLearningScreen(Screen):
         self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, self.batch)
         self.header = ui_elements.BorderedRectangle("Lernen", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 4, events, self.batch)
 
-        self.back = ui_elements.InputButton("Zurück", 40, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 10, events, self.batch)
+        self.back = ui_elements.InputButton("Zurück", 40, 5, 20, 10, events.color_scheme, color_scheme.Minecraft, 10, events, self.batch)
         self.settings = ui_elements.InputButton("Einstellungen", 2.5, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
         self.statistics = ui_elements.InputButton("Statistiken", 85, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, self.batch)
 
         # level anzeigen
         change_level_index = Var(0)
-        level_selection = change_level_index.pipe(
+        level_index = change_level_index.pipe(
             scan(lambda curr, chng: (curr + chng + len(LEVELS)) % len(LEVELS), 0),
+        )
+        level_selection = level_index.pipe(
             rmap(LEVELS.__getitem__),
         )
         select_level_event = Event()
         self.level_selector = Button(
             level_selection.pipe(rmap(itemgetter(0))),
-            pos.pipe(map_inner_perc(30, 30, 40, 40)),
+            pos.pipe(map_inner_perc(30, 20, 40, 40)),
             style,
             events,
             select_level_event,
             batch)
         self.prev_level = Button(
             "<",
-            pos.pipe(map_inner_perc(15, 30, 10, 40)),
+            pos.pipe(map_inner_perc(15, 20, 10, 40)),
             style,
             events,
             Observer(lambda _: change_level_index.on_next(-1)),
@@ -85,10 +87,18 @@ class MainLearningScreen(Screen):
         )
         self.next_level = Button(
             ">",
-            pos.pipe(map_inner_perc(75, 30, 10, 40)),
+            pos.pipe(map_inner_perc(75, 20, 10, 40)),
             style,
             events,
             Observer(lambda _: change_level_index.on_next(+1)),
+            batch
+        )
+        self.level_index_label = BorderedLabel(
+            level_index.pipe(
+                rmap(lambda i: f"{i+1}/{len(LEVELS)}")
+            ),
+            pos.pipe(map_inner_perc(40, 62, 20, 7)),
+            style,
             batch
         )
 
