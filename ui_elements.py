@@ -2,6 +2,7 @@ import math
 from collections import namedtuple
 
 import reactivex
+from pyglet.image import Animation
 from reactivex.disposable import CompositeDisposable
 from reactivex.subject import Subject
 import pyglet
@@ -799,7 +800,7 @@ class GifButton(pyglet.sprite.Sprite, UIElement):
             animation_frames.append(frames.__getattribute__("image"))
 
         # erstellt aus den einzelnen Bildern eine Animation der gewünschten Länge. Loop erlaubt ununterbrochene Wiederholung der Animation
-        animation = image.from_image_sequence(animation_frames, duration=duration / len(animation_frames), loop=loop)
+        animation = Animation.from_image_sequence(animation_frames, duration=duration / len(animation_frames), loop=loop)
         pyglet.sprite.Sprite.__init__(self, animation, x_px, y_px, batch=batch, group=group)
 
         # speichert die Standard-Maße des Gifs

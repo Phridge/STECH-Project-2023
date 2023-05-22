@@ -106,7 +106,7 @@ class MainLearningScreen(Screen):
         # wenn ein level ausgewählt wird, wird zum entsprechenden Level gewechselt
         self._subs.add(select_level_event.pipe(
             combine_latest(level_selection),
-        ).subscribe(lambda data: self.go_to(LearningLevel.init_fn(*data[1], save))))
+        ).subscribe(lambda data: self.push_screen(LearningLevel.init_fn(*data[1], save))))
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
         self._subs.add(self.back.clicked.subscribe(lambda _: self.go_back()))

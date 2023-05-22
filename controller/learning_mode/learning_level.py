@@ -75,7 +75,7 @@ class LearningLevel(Screen):
             pos.pipe(map_inner_perc(85, 85, 12.5, 10)),
             small_style,
             events,
-            Observer(lambda _: self.go_to(HomeScreen.init_fn(save))),
+            Observer(lambda _: self.go_back()),
             batch
         )
 

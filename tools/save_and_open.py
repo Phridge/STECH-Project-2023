@@ -61,6 +61,7 @@ def save_text_tracker(game_save_nr: int, level_name: str, text_tracker: TextTrac
             session.add(level)
             session.commit()
             session.refresh(level)
+
         run = Run(
             save_id=game_save_nr,
             level_id=level.id,
