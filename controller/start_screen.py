@@ -65,10 +65,7 @@ class StartScreen(Screen):
 
     def play_music(self, volume):
         with contextlib.suppress(pygame.error):
-            mixer.init()
             mixer.music.load("assets/sounds/02 Start Menu.mp3")
             mixer.music.play()
             mixer.music.play(-1)
-            self.events.volume.on_next(lambda v: mixer.music.set_volume(v))
-            mixer.music.set_volume(volume)
 

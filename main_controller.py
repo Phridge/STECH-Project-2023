@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from collections import namedtuple
 from typing import Any, Callable, Optional
 
+from pygame import mixer
 import pyglet
 import reactivex
 from reactivex import Observer
@@ -85,9 +86,12 @@ class GameWindow(pyglet.window.Window, Disposable):
             mouse_button=Event(),
             size=Var((self.width, self.height)),
             color_scheme=color_scheme.BlackWhite,
-            volume=0,
+            volume=Var(0),
             fullscreen=False,
         )
+
+        mixer.init()
+        self.volume_sub = self.events.volume.subscribe(mixer.music.set_volume)
 
         self.history = []
 
@@ -95,6 +99,7 @@ class GameWindow(pyglet.window.Window, Disposable):
 
         self.controller_subs = SerialDisposable()
 
+        # self.push_screen(Level1Screen)
         self.push_screen(StartScreen)
 
 
@@ -151,7 +156,7 @@ class GameWindow(pyglet.window.Window, Disposable):
                 self.set_fullscreen(fullscreen)
             case ChangeSetting(name, value):
                 match name:
-                    case "volume": self.events.volume = value
+                    case "volume": self.events.volume.on_next(value)
                     case "size": self.set_size(*value)
                     case "color_scheme": self.events.color_scheme = value
             case Exit(restart):

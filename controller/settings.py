@@ -15,7 +15,7 @@ class SettingsScreen(Screen):
         foreground = pyglet.graphics.Group(order=1)
 
         self.preview_color_scheme = events.color_scheme  # aktuelles Color_scheme
-        self.volume_value = events.volume  # aktuelle Lautstärke
+        self.volume_value = events.volume.value
         self.fullscreen = events.fullscreen
         self.new_screen_size = None
 
@@ -32,7 +32,7 @@ class SettingsScreen(Screen):
 
         # Volume-Picker
         self.volume = ui_elements.BorderedRectangle("Lautstärke:", 2.5, 42.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8.5, events, self.batch)
-        self.volume_picker = ui_elements.SettingTextField(str(int(events.volume * 100)), 3, 100, 40.8333, 42.5, 18.3333, 10, events.color_scheme, color_scheme.Minecraft, 15, events, "volume", self.batch)
+        self.volume_picker = ui_elements.SettingTextField(str(int(events.volume.value * 100)), 3, 100, 40.8333, 42.5, 18.3333, 10, events.color_scheme, color_scheme.Minecraft, 15, events, "volume", self.batch)
 
         # Fenster-Einstellungen
         self.window = ui_elements.BorderedRectangle("Fenster:", 2.5, 30, 15, 10, events.color_scheme, color_scheme.Minecraft, 10, events, self.batch)
@@ -149,6 +149,8 @@ class SettingsScreen(Screen):
             self.volume_value = int(self.volume_picker.text) / 100
         else:
             self.volume_value = 0
+        from main_controller import ChangeSetting
+        self.game_command.on_next(ChangeSetting("volume", self.volume_value))
 
     def set_fullscreen(self, state):
         """
