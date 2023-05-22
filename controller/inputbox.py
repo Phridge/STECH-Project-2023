@@ -7,7 +7,7 @@ from reactivex import Observable, concat, just
 from reactivex.operators import scan, combine_latest, map as rmap, filter as rfilter, merge, do_action, share
 from reactivex.disposable import SerialDisposable, CompositeDisposable
 
-import events
+from events import Events, Event
 import input_tracker
 from tools import save_and_open
 from ui_elements_ex import Rect, rx, Style, position_pyglet_shape, position_pyglet_text, map_border, map_center_anchor
@@ -17,7 +17,7 @@ import numpy as np
 
 
 class InputBox(Controller):
-    def __init__(self, text: str | Observable, pos: Rect | Observable, style: Style, events: events.Events, batch=None, group: Group=None):
+    def __init__(self, text: str | Observable, pos: Rect | Observable, style: Style, events: Events, input_analysis=None, batch=None, group: Group=None):
         super().__init__()
         text, pos = rx(text), rx(pos)
         background = Group(0, parent=group)
@@ -42,8 +42,7 @@ class InputBox(Controller):
         caret.height, caret.width = style.font_size * 1.4, 2
         caret_off = np.array((-3, -3))
 
-        # ob die der textracker zustand gespeichert wurde
-        has_saved = False
+        self.text_tracker = Event()
 
         def display_text_tracker(tt: input_tracker.TextTracker):
             text_correct = tt.last_input_correct
@@ -72,40 +71,22 @@ class InputBox(Controller):
         tt_sub = SerialDisposable()
         self._subs.add(tt_sub)
 
-        def init_text_tracker(text):
-            tt = input_tracker.TextTracker(text)
-            tt.start_timer()
-            nonlocal has_saved
-            has_saved = False
+        def init_text_tracker(t):
+            tt = input_tracker.TextTracker(t, input_analysis)
 
             def accept_char(cmd):
-                nonlocal has_saved
                 tt.accept_char(cmd)
-                if tt.string_finished and not has_saved:
-                    try:
-                        save_and_open.save_text_tracker(0, 0, "sandbox", tt)
-                    except Exception as e:
-                        print("Konnte nicht gespeichert werden")
-                        raise e
-                    else:
-                        print("Erfolgreich gespeichert")
-                    has_saved = True
-                return tt
-
-            tt_obs = concat(
-                just(tt),
-                events.text.pipe(
-                    rmap(accept_char),
-                    share()
-                )
-            )
+                self.text_tracker.on_next(tt)
 
             tt_sub.disposable = CompositeDisposable([
-                tt_obs.subscribe(display_text_tracker),
-                tt_obs.pipe(
+                events.text.subscribe(accept_char),
+                self.text_tracker.subscribe(display_text_tracker),
+                self.text_tracker.pipe(
                     combine_latest(text_layout_pos),
                 ).subscribe(update_caret_pos),
             ])
+
+            self.text_tracker.on_next(tt)
 
         self._subs.add(text.subscribe(init_text_tracker))
 

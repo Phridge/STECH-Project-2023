@@ -1,11 +1,13 @@
 from pyglet.graphics import Batch
 from reactivex import Observable, Observer, combine_latest as combine
-from reactivex.operators import combine_latest
+from reactivex.operators import combine_latest, filter as rfilter, do_action
 
 import color_scheme
 import textprovider.statistical
 from controller import Screen
 from controller.inputbox import InputBox
+from input_tracker import InputAnalysis
+from tools.save_and_open import save_game, save_text_tracker
 from ui_elements_ex import Rect, rx, Style, map_inner_perc, rmap, BorderedLabel, Button, ToggleButton
 from events import Var, Event
 
@@ -35,7 +37,14 @@ class SandboxLevel(Screen):
             rmap(generate_text)
         )
 
-        self.input_box = InputBox(text, pos.pipe(map_inner_perc(15, 10, 70, 30)), style, events, batch)
+        self.input_box = InputBox(text, pos.pipe(map_inner_perc(15, 10, 70, 30)), style, events, batch=batch)
+        self._subs.add(
+            self.input_box.text_tracker.pipe(
+                rfilter(lambda tt: tt.is_finished),
+                do_action(lambda tt: save_text_tracker(save, 0, "sandbox", tt)),
+            ).subscribe(regenerate)
+        )
+
         self.title = BorderedLabel("Sandbox-Modus", pos.pipe(map_inner_perc(35, 85, 30, 10)), style, batch)
 
         button_region = pos.pipe(map_inner_perc(10, 60, 80, 10))

@@ -44,19 +44,14 @@ class InputAnalysis:
             ['°', 0, 0, 0], ['²', 0, 0, 0], ['³', 0, 0, 0], ['€', 0, 0, 0], ['@', 0, 0, 0], ['{', 0, 0, 0],
             ['[', 0, 0, 0], [']', 0, 0, 0], ['}', 0, 0, 0], ['\\', 0, 0, 0], ['\'', 0, 0, 0]
         ]
-        self.start_time = None
-        self.end_time = None
         self.chars_typed = 0
         self.chars_typed_correctly = 0
-
-    def start_timer(self):
-        self.start_time = datetime.datetime.now()
-
-    def end_timer(self):
-        self.end_time = datetime.datetime.now()
+        self.acc_time = 0.0
 
     def track_input(self, char, is_correct, time_taken: datetime.timedelta):
         self.chars_typed += 1
+        self.acc_time += time_taken.total_seconds()
+
         if is_correct:
             self.chars_typed_correctly += 1
 
@@ -119,7 +114,8 @@ class InputAnalysis:
 
 # Klasse, welche den aktuellen Text beinhaltet und die derzeitige Position im Text wiedergibt
 class TextTracker:
-    def __init__(self, current_text):
+
+    def __init__(self, current_text, input_analysis=None):
         self.current_text = current_text
         self.written_text = ''
         self.time_per_char = [0]
@@ -128,11 +124,15 @@ class TextTracker:
         self.write_time_end = None
         self.last_input_correct = True
         self.last_input = None
-        self.input_analysis = InputAnalysis()
+        self.input_analysis = input_analysis or InputAnalysis()
 
     @property
     def current_position(self):
         return len(self.written_text)
+
+    @property
+    def is_finished(self):
+        return len(self.current_text) > 0 and len(self.written_text) >= len(self.current_text)
 
     def start_timer(self):
         self.input_analysis.start_timer()
@@ -146,9 +146,8 @@ class TextTracker:
         :return:
         """
         # nix machen wenn schon fertig
-        if self.string_finished:
+        if self.is_finished:
             return
-
 
         # zeit messen
         current_time = datetime.datetime.now()
@@ -165,12 +164,10 @@ class TextTracker:
             self.input_analysis.track_input(char, is_correct, time_taken)
 
         self.last_input = current_time
-        # check ob fertig
-        if len(self.written_text) >= len(self.current_text):
-            if not self.string_finished:
-                self.input_analysis.end_timer()
-                self.string_finished = True
-            return
+
+    def reset(self):
+        self.written_text = ""
+        self.last_input_correct = True
 
     # fügt den geschriebenen Buchstaben zum text hinzu, welcher vom Benutzer geschrieben wurde
     def update_written_text(self, user_input):

@@ -65,7 +65,7 @@ def save_text_tracker(game_save_nr: int, level_id: int, level_name: str, text_tr
             level_id=level_id,
             preset_text=text_tracker.current_text,
             typed_text=text_tracker.written_text,
-            time_taken_for_level=(text_tracker.input_analysis.end_time - text_tracker.input_analysis.start_time).total_seconds()
+            time_taken_for_level=text_tracker.input_analysis.acc_time
         )
         session.add(run)
         session.commit()
