@@ -21,6 +21,9 @@ class Rect(namedtuple("Rect", ["x", "y", "w", "h"])):
     def center_anchor(self):
         return Rect(self.x + self.w / 2, self.y + self.h / 2, self.w, self.h)
 
+    def offset(self, by):
+        return Rect(self.x + by[0], self.y + by[1], self.w, self.h)
+
     @staticmethod
     def zero():
         return Rect(0, 0, 0, 0)

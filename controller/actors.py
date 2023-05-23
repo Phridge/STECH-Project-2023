@@ -1,10 +1,19 @@
+from collections import namedtuple
+from enum import Enum
+
 import pyglet
+from pyglet.image import Animation
+from pyglet.sprite import Sprite
+from reactivex import Observable
 from reactivex.disposable import CompositeDisposable
+from reactivex.operators import scan, distinct_until_changed, map as rmap, combine_latest
 
 import ui_elements
 import time
 import color_scheme
+from events import Disposable, Var, Event
 from ui_elements import Gif
+from ui_elements_ex import Rect
 
 
 class Player:
@@ -56,6 +65,52 @@ class Player:
         self.gif = ui_elements.Gif("assets/images/mech_hurt.gif", 20, 40, 20, 30, 0.75, True, self.events, self.batch)
         time.sleep(1)
         self.idle()
+
+
+class ThePlayer(Disposable):
+    def __init__(self, pos=Rect(0, 0, 0, 0), look_dir=1, running_speed=0.0, batch=None, group=None):
+        self.pos = Var(pos) if pos is not None else Event()
+        self.look_dir = Var(look_dir)
+        self.running_speed = Var(running_speed)
+
+        self._subs = CompositeDisposable()
+
+        def create_sprite(speed):
+            if speed > 0:
+                path = "assets/images/mech_walk.gif"
+                anim = pyglet.image.load_animation(path)
+                for frame in anim.frames:
+                    frame.duration = (1 / speed) / len(anim.frames)
+            else:
+                path = "assets/images/mech_idle.gif"
+                anim = pyglet.image.load_animation(path)
+
+            return Sprite(anim, 0, 0, 0, batch=batch, group=group)
+
+        sprite = self.running_speed.pipe(
+            distinct_until_changed(),
+            rmap(create_sprite)
+        )
+
+        def update_sprite_transform(data):
+            sprite, look_dir, pos = data
+            sprite.position = pos.x, pos.y, 0
+            if pos.w * pos.h > 0:
+                sprite.scale_x = pos.w * sprite.scale_x / sprite.width
+                sprite.scale_y = pos.h * sprite.scale_y / sprite.height
+            return sprite
+
+        self._subs.add(
+            sprite.pipe(
+                combine_latest(self.look_dir, self.pos),
+            ).subscribe(update_sprite_transform)
+        )
+
+    def move(self, dx, dy):
+        curr_pos = self.pos.value
+        self.pos.on_next(Rect(curr_pos.x + dx, curr_pos.y + dy, curr_pos.w, curr_pos))
+
+
 
 
 class Enemy():

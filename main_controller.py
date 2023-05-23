@@ -84,6 +84,7 @@ class GameWindow(pyglet.window.Window, Disposable):
             mouse=Var((0, 0, 0)),
             mouse_move=Event(),
             mouse_button=Event(),
+            update=Event(),
             size=Var((self.width, self.height)),
             color_scheme=color_scheme.BlackWhite,
             volume=Var(0),
@@ -194,6 +195,8 @@ class GameWindow(pyglet.window.Window, Disposable):
         super().on_resize(w, h)
         self.events.size.on_next((w, h))
 
+    def on_refresh(self, dt):
+        self.events.update.on_next(dt)
 
 def main():
     window = GameWindow()
