@@ -85,7 +85,9 @@ class ThePlayer(Disposable):
                 path = "assets/images/mech_idle.gif"
                 anim = pyglet.image.load_animation(path)
 
-            return Sprite(anim, 0, 0, 0, batch=batch, group=group)
+            sprite = Sprite(anim, 0, 0, 0, batch=batch, group=group)
+            sprite.visible = False
+            return sprite
 
         sprite = self.running_speed.pipe(
             distinct_until_changed(),
@@ -98,6 +100,8 @@ class ThePlayer(Disposable):
             if pos.w * pos.h > 0:
                 sprite.scale_x = pos.w * sprite.scale_x / sprite.width
                 sprite.scale_y = pos.h * sprite.scale_y / sprite.height
+            if not sprite.visible:
+                sprite.visible = True
             return sprite
 
         self._subs.add(
