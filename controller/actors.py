@@ -68,7 +68,7 @@ class Player:
 
 
 class ThePlayer(Disposable):
-    def __init__(self, pos=Rect(0, 0, 0, 0), look_dir=1, running_speed=0.0, batch=None, group=None):
+    def __init__(self, pos=None, look_dir=1, running_speed=0.0, batch=None, group=None):
         self.pos = Var(pos) if pos is not None else Event()
         self.look_dir = Var(look_dir)
         self.running_speed = Var(running_speed)
