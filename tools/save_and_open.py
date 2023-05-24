@@ -50,6 +50,7 @@ def get_game_save(save_id):
             session.commit()
         return save
 
+
 def save_text_tracker(game_save_nr: int, level_name: str, text_tracker: TextTracker):
     with new_session() as session:
         try:
@@ -85,6 +86,7 @@ def save_text_tracker(game_save_nr: int, level_name: str, text_tracker: TextTrac
                 accuracy=(count - wrong) / count,
             ))
         session.commit()
+
 
 # -----------------Noch testen---------------------
 def save_game(game_save_nr, level_id, preset_text, written_text, time_needed_for_game, char_array):
