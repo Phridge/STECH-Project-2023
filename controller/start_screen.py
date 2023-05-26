@@ -63,7 +63,7 @@ class StartScreen(Screen):
         return self.batch
 
 
-    def play_music(self, volume):
+    def play_music(self, volume): #Musik im Start Menü
         with contextlib.suppress(pygame.error):
             mixer.music.load("assets/sounds/02 Start Menu.mp3")
             mixer.music.play()

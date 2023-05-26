@@ -1,6 +1,9 @@
 import time
 
 import pyglet
+import pygame
+import mixer
+import contextlib
 import color_scheme
 import ui_elements
 from reactivex.subject import Subject
@@ -10,6 +13,7 @@ from reactivex.disposable import CompositeDisposable
 from controller import Screen
 from controller.actors import Player, ThePlayer
 from ui_elements_ex import Rect, map_inner_perc
+
 
 """
 Eine Vorlage für einen Screen. ab Zeile 22 können Elemente eingefügt werde. Ein paar der ui-Elements sind als Beispiel gezeigt.
@@ -53,9 +57,17 @@ class Level1Screen(Screen):
         self.change_controller = Subject()
         self.event = Subject()  # separates Subject für eventuelle Events die in diesem Screen stattfinden
 
+
     #  Falls die Funktionen namentlich nicht passen erstellte einfach neue!
     def button_clicked(self, data):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
         self.change_controller.on_next(("HomeScreen", data))
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
+
+    def play_music(self, nextmusic):
+        with contextlib.suppress(pygame.error):
+            mixer.init()
+            mixer.music.load(nextmusic)
+            mixer.music.play()
+            mixer.music.play(-1)

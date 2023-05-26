@@ -2,6 +2,10 @@ import logging
 import time
 
 import pyglet
+import pygame
+import mixer
+import contextlib
+
 import color_scheme
 import ui_elements
 from reactivex.subject import Subject
@@ -59,3 +63,10 @@ class Level2Screen(Screen):
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
+
+    def play_music(self, nextmusic):
+        with contextlib.suppress(pygame.error):
+            mixer.init()
+            mixer.music.load(nextmusic)
+            mixer.music.play()
+            mixer.music.play(-1)
