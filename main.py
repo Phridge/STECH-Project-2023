@@ -1,3 +1,4 @@
 from main_controller import main
 
-main()
+import statistics.statistic_view
+# main()
