@@ -3,7 +3,7 @@ import time
 
 import pyglet
 import pygame
-import mixer
+from pygame import mixer
 import contextlib
 
 import color_scheme

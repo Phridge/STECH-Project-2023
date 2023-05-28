@@ -1,6 +1,5 @@
 import pyglet
 import pygame
-import mixer
 import contextlib
 
 import color_scheme
@@ -48,7 +47,7 @@ class MainStoryScreen(Screen):
         from controller.story_mode.level4_screen import Level4Screen
         # from controller.story_mode.level5_screen import Level5Screen
 
-        self._subs.add(self.level1_button.clicked.subscribe(lambda _: self.push_screen(Level1Screen.init_fn())))
+        self._subs.add(self.level1_button.clicked.subscribe(lambda _: self.push_screen(Level1Screen.init_fn(save))))
         self._subs.add(self.level2_button.clicked.subscribe(lambda _: self.push_screen(Level2Screen.init_fn())))
         self._subs.add(self.level3_button.clicked.subscribe(lambda _: self.push_screen(Level3Screen.init_fn())))
         self._subs.add(self.level4_button.clicked.subscribe(lambda _: self.push_screen(Level4Screen.init_fn())))

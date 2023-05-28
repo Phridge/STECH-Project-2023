@@ -215,3 +215,11 @@ class ToggleButton(UIElement):
         self._subs.add(events.mouse.subscribe(handle_mouse))
         self._subs.add(events.mouse_button.subscribe(handle_mouse_button))
 
+class Rectangle(UIElement):
+    def __init__(self, pos, color, batch=None, group=None):
+        super().__init__()
+        pos, color = rx(pos), rx(color)
+
+        rect = pyglet.shapes.Rectangle(0, 0, 0, 0, (0,)*4, batch, group)
+        self._subs.add(pos.subscribe(partial(position_pyglet_shape, rect)))
+        self._subs.add(color.subscribe(partial(setattr, rect, "color")))

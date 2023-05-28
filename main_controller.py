@@ -1,8 +1,10 @@
 import contextlib
+from contextlib import suppress
 from dataclasses import dataclass
 from collections import namedtuple
 from typing import Any, Callable, Optional
 
+import pygame
 from pygame import mixer
 import pyglet
 import pygame
@@ -93,8 +95,9 @@ class GameWindow(pyglet.window.Window, Disposable):
             fullscreen=False,
         )
 
-        mixer.init()
-        self.volume_sub = self.events.volume.subscribe(mixer.music.set_volume)
+        with suppress(pygame.error):
+            mixer.init()
+        self.volume_sub = self.events.volume.subscribe(mixer.music.set_volume, on_error=lambda e: None)
 
         self.history = []
 

@@ -53,7 +53,7 @@ class StartScreen(Screen):
         self._subs.add(self.delete_save2.clicked.subscribe(goto(DeleteSaveScreen.init_fn(2))))
         self._subs.add(self.delete_save3.clicked.subscribe(goto(DeleteSaveScreen.init_fn(3))))
         self._subs.add(self.settings.clicked.subscribe(goto(SettingsScreen.init_fn(0))))
-        self._subs.add(self.statistics.clicked.subscribe(goto(StatisticsScreen.init_fn("Settings", 0))))
+        self._subs.add(self.statistics.clicked.subscribe(goto(StatisticsScreen.init_fn(0))))
         self._subs.add(self.leave.clicked.subscribe(lambda _: self.game_command.on_next(Exit())))
 
         self.play_music(events.volume)

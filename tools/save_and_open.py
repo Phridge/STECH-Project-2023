@@ -6,7 +6,7 @@ from sqlalchemy.exc import NoResultFound
 from database import new_session, Save, Run, Char, Level
 from sqlalchemy import update, select
 
-from input_tracker import TextTracker
+from input_tracker import TextTracker, InputAnalysis
 
 """
 Funktion, die die Usersettings speichert und local in einer Datei speichert. 
@@ -41,7 +41,7 @@ def get_info_from_json_file():
 def get_game_save(save_id):
     with new_session() as session:
         try:
-            save = session.execute(select(Save).where(Save.id == save_id)).one()
+            save = session.execute(select(Save).where(Save.id == save_id)).scalar_one()
         except NoResultFound:
             save = Save(
                 id=save_id
@@ -54,7 +54,7 @@ def get_game_save(save_id):
 def save_text_tracker(game_save_nr: int, level_name: str, text_tracker: TextTracker):
     with new_session() as session:
         try:
-            level = session.execute(select(Level).where(Level.name == level_name)).one()
+            level = session.execute(select(Level).where(Level.name == level_name)).scalar_one()
         except NoResultFound:
             level = Level(
                 name=level_name,
@@ -88,6 +88,41 @@ def save_text_tracker(game_save_nr: int, level_name: str, text_tracker: TextTrac
         session.commit()
 
 
+def save_run(game_save_nr: int, level_name: str, input_analysis: InputAnalysis):
+    with new_session() as session:
+        try:
+            level = session.execute(select(Level).where(Level.name == level_name)).scalar_one()
+        except NoResultFound:
+            level = Level(
+                name=level_name,
+            )
+            session.add(level)
+            session.commit()
+            session.refresh(level)
+
+        run = Run(
+            save_id=game_save_nr,
+            level_id=level.id,
+            preset_text=input_analysis.text,
+            typed_text=input_analysis.text_written,
+            time_taken_for_level=input_analysis.acc_time
+        )
+        session.add(run)
+        session.commit()
+        session.refresh(run)
+
+        for key, count, wrong, time in input_analysis.char_list:
+            if count == 0:
+                continue
+            session.add(Char(
+                run_id=run.id,
+                char=key,
+                preset_char_count=count,
+                typed_char_count=count - wrong,
+                avg_time_per_char=time / count,
+                accuracy=(count - wrong) / count,
+            ))
+        session.commit()
 # -----------------Noch testen---------------------
 def save_game(game_save_nr, level_id, preset_text, written_text, time_needed_for_game, char_array):
     with new_session() as session:

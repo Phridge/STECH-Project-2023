@@ -75,7 +75,10 @@ class ThePlayer(Disposable):
 
         self._subs = CompositeDisposable()
 
-        def create_sprite(speed):
+        def create_sprite(old_sprite: pyglet.sprite.Sprite | None, speed: float):
+            if old_sprite:
+                old_sprite.delete()
+
             if speed > 0:
                 path = "assets/images/mech_walk.gif"
                 anim = pyglet.image.load_animation(path)
@@ -91,7 +94,7 @@ class ThePlayer(Disposable):
 
         sprite = self.running_speed.pipe(
             distinct_until_changed(),
-            rmap(create_sprite)
+            scan(create_sprite, None)
         )
 
         def update_sprite_transform(data):

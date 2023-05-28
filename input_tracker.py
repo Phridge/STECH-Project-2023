@@ -46,14 +46,18 @@ class InputAnalysis:
         ]
         self.chars_typed = 0
         self.chars_typed_correctly = 0
+        self.text = ""
+        self.text_written = ""
         self.acc_time = 0.0
 
     def track_input(self, char, is_correct, time_taken: datetime.timedelta):
         self.chars_typed += 1
         self.acc_time += time_taken.total_seconds()
+        self.text_written += char
 
         if is_correct:
             self.chars_typed_correctly += 1
+            self.text += char
 
         for entry in self.char_list:
             if entry[0] == char:
@@ -132,7 +136,11 @@ class TextTracker:
 
     @property
     def is_finished(self):
-        return len(self.current_text) > 0 and len(self.written_text) >= len(self.current_text)
+        return self.text_valid and len(self.written_text) >= len(self.current_text)
+
+    @property
+    def text_valid(self):
+        return len(self.current_text) > 0
 
     def start_timer(self):
         self.input_analysis.start_timer()
@@ -146,7 +154,7 @@ class TextTracker:
         :return:
         """
         # nix machen wenn schon fertig
-        if self.is_finished:
+        if self.is_finished or not self.text_valid:
             return
 
         # zeit messen
