@@ -207,6 +207,9 @@ Die Reise wird lang und herausfordernd, hoffentlich habe ich genug Ersatz-Teetas
             + [player_exit]
         )
 
+        def calculate_points(input_analysis: InputAnalysis):
+            input_analysis.a
+
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch

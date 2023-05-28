@@ -44,19 +44,21 @@ class InputAnalysis:
             ['°', 0, 0, 0], ['²', 0, 0, 0], ['³', 0, 0, 0], ['€', 0, 0, 0], ['@', 0, 0, 0], ['{', 0, 0, 0],
             ['[', 0, 0, 0], [']', 0, 0, 0], ['}', 0, 0, 0], ['\\', 0, 0, 0], ['\'', 0, 0, 0]
         ]
-        self.chars_typed = 0
-        self.chars_typed_correctly = 0
+        self.char_count = 0
+        self.correct_char_count = 0
         self.text = ""
         self.text_written = ""
-        self.acc_time = 0.0
+        self.time = 0.0
+        self.correct_time = 0.0
 
     def track_input(self, char, is_correct, time_taken: datetime.timedelta):
-        self.chars_typed += 1
-        self.acc_time += time_taken.total_seconds()
+        self.char_count += 1
+        self.time += time_taken.total_seconds()
         self.text_written += char
 
         if is_correct:
-            self.chars_typed_correctly += 1
+            self.correct_char_count += 1
+            self.correct_time += time_taken.total_seconds()
             self.text += char
 
         for entry in self.char_list:
@@ -66,6 +68,18 @@ class InputAnalysis:
                     entry[2] += 1
                 entry[3] += time_taken.total_seconds()
                 break
+
+    @property
+    def accuracy(self):
+        return self.correct_char_count / self.char_count
+
+    @property
+    def real_type_speed(self):
+        return self.correct_char_count / self.time
+
+    @property
+    def logical_type_speed(self):
+        return self.correct_time / self.correct_char_count
 
     def set_level_text(self, level_text):
         self.level_text = level_text

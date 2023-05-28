@@ -42,7 +42,10 @@ class Run(Base):
 
     preset_text: Mapped[Text]
     typed_text: Mapped[Text]
-    time_taken_for_level: Mapped[float]
+    char_count: Mapped[int]
+    time: Mapped[float]
+    correct_char_count: Mapped[int]
+    correct_time: Mapped[float]
     chars: Mapped[List["Char"]] = relationship()
 
 

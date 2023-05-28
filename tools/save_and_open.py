@@ -66,9 +66,12 @@ def save_text_tracker(game_save_nr: int, level_name: str, text_tracker: TextTrac
         run = Run(
             save_id=game_save_nr,
             level_id=level.id,
-            preset_text=text_tracker.current_text,
-            typed_text=text_tracker.written_text,
-            time_taken_for_level=text_tracker.input_analysis.acc_time
+            preset_text=text_tracker.input_analysis.text,
+            typed_text=text_tracker.input_analysis.text_written,
+            char_count=text_tracker.input_analysis.char_count,
+            time=text_tracker.input_analysis.time,
+            correct_char_count=text_tracker.input_analysis.correct_char_count,
+            correct_time=text_tracker.input_analysis.correct_time,
         )
         session.add(run)
         session.commit()
@@ -105,7 +108,10 @@ def save_run(game_save_nr: int, level_name: str, input_analysis: InputAnalysis):
             level_id=level.id,
             preset_text=input_analysis.text,
             typed_text=input_analysis.text_written,
-            time_taken_for_level=input_analysis.acc_time
+            char_count=input_analysis.char_count,
+            time=input_analysis.time,
+            correct_char_count=input_analysis.correct_char_count,
+            correct_time=input_analysis.correct_time,
         )
         session.add(run)
         session.commit()
@@ -223,7 +229,7 @@ def show_last_run_results(game_save):
             "SELECT typed_text FROM Run WHERE id =" + last_run_id
         )
         last_time_taken_for_level = session.execute(
-            "SELECT time_taken_for_level FROM Run WHERE id =" + last_run_id
+            "SELECT time FROM Run WHERE id =" + last_run_id
         )
     return [last_level_played, last_preset_text, last_typed_text, last_time_taken_for_level]
 
