@@ -14,6 +14,7 @@ from reactivex.disposable import CompositeDisposable
 from controller import Screen
 from controller.actors import Player
 from controller.actors import Enemy
+from . import Level
 
 """
 Eine Vorlage für einen Screen. ab Zeile 22 können Elemente eingefügt werde. Ein paar der ui-Elements sind als Beispiel gezeigt.
@@ -21,18 +22,15 @@ In dieser Datei sind nur die absoluten Essentials drin. Hinzufügen ist kein Pro
 Lasst euch dieses Template anzeigen, indem ihr es im main_controller als initialen Controller setzt :D
 """
 
-class Level2Screen(Screen):
+class Level2Screen(Level):
     def __init__(self, events):
         super().__init__()
         self.events = events
-        self.batch = pyglet.graphics.Batch()
         # dient, um Objekte manuell nach vorne und hinten zu schieben. Je weniger er genutzt wird, umso performanter ist alles.
         # Standardmäßig ist alles im Mittelgrund zwischen Vorder- und Hintergrund
-        background = pyglet.graphics.Group(order=-1)
-        foreground = pyglet.graphics.Group(order=1)
 
         # im folgenden Block können Elemente eingefügt werden. Die Elemente die schon da sind dienen nur als Beispiele
-        self.gif = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, background)
+        self.gif = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, self.background)
 
         # Player-Objekt
         player = Player(self.events, self.batch, 40, 12, 20, 30)

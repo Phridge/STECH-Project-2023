@@ -1,3 +1,4 @@
+from pyglet.graphics import Batch
 from reactivex.disposable import CompositeDisposable
 
 from events import Disposable, Var, Event
@@ -16,8 +17,7 @@ class Screen(Controller):
 
     def __init__(self):
         super().__init__()
-        self.change_controller = Event()
-        self.event = Event()  # separates Subject für eventuelle Events die in diesem Screen stattfinden
+        self.batch = Batch()
         self.game_command = Event()
 
     def push_screen(self, screen):
@@ -37,4 +37,4 @@ class Screen(Controller):
         return lambda e: cls(e, *args, **kwargs)
 
     def get_view(self):
-        raise NotImplementedError
+        return self.batch

@@ -10,7 +10,7 @@ from reactivex.disposable import CompositeDisposable
 from controller import Controller, Screen
 from controller.settings import SettingsScreen
 from controller.statistics import StatisticsScreen
-from controller.story_mode.level1_screen import Level1Screen
+from controller.story_mode.level1_screen import Level1
 
 
 class MainStoryScreen(Screen):
@@ -41,13 +41,13 @@ class MainStoryScreen(Screen):
         self._subs.add(self.settings.clicked.subscribe(lambda _: self.push_screen(SettingsScreen.init_fn(save))))
         self._subs.add(self.statistics.clicked.subscribe(lambda _: self.push_screen(StatisticsScreen.init_fn(save))))
 
-        from controller.story_mode.level1_screen import Level1Screen
+        from controller.story_mode.level1_screen import Level1
         from controller.story_mode.level2_screen import Level2Screen
         from controller.story_mode.level3_screen import Level3Screen
         from controller.story_mode.level4_screen import Level4Screen
         # from controller.story_mode.level5_screen import Level5Screen
 
-        self._subs.add(self.level1_button.clicked.subscribe(lambda _: self.push_screen(Level1Screen.init_fn(save))))
+        self._subs.add(self.level1_button.clicked.subscribe(lambda _: self.push_screen(Level1.init_fn(save))))
         self._subs.add(self.level2_button.clicked.subscribe(lambda _: self.push_screen(Level2Screen.init_fn())))
         self._subs.add(self.level3_button.clicked.subscribe(lambda _: self.push_screen(Level3Screen.init_fn())))
         self._subs.add(self.level4_button.clicked.subscribe(lambda _: self.push_screen(Level4Screen.init_fn())))
