@@ -1,4 +1,5 @@
 import pyglet
+import pyglet.window.key
 import io
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,6 +12,17 @@ from events import Events, Event, Var, Disposable
 import ui_elements
 import color_scheme
 import math
+import main_controller
+
+
+class CharView:
+    char_name = ""
+
+    def change_char(self, text):
+        self.char_name = text
+
+    def get_char(self):
+        return self.char_name
 
 
 def roundup(x):
@@ -110,7 +122,7 @@ def draw_time_per_char_chart(fig, avg_time, new_time):
     appearance_of_char = [avg_time, new_time]
     x = np.arange(len(name_of_bars))
     ax = fig.add_subplot(2, 3, 3)
-    ax.bar(x, appearance_of_char, color='#D2FF12', width=0.6, align='center')
+    ax.bar(x, appearance_of_char, color='#F8768F', width=0.6, align='center')
     ax.set_title('Time to press the Char', color='pink', fontname='Arial', fontsize=17)
     ax.set_ylabel('time in ms', fontname='Arial', fontsize=17)
     ax.set_yticks(np.arange(0, get_yaxis_limit(avg_time, new_time)[0], get_yaxis_limit(avg_time, new_time)[1]))
@@ -151,11 +163,11 @@ def bigu_graphu(fig):
     ax.set_ylabel('Text ?xD', fontname='Arial', fontsize=17)
     ax.set_ylim(0, 8)
     ax.set_xlim(0, 8)
-    #Text an dem Graphen
-    #ax.text(y[-1]+0.1, data1[-1]-0.2, 'December', style='normal', color='green', fontsize=17)
+    # Text an dem Graphen
+    # ax.text(y[-1]+0.1, data1[-1]-0.2, 'December', style='normal', color='green', fontsize=17)
 
-    ax.legend(frameon=False, framealpha=0.8, bbox_to_anchor =(1, 1), labelcolor='linecolor', fontsize=15, loc=1)
-    #ncol = 2,facecolor='k', labelcolor='w'
+    ax.legend(frameon=False, framealpha=0.8, bbox_to_anchor=(1, 1), labelcolor='linecolor', fontsize=15, loc=1)
+    # ncol = 2,facecolor='k', labelcolor='w'
 
     ax.set_facecolor('xkcd:black')
     ax.xaxis.label.set_color('yellow')  # setting up X-axis label color to yellow
@@ -181,6 +193,11 @@ def bigu_graphu(fig):
         tick.set_fontsize(15)
 
 
+def draw_head_box(display_char, batch):
+    top_box = ui_elements.BorderedRectangle('Statistics for the char: ' + display_char, 35, 93, 30, 7,
+                                            color_scheme.BlackWhite,
+                                            color_scheme.Minecraft, 4, events, batch=batch)
+
 # Setting up windows using Pyglet
 window = pyglet.window.Window(width=1280, height=720)
 dpi_res = min(window.width, window.height) / 10
@@ -192,22 +209,31 @@ events = Events(
 )
 
 # Using the draw-figure functionality to render our image:
+current_char = CharView()
 draw_accuracy_chart(fig, 98.6, 37.5)
 draw_char_pressed_chart(fig, 378, 820)
 draw_time_per_char_chart(fig, 997, 222)
 bigu_graphu(fig)
 image = render_figure(fig)
-center_line = shapes.Line(1280 * 0, 720 * 0.45, 1280 * 1, 720 * 0.45, 5, color=(255, 255, 255), batch=batch)
+center_line = shapes.Line(1280 * 0, 720 * 0.46, 1280 * 1, 720 * 0.46, 5, color=(255, 255, 255), batch=batch)
 # x,y,w,h in % der gesamten Bildschirmgröße. Schriftgröße einfach testen, funktioniert nur mit Integer :(
-top_box = ui_elements.BorderedRectangle('Statistics for the char: c', 35, 93, 30, 7, color_scheme.BlackWhite,
-                                        color_scheme.Minecraft, 4, events, batch=batch)
+#draw_head_box(current_char.get_char(), batch)
 
-
+#äHier ist noch ein fehler D:
 @window.event
 def on_draw():
     window.clear()
     image.blit(0, 0)
     batch.draw()
+
+
+@window.event
+def on_text(text):
+    current_char.change_char(text)
+
+    draw_head_box(current_char.get_char(), batch)
+    print(text)
+
 
 
 # Runner code
