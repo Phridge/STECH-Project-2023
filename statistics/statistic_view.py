@@ -194,15 +194,17 @@ def bigu_graphu(fig):
 
 
 def draw_head_box(display_char, batch):
-    top_box = ui_elements.BorderedRectangle('Statistics for the char: ' + display_char, 35, 93, 30, 7,
+    return ui_elements.BorderedRectangle('Statistics for the char: ' + display_char, 35, 93, 30, 7,
                                             color_scheme.BlackWhite,
                                             color_scheme.Minecraft, 4, events, batch=batch)
+
 
 # Setting up windows using Pyglet
 window = pyglet.window.Window(width=1280, height=720)
 dpi_res = min(window.width, window.height) / 10
 fig = Figure((window.width / dpi_res, window.height / dpi_res), dpi=dpi_res)
 batch = pyglet.graphics.Batch()
+canvas = {}
 
 events = Events(
     size=Var((window.width, window.height))
@@ -210,16 +212,18 @@ events = Events(
 
 # Using the draw-figure functionality to render our image:
 current_char = CharView()
-draw_accuracy_chart(fig, 98.6, 37.5)
-draw_char_pressed_chart(fig, 378, 820)
-draw_time_per_char_chart(fig, 997, 222)
-bigu_graphu(fig)
+#draw_accuracy_chart(fig, 98.6, 37.5)
+#draw_char_pressed_chart(fig, 378, 820)
+#draw_time_per_char_chart(fig, 997, 222)
+#bigu_graphu(fig)
 image = render_figure(fig)
 center_line = shapes.Line(1280 * 0, 720 * 0.46, 1280 * 1, 720 * 0.46, 5, color=(255, 255, 255), batch=batch)
-# x,y,w,h in % der gesamten Bildschirmgröße. Schriftgröße einfach testen, funktioniert nur mit Integer :(
-#draw_head_box(current_char.get_char(), batch)
 
-#äHier ist noch ein fehler D:
+
+# x,y,w,h in % der gesamten Bildschirmgröße. Schriftgröße einfach testen, funktioniert nur mit Integer :(
+canvas[1] = draw_head_box(current_char.get_char(), batch)
+
+# äHier ist noch ein fehler D:
 @window.event
 def on_draw():
     window.clear()
@@ -230,9 +234,9 @@ def on_draw():
 @window.event
 def on_text(text):
     current_char.change_char(text)
+    print(current_char.get_char())
+    canvas[1].label.text = 'Statistics for the char: ' + current_char.get_char()
 
-    draw_head_box(current_char.get_char(), batch)
-    print(text)
 
 
 
