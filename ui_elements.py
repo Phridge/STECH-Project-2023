@@ -272,6 +272,7 @@ class InputBox(UIElement):
 
 class InputButton(UIElement):
     def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, batch=None, group=pyglet.graphics.Group(order=0)):
+        self.hovered = False
         """
         Rechtecktiger Button mit einer Border. Er kann gehovert und geclickt werden.
         Zudem kann der im Button angezeigte Text vollständig eingegeben werden, um ihn ebenfalls zu aktivieren.
@@ -332,11 +333,11 @@ class InputButton(UIElement):
                 self.rectangle.color = color_scheme.hover
                 self.borderRectangle.color = color_scheme.hover_border
                 self.label.color = color_scheme.hover_text
-                return True
+                self.hovered = True
             elif buttons is False:  # elif verhindert, dass gehaltene Knöpfe überschrieben werden
                 self.rectangle.color = color_scheme.color
                 self.borderRectangle.color = color_scheme.border
-                return False
+                self.hovered = False
 
         def button_clicked(data):
             """
@@ -377,7 +378,7 @@ class InputButton(UIElement):
         if self.pulse >= 4: self.pulse = 0
         if math.sin(self.pulse*math.pi) > 0 and self.pulse <= 2: text_increase = math.sin(self.pulse*math.pi)/3
         else: text_increase = 0
-        self.label.color = (int(self.color_scheme.text[0]*(1-text_increase)), int(self.color_scheme.text[1]*(1-text_increase)), int(self.color_scheme.text[2]*(1-text_increase)), 255)
+        if not self.hovered: self.label.color = (int(self.color_scheme.text[0]*(1-text_increase)), int(self.color_scheme.text[1]*(1-text_increase)), int(self.color_scheme.text[2]*(1-text_increase)), 255)
 
 
 class SettingTextField(UIElement):
