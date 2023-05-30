@@ -32,13 +32,13 @@ Schön, dass du dich entschieden hast, das 10-Finger-Schreiben zu lernen.
 
 Je schneller du schreibst, desto mehr Punkte warten am Ende jeden Levels auf dich.
 
-Doch zunächst muss ich erstmal meine Freunde, die vom Maschinenkönig in der Dampfstadt gefangen halten werden, befreien!
+Bitte hilf mir meine Freunde, die vom Maschinenkönig in der Dampfstadt gefangen halten werden, zu befreien!
 
-Die Reise wird lang und herausfordernd, hoffentlich habe ich genug Ersatz-Teetassen mit. Ohne mein Lebenselixier geht nichts!
+Hoffentlich habe ich genug Ersatz-Teetassen mit. Ohne mein Lebenselixier geht nichts!
 
-*SSSSSSSsssssssssssssssssip*
+*Schlürf* Tee ist einfach das Beste!
 
-...genug Tee, nun gehts los!\
+Und jetzt los, wir haben viel zu tun!\
 """.split("\n\n")
 
     def __init__(self, events, save):
@@ -77,7 +77,7 @@ Die Reise wird lang und herausfordernd, hoffentlich habe ich genug Ersatz-Teetas
         )
 
         # Überschrift.
-        self.header = ui_elements.BorderedRectangle("Level 1: Der Hafen der Freiheit", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.batch, self.foreground)
+        self.header = ui_elements.BorderedRectangle("Level 1: Der Hafen der Freiheit", 30, 80, 40, 15, self.events.color_scheme, color_scheme.Minecraft, 4, self.events, self.batch, self.foreground)
 
         def display_text(display_text):
             """
