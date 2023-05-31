@@ -1,5 +1,6 @@
+from reactivex import Subject
 from reactivex.abc import DisposableBase
-from reactivex.subject import Subject as Event, BehaviorSubject as Var
+from reactivex.subject import Subject as Event, BehaviorSubject as Var, BehaviorSubject
 
 
 class Events:
@@ -15,3 +16,10 @@ class Disposable:
         for value in vars(self).values():
             if isinstance(value, (Disposable, DisposableBase)):
                 value.dispose()
+
+
+Unset = object()
+
+
+def OptVar(init):
+    return Var(init) if init is not Unset else Event()

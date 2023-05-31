@@ -37,6 +37,18 @@ def map_border(width):
 
 
 def map_inner_perc(p_x, p_y, p_w, p_h):
+    """
+    Mapping-Operator für Rect-Observables.
+
+    Wählt eine Innere Region aus einem Rect aus. Sinnvoll für UI Elements.
+
+    Verwendung:
+
+        fenster_observable.pipe(
+            map_inner_perc(10, 10, 30, 40)
+        )
+
+    """
     return rmap(lambda r: r.inner_perc(p_x, p_y, p_w, p_h))
 
 
@@ -45,6 +57,11 @@ def map_center_anchor():
 
 
 def rx(v):
+    """
+    Wrappt das argument, sofern es nicht reactivex.Observable ist, in ein Observable.
+    :param v: ein Wert
+    :return: v falls v Observable ist, ansonsten ein reactivex.just(v) Observable
+    """
     return v if isinstance(v, reactivex.Observable) else reactivex.just(v)
 
 
@@ -58,7 +75,10 @@ def position_pyglet_text(text, rect):
 
 @dataclasses.dataclass
 class Style:
-    color: Any
+    """
+    Zusammenfassung für 3 werte, die typischerweise an UI-Elemente übergeben werden.
+    """
+    color: Any  # so nen color_scheme.color_scheme objekt
     font: str
     font_size: float
 

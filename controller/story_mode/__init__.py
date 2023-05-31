@@ -1,4 +1,5 @@
 from pyglet.graphics import Group
+from reactivex import Observable
 from reactivex.abc import DisposableBase
 from reactivex.disposable import SerialDisposable
 from reactivex.operators import scan, take_while, map as rmap
@@ -50,7 +51,7 @@ def linear(t):
     return t
 
 
-def animate(lo, hi, time, update_event, map=lambda x: x, interp=linear):
+def animate(lo, hi, time, update_event, map=lambda x: x, interp=linear) -> Observable:
     """
     Animiert einen Wert von lo nach hi über gegebene Zeit.
     :param lo: startwert.

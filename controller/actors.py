@@ -1,19 +1,18 @@
 from collections import namedtuple
-from enum import Enum
 
 import pyglet
-from pyglet.image import Animation
+import reactivex
+from pyglet.math import Vec2
 from pyglet.sprite import Sprite
 from reactivex import Observable
 from reactivex.disposable import CompositeDisposable
-from reactivex.operators import scan, distinct_until_changed, map as rmap, combine_latest
+from reactivex.operators import scan, distinct_until_changed, combine_latest, starmap, share
 
 import ui_elements
 import time
 import color_scheme
-from events import Disposable, Var, Event
-from ui_elements import Gif
-from ui_elements_ex import Rect
+from events import Disposable, Var, Unset, OptVar
+from ui_elements_ex import Rect, rx
 
 
 class Player:
@@ -67,56 +66,121 @@ class Player:
         self.idle()
 
 
+def combine_offset(offset: Observable):
+    """
+    Pipe-Operator, um einen Rect-Observable-Stream um
+    die positionsangaben eines anderen Rect-Observable-Streams zu offsetten.
+    :param offset: Rect-Observable-Stream, der das offset angibt
+    :return: einen Operator für observable.pipe, der eben gesagtes tut
+    """
+    return reactivex.compose(
+        combine_latest(offset),
+        starmap(Rect.offset)
+    )
+
+
+def continuous_sum(initial=0):
+    """
+    Pipe-Operator, um werte in einem Stream zu summieren.
+    :param initial: initialwert
+    :return: ein Operator für observable.pipe
+    """
+    return scan(lambda acc, new: acc + new, initial)
+
+
+
 class ThePlayer(Disposable):
-    def __init__(self, pos=None, look_dir=1, running_speed=0.0, batch=None, group=None):
-        self.pos = Var(pos) if pos is not None else Event()
-        self.look_dir = Var(look_dir)
-        self.running_speed = Var(running_speed)
+    """
+    Spieler-Klasse auf reactivex-Basis.
 
-        self._subs = CompositeDisposable()
+    Hat Grundlegend eine Positionierung (pos) in form eines Rect(x, y, w, h) (enthält größe!), eine richtung, in die geguckt
+    wird, und einen Status. Dieser bestimmt über die Animation. Idle: steht da. Running: Rennen mit geschwindigkeit.
+    Jumping: nocht nicht drin, sollte evtl. Springanimation oder so machen. GERNE WEITERS HINZUFÜGEN
+    """
 
-        def create_sprite(old_sprite: pyglet.sprite.Sprite | None, speed: float):
-            if old_sprite:
-                old_sprite.delete()
+    Idle = namedtuple("Idle", "")
+    Running = namedtuple("Running", "speed")
+    Jumping = namedtuple("Jumping", "")
 
-            if speed > 0:
-                path = "assets/images/mech_walk.gif"
-                anim = pyglet.image.load_animation(path)
-                for frame in anim.frames:
-                    frame.duration = (1 / speed) / len(anim.frames)
+    def __init__(self, pos=Rect.zero(), look_dir=1, state=Idle(), batch=None, group=None):
+        """
+        Initialisiere den Spieler.
+
+        pos, look_dir, und state nehmen auch Observables an. Die Übergebenen Werte werden 1:1 im Objekt gespeichert,
+        somit können, sofern Var() oder Event() übergeben wurden, diese Observable noch per spieler.state.on_next(x)
+        aufgerufen werden (s. Level 1)
+
+        :param pos: Position und Größe des spielers. Rect() oder Observable mit Rect()
+        :param look_dir: Blickrichtung. 1 für rechts, -1 für links
+        :param state: Idle(), Running(speed), Jumping() usw.
+        :param batch: Zeichen-Batch
+        :param group: Gruppe
+        """
+        self.pos = rx(pos)  # rx() wrappt nicht-Observable-Argumente und macht welche draus, wenn dies nicht sind
+        self.look_dir = rx(look_dir)
+        self.state = rx(state)
+
+        def create_sprite(old_sprite: pyglet.sprite.Sprite | None, state):
+            """
+            Mapper-Funktion, die auf Zustandsänderungen (Änderungen in state) und entsprechend old_sprite anpasst.
+            :param old_sprite: die vorherige Sprite (beim ersten mal None)
+            :param state: der neue Zustand
+            :return: aktualisierte Sprite. Es ändert sich nur die Animation.
+            """
+            match state:
+                case self.Idle():
+                    path = "assets/images/mech_idle.gif"
+                    anim = pyglet.image.load_animation(path)
+                case self.Running(speed):
+                    path = "assets/images/mech_walk.gif"
+                    anim = pyglet.image.load_animation(path)
+                    for frame in anim.frames:
+                        frame.duration = (1 / speed) / len(anim.frames)
+                case _:
+                    raise NotImplementedError
+
+            if old_sprite is None:
+                sprite = Sprite(anim, 0, 0, 0, batch=batch, group=group)
+                sprite.visible = False
             else:
-                path = "assets/images/mech_idle.gif"
-                anim = pyglet.image.load_animation(path)
+                sprite = old_sprite
+                sprite.image = anim
 
-            sprite = Sprite(anim, 0, 0, 0, batch=batch, group=group)
-            sprite.visible = False
             return sprite
 
-        sprite = self.running_speed.pipe(
-            distinct_until_changed(),
-            scan(create_sprite, None)
-        )
 
-        def update_sprite_transform(data):
-            sprite, look_dir, pos = data
+        def update_sprite_transform(sprite, look_dir, pos):
+            """
+            Reagiert auf richtungs- und Größenänderungen und passt die Sprite entsprechend an.
+            :param sprite: aktuelle sprite
+            :param look_dir: blickrichtung
+            :param pos: position
+            :return: aktualisierte sprite
+            """
             sprite.position = pos.x, pos.y, 0
+
+            if look_dir < 0:  # falls look_dir -1 ist
+                sprite.x += pos.w
+
             if pos.w * pos.h > 0:
                 sprite.scale_x = pos.w * sprite.scale_x / sprite.width
+                if look_dir * sprite.scale_x <= 0:  # falls look_dir -1 ist
+                    sprite.scale_x *= -1
                 sprite.scale_y = pos.h * sprite.scale_y / sprite.height
-            if not sprite.visible:
-                sprite.visible = True
+
+                # sichtbar machen, wenns nicht schon geschehen ist
+                if not sprite.visible:
+                    sprite.visible = True
+
             return sprite
 
-        self._subs.add(
-            sprite.pipe(
-                combine_latest(self.look_dir, self.pos),
-            ).subscribe(update_sprite_transform)
+        sprite = self.state.pipe(
+            scan(create_sprite, None),
+            combine_latest(self.look_dir, self.pos),
+            starmap(update_sprite_transform),
         )
 
-    def move(self, dx, dy):
-        curr_pos = self.pos.value
-        self.pos.on_next(Rect(curr_pos.x + dx, curr_pos.y + dy, curr_pos.w, curr_pos))
-
+        self._sub = sprite.subscribe()  # muss gemacht werden, damit auch was passiert (lol)
 
 
 

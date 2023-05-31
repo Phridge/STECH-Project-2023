@@ -4,17 +4,18 @@ from pygame import mixer
 import contextlib
 
 import color_scheme
+import main_controller
 import ui_elements
-from reactivex.operators import delay, map as rmap, combine_latest, do_action, starmap, filter as rfilter
+from reactivex.operators import delay, map as rmap, combine_latest, do_action, starmap, filter as rfilter, share
 from reactivex.disposable import CompositeDisposable, Disposable
 from controller import Screen
-from controller.actors import ThePlayer
+from controller.actors import ThePlayer, combine_offset
 from controller.inputbox import InputBox
 from . import Machine, animate, Level
 from input_tracker import InputAnalysis
 from tools.save_and_open import save_run
 from ui_elements_ex import Rect, map_inner_perc, Style, Rectangle
-from events import Event
+from events import Event, Var
 
 """
 Eine Vorlage für einen Screen. ab Zeile 22 können Elemente eingefügt werde. Ein paar der ui-Elements sind als Beispiel gezeigt.
@@ -52,15 +53,18 @@ Und jetzt los, wir haben viel zu tun!\
         # hintergrund
         self.gif = ui_elements.Gif("assets/images/port.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, self.background)
 
-        # Player-Objekt
-        # player = Player(self.events, self.batch, 20, 40, 20, 30)
-
-
-        # Spieler-Objekt. Bis is eine Position erhält, ist es nicht sichtbar.
-        self.p = ThePlayer(batch=self.batch, group=self.foreground)
         # Region, in dem sich der spieler bewegen darf. Die untere kante stellt den laufsteg dar.
         player_area = pos.pipe(
             map_inner_perc(0, 40, 100, 60)
+        )
+
+        # Spieler-Objekt.
+        player_pos = Event()  # um seine Position zu steuern
+        self.p = ThePlayer(
+            pos=player_pos.pipe(combine_offset(player_area)),  #position brauch globales offset
+            look_dir=Var(1),
+            state=Var(ThePlayer.Idle()), # von außen dann über self.p.state steuerbar
+            batch=self.batch, group=self.foreground
         )
 
         # event, welches von der Machine s. unten den anzuzeigenden Text erhält-
@@ -98,20 +102,21 @@ Und jetzt los, wir haben viel zu tun!\
             color = animate(255, 0, 3.0, events.update, lambda o: (0, 0, 0, int(o)))
             # spielerpositionsanimation.
             # Sieht kompliziert aus, da noch die Position des Laufstegs mit berücksichtigt werden muss.
-            player_pos = animate(-300, 100, 5.0, events.update).pipe(
-                do_action(on_completed=lambda: machine.next()),  # wenn die animation durch ist, nächster Zustand
-                combine_latest(player_area),
-                starmap(lambda xoff, area: Rect(xoff, 0, 150, 150).offset(area)),
-            )
+            player_anim = animate(-300, 100, 5.0, events.update, lambda v: Rect(v, 0, 150, 150))
             # Das Rechteck für den FAde
             overlay_rect = Rectangle(pos, color, self.batch, self.overlay)
 
             # den Spieler zum Laufen bringen.
-            self.p.running_speed.on_next(2.0)
+            self.p.state.on_next(ThePlayer.Running(2.0))
+
+            # moonwalk ;)
+            self.p.look_dir.on_next(-1)
+
             return CompositeDisposable(
                 overlay_rect,
-                player_pos.subscribe(self.p.pos),
-                Disposable(lambda: self.p.running_speed.on_next(0.0))  # wenn fertig, dann spieler stoppen.
+                player_anim.subscribe(player_pos.on_next, on_completed=lambda: machine.next()),
+                Disposable(lambda: self.p.state.on_next(ThePlayer.Idle())),  # wenn fertig, dann spieler stoppen.
+                Disposable(lambda: self.p.look_dir.on_next(1))  # wenn fertig, dann twist
             )
 
         def player_exit():
@@ -122,20 +127,16 @@ Und jetzt los, wir haben viel zu tun!\
             save_run(save, "story_level_1", input_analysis)
 
             color = animate(0, 255, 3.0, events.update, lambda o: (0, 0, 0, int(o))).pipe(delay(3.0))
-            player_pos = animate(100, 2000, 10.0, events.update).pipe(
-                do_action(on_completed=lambda: machine.next()),
-                combine_latest(player_area),
-                starmap(lambda xoff, area: Rect(xoff, 0, 150, 150).offset(area)),
-            )
+            pos_anim = animate(100, 2000, 10.0, events.update, lambda v: Rect(v, 0, 150, 150))
 
             overlay_rect = Rectangle(pos, color, self.batch, self.overlay)
 
             print(calculate_points(input_analysis))
 
-            self.p.running_speed.on_next(4.0)
+            self.p.state.on_next(ThePlayer.Running(4.0))
             return CompositeDisposable(
                 overlay_rect,
-                player_pos.subscribe(self.p.pos),
+                pos_anim.subscribe(player_pos.on_next, on_completed=lambda: machine.next()),
             )
 
         # Erstellung der State Machine aus allen nötigen Zuständen:
@@ -144,12 +145,12 @@ Und jetzt los, wir haben viel zu tun!\
         # dann Spieler exit
         machine = Machine(
             [player_entry]
-            + [display_text(text) for text in self.TEXTS]
+            + [display_text(text) for text in self.TEXTS[:1]]
             + [player_exit]
         )
 
         def calculate_points(input_analysis: InputAnalysis):
-            return int((input_analysis.correct_char_count / input_analysis.time) * 100)
+            return int((input_analysis.correct_char_count / input_analysis.time) ** 2 * 100)
 
 
     def get_view(self):  # Erzeugt den aktuellen View
