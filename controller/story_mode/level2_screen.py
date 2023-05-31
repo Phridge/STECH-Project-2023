@@ -66,7 +66,7 @@ class Level2Screen(Level):
 
         # im folgenden Block können Elemente eingefügt werden. Die Elemente die schon da sind dienen nur als Beispiele
         self.gif = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, self.background)
-
+        self.play_music()
         object_area = window.pipe(
             map_inner_perc(0, 10, 100, 90)
         )
@@ -130,9 +130,8 @@ class Level2Screen(Level):
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
 
-    def play_music(self, nextmusic):
+    def play_music(self):
         with contextlib.suppress(pygame.error):
             mixer.init()
-            mixer.music.load(nextmusic)
-            mixer.music.play()
+            mixer.music.load("assets/sounds/Unnecessary Tension.mp3")
             mixer.music.play(-1)

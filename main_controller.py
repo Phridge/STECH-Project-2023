@@ -91,8 +91,8 @@ class GameWindow(pyglet.window.Window, Disposable):
             update=Event(),
             size=Var((self.width, self.height)),
             color_scheme=color_scheme.BlackWhite,
-            volume=Var(0),
-            fullscreen=False,
+            volume=Var(0.5),
+            fullscreen=False,   
         )
 
         with suppress(pygame.error):
