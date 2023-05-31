@@ -6,7 +6,7 @@ from pyglet.math import Vec2
 from pyglet.sprite import Sprite
 from reactivex import Observable
 from reactivex.disposable import CompositeDisposable
-from reactivex.operators import scan, distinct_until_changed, combine_latest, starmap, share
+from reactivex.operators import scan, distinct_until_changed, combine_latest, starmap, share, map as rmap
 
 import ui_elements
 import time
@@ -88,66 +88,48 @@ def continuous_sum(initial=0):
     return scan(lambda acc, new: acc + new, initial)
 
 
-
-class ThePlayer(Disposable):
+class Actor(Disposable):
     """
-    Spieler-Klasse auf reactivex-Basis.
+    Abstrakte klasse, um Spieler und andere Objekte zu abstrahieren.
 
-    Hat Grundlegend eine Positionierung (pos) in form eines Rect(x, y, w, h) (enthält größe!), eine richtung, in die geguckt
-    wird, und einen Status. Dieser bestimmt über die Animation. Idle: steht da. Running: Rennen mit geschwindigkeit.
-    Jumping: nocht nicht drin, sollte evtl. Springanimation oder so machen. GERNE WEITERS HINZUFÜGEN
+    Kann in Unterklassen um weitere Zustände erweitert werden.
     """
 
     Idle = namedtuple("Idle", "")
-    Running = namedtuple("Running", "speed")
-    Jumping = namedtuple("Jumping", "")
 
-    def __init__(self, pos=Rect.zero(), look_dir=1, state=Idle(), batch=None, group=None):
+    def __init__(self, pos=None, look_dir=None, state=None, batch=None, group=None):
         """
-        Initialisiere den Spieler.
+        Initialisiere den Actor.
 
         pos, look_dir, und state nehmen auch Observables an. Die Übergebenen Werte werden 1:1 im Objekt gespeichert,
         somit können, sofern Var() oder Event() übergeben wurden, diese Observable noch per spieler.state.on_next(x)
         aufgerufen werden (s. Level 1)
 
-        :param pos: Position und Größe des spielers. Rect() oder Observable mit Rect()
+        :param pos: Position und Größe des Actors. Rect() oder Observable mit Rect()
         :param look_dir: Blickrichtung. 1 für rechts, -1 für links
         :param state: Idle(), Running(speed), Jumping() usw.
         :param batch: Zeichen-Batch
         :param group: Gruppe
         """
-        self.pos = rx(pos)  # rx() wrappt nicht-Observable-Argumente und macht welche draus, wenn dies nicht sind
-        self.look_dir = rx(look_dir)
-        self.state = rx(state)
+        self.pos = rx(pos, Rect.zero())  # rx() wrappt nicht-Observable-Argumente und macht welche draus, wenn dies nicht sind
+        self.look_dir = rx(look_dir, 1)
+        self.state = rx(state, self.Idle())
 
-        def create_sprite(old_sprite: pyglet.sprite.Sprite | None, state):
+        def create_sprite(old_sprite: pyglet.sprite.Sprite | None, image):
             """
-            Mapper-Funktion, die auf Zustandsänderungen (Änderungen in state) und entsprechend old_sprite anpasst.
+            Mapper-Funktion, die auf Änderungen des anzuzeigenden Bildes reagiert und ein Sprite-Objekt anpasst.
             :param old_sprite: die vorherige Sprite (beim ersten mal None)
-            :param state: der neue Zustand
+            :param image: neues bild, geladen durch _get_image(self)
             :return: aktualisierte Sprite. Es ändert sich nur die Animation.
             """
-            match state:
-                case self.Idle():
-                    path = "assets/images/mech_idle.gif"
-                    anim = pyglet.image.load_animation(path)
-                case self.Running(speed):
-                    path = "assets/images/mech_walk.gif"
-                    anim = pyglet.image.load_animation(path)
-                    for frame in anim.frames:
-                        frame.duration = (1 / speed) / len(anim.frames)
-                case _:
-                    raise NotImplementedError
-
             if old_sprite is None:
-                sprite = Sprite(anim, 0, 0, 0, batch=batch, group=group)
+                sprite = Sprite(image, 0, 0, 0, batch=batch, group=group)
                 sprite.visible = False
             else:
                 sprite = old_sprite
-                sprite.image = anim
+                sprite.image = image
 
             return sprite
-
 
         def update_sprite_transform(sprite, look_dir, pos):
             """
@@ -175,6 +157,7 @@ class ThePlayer(Disposable):
             return sprite
 
         sprite = self.state.pipe(
+            rmap(self._get_image),
             scan(create_sprite, None),
             combine_latest(self.look_dir, self.pos),
             starmap(update_sprite_transform),
@@ -182,6 +165,71 @@ class ThePlayer(Disposable):
 
         self._sub = sprite.subscribe()  # muss gemacht werden, damit auch was passiert (lol)
 
+
+    def _get_image(self, state):
+        """
+        Erstellt das anzuzeigende Bild für gegebenen Zustand.
+
+        Muss überschrieben werden durch unterklassen.
+        :param state: aktueller Zustand
+        :return: ein Bild entsprechend des Zustands
+        """
+        raise NotImplementedError
+
+
+class ThePlayer(Actor):
+    """
+    Spieler-Klasse auf reactivex-Basis.
+
+    Hat Grundlegend eine Positionierung (pos) in form eines Rect(x, y, w, h) (enthält größe!), eine richtung, in die geguckt
+    wird, und einen Status. Dieser bestimmt über die Animation. Idle: steht da. Running: Rennen mit geschwindigkeit.
+    Jumping: nocht nicht drin, sollte evtl. Springanimation oder so machen. GERNE WEITERS HINZUFÜGEN
+    """
+
+    Running = namedtuple("Running", "speed")
+    Jumping = namedtuple("Jumping", "")
+
+    def __init__(self, pos=None, look_dir=None, state=None, batch=None, group=None):
+        super().__init__(pos, look_dir, state, batch, group)
+
+    def _get_image(self, state):
+        match state:
+            case self.Idle():
+                path = "assets/images/mech_idle.gif"
+                return pyglet.image.load_animation(path)
+            case self.Running(speed):
+                path = "assets/images/mech_walk.gif"
+                anim = pyglet.image.load_animation(path)
+                for frame in anim.frames:
+                    frame.duration = (1 / speed) / len(anim.frames)
+                return anim
+            case _:
+                raise NotImplementedError
+
+
+
+class StaticActor(Actor):
+    """
+    Actor, der nur einen Zustand hat und diesen nicht wechselt.
+
+    Z.B. für Busch und so.
+    """
+    def __init__(self, image, pos=None, look_dir=None, batch=None, group=None):
+        """
+        Initialisiere diesen StaticActor.
+
+        Will eine Image/Animation haben, die immer angezeigt wird.
+        :param image:
+        :param pos:
+        :param look_dir:
+        :param batch:
+        :param group:
+        """
+        self.image = image
+        super().__init__(pos, look_dir, self.Idle(), batch, group)
+
+    def _get_image(self, state):
+        return self.image
 
 
 class Enemy():

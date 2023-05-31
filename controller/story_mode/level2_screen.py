@@ -6,7 +6,7 @@ import pygame
 from pygame import mixer
 import contextlib
 
-from reactivex import Observable
+from reactivex import Observable, just, interval
 from reactivex.operators import combine_latest, map as rmap, share, starmap, multicast, scan
 
 import color_scheme
@@ -15,7 +15,7 @@ from reactivex.subject import Subject
 from reactivex.disposable import CompositeDisposable
 
 from controller import Screen
-from controller.actors import Player, Enemy, ThePlayer
+from controller.actors import Player, Enemy, ThePlayer, combine_offset, StaticActor, continuous_sum
 from ui_elements_ex import rx, Rect, Style, map_inner_perc
 from events import Event, Var
 from . import Level
@@ -57,7 +57,7 @@ class Level2Screen(Level):
     def __init__(self, events):
         super().__init__()
         self.events = events
-        pos = events.size.pipe(
+        window = events.size.pipe(
             rmap(lambda s: Rect(0, 0, *s))
         )
         style = Style(events.color_scheme, "Monocraft", 15)
@@ -67,34 +67,46 @@ class Level2Screen(Level):
         # im folgenden Block können Elemente eingefügt werden. Die Elemente die schon da sind dienen nur als Beispiele
         self.gif = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, self.background)
 
-
-        # Test Enemy-Objekt
-        enemy = Enemy(self.events, self.batch, 70, 12, 7.5, 15)
-
-        object_area = pos.pipe(
+        object_area = window.pipe(
             map_inner_perc(0, 10, 100, 90)
         )
 
+        scroll_delta = Var(0)
+        scroll = scroll_delta.pipe(continuous_sum())
+
         # Player-Objekt
+        player_pos = Event()
         self.player = ThePlayer(
+            pos=player_pos.pipe(combine_offset(object_area)),
+            state=Var(ThePlayer.Idle()),
             batch=self.batch,
             group=self.foreground,
         )
 
-        self._subs.add(object_area.pipe(
-            rmap(lambda p: Rect(p.x, p.y, 150, 150))
-        ).subscribe(self.player.pos))
+        self.enemy = StaticActor(
+            pyglet.image.load_animation("assets/images/enemy_walk.gif"),
+            just(Rect(500, 0, 100, 120)).pipe(combine_offset(object_area)),
+            look_dir=-1,
+            batch=self.batch,
+            group=self.foreground
+        )
 
-        self.bush = game_object(
+
+        self.bush = StaticActor(
             pyglet.image.load("assets/images/bush.png"),
-            object_area.pipe(
-                rmap(lambda p: Rect(p.x, p.y, 200, 200))
+            just(Rect(300, -20, 150, 100)).pipe(
+                combine_offset(scroll.pipe(rmap(lambda o: Rect(o, 0, 0, 0)))),
+                combine_offset(object_area),
             ),
             batch=self.batch,
             group=self.foreground
-        ).subscribe()
+        )
 
-        self.header = ui_elements.BorderedRectangle("Level 2: Der Wald des Widerstands", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.batch)
+        interval(1).pipe(
+            rmap(lambda _: 50),
+        ).subscribe(scroll_delta)
+
+        self.header = ui_elements.BorderedRectangle("Level 2: Der Wald des Widerstands", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.batch, self.foreground)
 
         # Hier muss für jeden Button eine Subscription erstellt werden.
         # In der Lambda-Funktion wird dann die Funktion angebgeben, die aufgerufen werden soll wenn der jeweilige Button gedrückt wird

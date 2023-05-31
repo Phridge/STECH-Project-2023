@@ -56,13 +56,14 @@ def map_center_anchor():
     return rmap(Rect.center_anchor)
 
 
-def rx(v):
+def rx(v, default=None):
     """
     Wrappt das argument, sofern es nicht reactivex.Observable ist, in ein Observable.
+    :param default: falls v None ist, wird default eingesetzt
     :param v: ein Wert
     :return: v falls v Observable ist, ansonsten ein reactivex.just(v) Observable
     """
-    return v if isinstance(v, reactivex.Observable) else reactivex.just(v)
+    return v if isinstance(v, reactivex.Observable) else reactivex.just(v if v is not None else default)
 
 
 def position_pyglet_shape(shape, rect):
