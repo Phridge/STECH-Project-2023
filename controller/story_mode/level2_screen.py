@@ -1,11 +1,15 @@
+import itertools
 import logging
 import time
+from functools import partial
 
 import pyglet
 import pygame
 from pygame import mixer
 import contextlib
 
+from pyglet.graphics import Group
+from pyglet.resource import animation
 from reactivex import Observable, just, interval
 from reactivex.operators import combine_latest, map as rmap, share, starmap, multicast, scan
 
@@ -18,7 +22,7 @@ from controller import Screen
 from controller.actors import Player, Enemy, ThePlayer, combine_offset, StaticActor, continuous_sum
 from ui_elements_ex import rx, Rect, Style, map_inner_perc
 from events import Event, Var
-from . import Level
+from . import Level, Machine, animate
 
 """
 Eine Vorlage für einen Screen. ab Zeile 22 können Elemente eingefügt werde. Ein paar der ui-Elements sind als Beispiel gezeigt.
@@ -61,50 +65,126 @@ class Level2Screen(Level):
             rmap(lambda s: Rect(0, 0, *s))
         )
         style = Style(events.color_scheme, "Monocraft", 15)
+        player_group = Group(0, parent=self.foreground)
+        bush_group = Group(1, parent=self.foreground)
+        enemy_group = Group(2, parent=self.foreground)
         # dient, um Objekte manuell nach vorne und hinten zu schieben. Je weniger er genutzt wird, umso performanter ist alles.
         # Standardmäßig ist alles im Mittelgrund zwischen Vorder- und Hintergrund
 
         # im folgenden Block können Elemente eingefügt werden. Die Elemente die schon da sind dienen nur als Beispiele
         self.gif = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, self.background)
 
+
+        def generate_bush_enemy_positions():
+            curr = 0
+            inc = 500
+            iinc = 1.01
+            while True:
+                yield Rect(curr, -30, 150, 100), Rect(curr + inc / 2, -10, 100, 130)
+                curr += inc
+                inc *= iinc
+
+
+        positions = list(itertools.islice(generate_bush_enemy_positions(), 1000))
+
+        level_progress = Var(0)
+
+        sprite_sheet = pyglet.resource.image('assets/images/enemy_idle.png')
+        image_grid = pyglet.image.ImageGrid(sprite_sheet, rows=1, columns=4)
+        enemy_animation = pyglet.image.Animation.from_image_sequence(image_grid, duration=0.3); del sprite_sheet, image_grid
+        bush_animation = pyglet.image.load("assets/images/bush.png")
+
         object_area = window.pipe(
             map_inner_perc(0, 10, 100, 90)
         )
 
-        scroll_delta = Var(0)
-        scroll = scroll_delta.pipe(continuous_sum())
+        scroll = Var(0)
+        scroll_off = scroll.pipe(
+            rmap(lambda o: Rect(-o, 0, 0, 0))
+        )
 
         # Player-Objekt
-        player_pos = Event()
+
+        player_stationary = Rect(100, -10, 130, 130)
+        player_pos = Var(player_stationary)
         self.player = ThePlayer(
             pos=player_pos.pipe(combine_offset(object_area)),
-            state=Var(ThePlayer.Idle()),
+            state=Var(ThePlayer.Running(4.0)),
             batch=self.batch,
-            group=self.foreground,
-        )
-
-        self.enemy = StaticActor(
-            pyglet.image.load_animation("assets/images/enemy_walk.gif"),
-            just(Rect(500, 0, 100, 120)).pipe(combine_offset(object_area)),
-            look_dir=-1,
-            batch=self.batch,
-            group=self.foreground
+            group=player_group,
         )
 
 
-        self.bush = StaticActor(
-            pyglet.image.load("assets/images/bush.png"),
-            just(Rect(300, -20, 150, 100)).pipe(
-                combine_offset(scroll.pipe(rmap(lambda o: Rect(o, 0, 0, 0)))),
-                combine_offset(object_area),
-            ),
-            batch=self.batch,
-            group=self.foreground
-        )
+        level_enemies = []
 
-        interval(1).pipe(
-            rmap(lambda _: 50),
-        ).subscribe(scroll_delta)
+        def generate_enemies(index):
+            bush_pos, enemy_pos = positions[index]
+
+            enemy = StaticActor(
+                enemy_animation,
+                just(enemy_pos).pipe(
+                    combine_offset(scroll_off),
+                    combine_offset(object_area)
+                ),
+                look_dir=-1,
+                batch=self.batch,
+                group=enemy_group
+            )
+
+
+            bush = StaticActor(
+                bush_animation,
+                just(bush_pos).pipe(
+                    combine_offset(scroll_off),
+                    combine_offset(object_area),
+                ),
+                batch=self.batch,
+                group=bush_group
+            )
+
+            return bush, enemy
+
+        generate_ahead = 5
+
+        for i in range(generate_ahead):
+            level_enemies.append(generate_enemies(i))
+
+
+        def rotate_enemies(index):
+            level_enemies.pop(0)
+            level_enemies.append(generate_enemies(index + generate_ahead))
+
+        self._subs.add(level_progress.subscribe(rotate_enemies))
+
+
+        def scroll_to_progress(index):
+            if index == 0:
+                lo = -1500
+                time = 4
+            else:
+                lo = positions[index-1][0].x - 100
+                time = 1
+            hi = positions[index][0].x - 100
+
+            disposable = animate(lo, hi, time, events.update).subscribe(scroll.on_next, on_completed=lambda: disposable.dispose())
+
+
+        self._subs.add(level_progress.subscribe(scroll_to_progress))
+
+        self.events.text.subscribe(lambda _: level_progress.on_next(level_progress.value + 1))
+
+        def player_enter():
+
+            return CompositeDisposable([
+
+            ])
+
+        machine = Machine([
+            player_enter,
+        ])
+
+
+
 
         self.header = ui_elements.BorderedRectangle("Level 2: Der Wald des Widerstands", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.batch, self.foreground)
 
