@@ -54,13 +54,18 @@ def render_figure(fig):
     return pyglet.image.ImageData(w, h, "RGBA", data, -4 * w)
 
 
-def draw_accuracy_chart(fig, avg_accuracy, current_game_accuracy):
+def update_image(fig):
+    # Hier kannst du die gewünschten Änderungen am Bild vornehmen, z.B.:
+    image.blit_into(render_figure(fig), 0, 0, 0)
+
+
+def draw_accuracy_chart(fig, avg_accuracy, current_game_accuracy, char_to_analyse):
     name_of_bars = ['in Average', 'in this Game']
     accuracy = [avg_accuracy, current_game_accuracy]
     x = np.arange(len(name_of_bars))
     ax = fig.add_subplot(2, 3, (1, 1))
     ax.bar(x, accuracy, color='#34C7FF', width=0.6, align='center')
-    ax.set_title('Accuracy of the Char', color='pink', fontname='Arial', fontsize=17)
+    ax.set_title('Accuracy of the Char: ' + char_to_analyse, color='pink', fontname='Arial', fontsize=17)
     ax.set_ylabel('Accuracy in %', fontname='Arial', fontsize=17)
     ax.set_yticks(np.arange(0, 100.1, 10))
     ax.set_xticks(x)
@@ -85,13 +90,13 @@ def draw_accuracy_chart(fig, avg_accuracy, current_game_accuracy):
         tick.set_fontsize(15)
 
 
-def draw_char_pressed_chart(fig, occurance_in_Game, typed_by_user):
+def draw_char_pressed_chart(fig, occurance_in_Game, typed_by_user, char_to_analyse):
     name_of_bars = ['appeared in Game', 'actually pressed']
     appearance_of_char = [occurance_in_Game, typed_by_user]
     x = np.arange(len(name_of_bars))
     ax = fig.add_subplot(2, 3, 2)
     ax.bar(x, appearance_of_char, color='#FFC712', width=0.6, align='center')
-    ax.set_title('Appearance of the Char', color='pink', fontname='Arial', fontsize=17)
+    ax.set_title('Appearance of the Char: ' + char_to_analyse, color='pink', fontname='Arial', fontsize=17)
     ax.set_ylabel('Count of the Char', fontname='Arial', fontsize=17)
     ax.set_yticks(np.arange(0, get_yaxis_limit(occurance_in_Game, typed_by_user)[0],
                             get_yaxis_limit(occurance_in_Game, typed_by_user)[1]))
@@ -117,13 +122,13 @@ def draw_char_pressed_chart(fig, occurance_in_Game, typed_by_user):
         tick.set_fontsize(15)
 
 
-def draw_time_per_char_chart(fig, avg_time, new_time):
+def draw_time_per_char_chart(fig, avg_time, new_time, char_to_analyse):
     name_of_bars = ['in average', 'in this Game']
     appearance_of_char = [avg_time, new_time]
     x = np.arange(len(name_of_bars))
     ax = fig.add_subplot(2, 3, 3)
     ax.bar(x, appearance_of_char, color='#F8768F', width=0.6, align='center')
-    ax.set_title('Time to press the Char', color='pink', fontname='Arial', fontsize=17)
+    ax.set_title('Time to press the Char: ' + char_to_analyse, color='pink', fontname='Arial', fontsize=17)
     ax.set_ylabel('time in ms', fontname='Arial', fontsize=17)
     ax.set_yticks(np.arange(0, get_yaxis_limit(avg_time, new_time)[0], get_yaxis_limit(avg_time, new_time)[1]))
     ax.set_xticks(x)
@@ -195,8 +200,8 @@ def bigu_graphu(fig):
 
 def draw_head_box(display_char, batch):
     return ui_elements.BorderedRectangle('Statistics for the char: ' + display_char, 35, 93, 30, 7,
-                                            color_scheme.BlackWhite,
-                                            color_scheme.Minecraft, 4, events, batch=batch)
+                                         color_scheme.BlackWhite,
+                                         color_scheme.Minecraft, 4, events, batch=batch)
 
 
 # Setting up windows using Pyglet
@@ -205,25 +210,26 @@ dpi_res = min(window.width, window.height) / 10
 fig = Figure((window.width / dpi_res, window.height / dpi_res), dpi=dpi_res)
 batch = pyglet.graphics.Batch()
 canvas = {}
-
+image = pyglet.image.create(width=1280, height=720).get_texture()
 events = Events(
     size=Var((window.width, window.height))
 )
 
 # Using the draw-figure functionality to render our image:
 current_char = CharView()
-#draw_accuracy_chart(fig, 98.6, 37.5)
-#draw_char_pressed_chart(fig, 378, 820)
-#draw_time_per_char_chart(fig, 997, 222)
-#bigu_graphu(fig)
-image = render_figure(fig)
-center_line = shapes.Line(1280 * 0, 720 * 0.46, 1280 * 1, 720 * 0.46, 5, color=(255, 255, 255), batch=batch)
+draw_accuracy_chart(fig, 98.6, 37.5, current_char.get_char())
+draw_char_pressed_chart(fig, 378, 820, current_char.get_char())
+draw_time_per_char_chart(fig, 997, 222, current_char.get_char())
+bigu_graphu(fig)
 
+update_image(fig)
+center_line = shapes.Line(1280 * 0, 720 * 0.46, 1280 * 1, 720 * 0.46, 5, color=(255, 255, 255), batch=batch)
 
 # x,y,w,h in % der gesamten Bildschirmgröße. Schriftgröße einfach testen, funktioniert nur mit Integer :(
 canvas[1] = draw_head_box(current_char.get_char(), batch)
 
-# äHier ist noch ein fehler D:
+
+# Hier ist noch ein fehler D:
 @window.event
 def on_draw():
     window.clear()
@@ -236,8 +242,16 @@ def on_text(text):
     current_char.change_char(text)
     print(current_char.get_char())
     canvas[1].label.text = 'Statistics for the char: ' + current_char.get_char()
+    fig.clf()
+    # graphen zeichnen
+    draw_accuracy_chart(fig, 98.6, 37.5, current_char.get_char())
+    draw_char_pressed_chart(fig, 378, 820, current_char.get_char())
+    draw_time_per_char_chart(fig, 997, 222, current_char.get_char())
+    bigu_graphu(fig)
 
+    update_image(fig)
 
+    # image.blit(0, 0)
 
 
 # Runner code
