@@ -1,6 +1,8 @@
-from pyglet.graphics import Batch
+from pyglet.graphics import Batch, Group
 
 import textprovider
+import ui_elements
+import ui_elements_ex
 from textprovider import TextProviderArgs
 from textprovider.statistical import StatisticalTextProvider
 from textprovider.randomized import RandomTextProvider
@@ -20,6 +22,12 @@ class LearningLevel(Screen):
         pos = events.size.pipe(rmap(lambda size: Rect(0, 0, *size)))
         style = Style(events.color_scheme, "Monocraft", 15)
         self.batch = batch = Batch()
+        background = Group(0)
+        foreground = Group(1)
+
+        # hintergrund
+        self.gif = ui_elements.Gif("assets/images/learning_mode_background.gif", 0, 0, 100, 120, 2, True, events, self.batch, background)
+        self.gif = ui_elements_ex.Rectangle(pos, (0, 0, 0, 100), batch, foreground)
 
         # textgeneratoren initialisieren
         self.focus_text_provider = RandomTextProvider(5)
@@ -33,7 +41,7 @@ class LearningLevel(Screen):
             return provider.get_text(args)
 
 
-        self.title = BorderedLabel(f"Buchstaben {', '.join(focus_chars)}", pos.pipe(map_inner_perc(25, 80, 50, 15)), style, batch)
+        self.title = BorderedLabel(f"Buchstaben {', '.join(focus_chars)}", pos.pipe(map_inner_perc(25, 80, 50, 15)), style, batch, foreground)
 
         max_rounds = 5
         round = Var(0)
@@ -44,13 +52,14 @@ class LearningLevel(Screen):
             ),
             pos.pipe(map_inner_perc(5, 65, 20, 7)),
             style,
-            batch
+            batch,
+            foreground
         )
 
         # runde zu text
         text = round.pipe(rmap(text_for_round))
 
-        self.input_box = InputBox(text, pos.pipe(map_inner_perc(15, 10, 70, 30)), style, events, batch=batch)
+        self.input_box = InputBox(text, pos.pipe(map_inner_perc(15, 10, 70, 30)), style, events, batch=batch, group=foreground)
         self._subs.add(
             self.input_box.text_tracker.pipe(
                 rfilter(lambda tt: tt.is_finished),
@@ -68,7 +77,8 @@ class LearningLevel(Screen):
             small_style,
             events,
             Observer(lambda _: self.push_screen(SettingsScreen.init_fn(save))),
-            batch
+            batch,
+            foreground
         )
         self.leave_button = Button(
             "Verlassen",
@@ -76,7 +86,8 @@ class LearningLevel(Screen):
             small_style,
             events,
             Observer(lambda _: self.go_back()),
-            batch
+            batch,
+            foreground
         )
 
     def get_view(self):

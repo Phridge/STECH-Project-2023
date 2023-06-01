@@ -170,6 +170,7 @@ class GameWindow(pyglet.window.Window, Disposable):
                     pyglet.app.exit()
                 else:
                     exit(0)
+
     def on_draw(self, *args):
         self.clear()
         view = self.controller.get_view()
