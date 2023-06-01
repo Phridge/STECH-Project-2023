@@ -129,6 +129,8 @@ def save_run(game_save_nr: int, level_name: str, input_analysis: InputAnalysis):
                 accuracy=(count - wrong) / count,
             ))
         session.commit()
+
+
 # -----------------Noch testen---------------------
 def save_game(game_save_nr, level_id, preset_text, written_text, time_needed_for_game, char_array):
     with new_session() as session:
@@ -193,10 +195,11 @@ def get_game_save_keyboard_layout(game_save):
         return session.execute("SELECT keyboard_layout FROM Save WHERE id =" + game_save)
 
 
-def get_game_save_average_accuracy(game_save):
+def get_avg_accuracy_of_specific_char(game_save, char_name):
     with new_session() as session:
         value_of_accuracy_sum = session.execute(
-            "SELECT SUM(accuracy) FROM Char WHERE run_id = (SELECT save_id FROM Run WHERE save_id =" + game_save + ")"
+            "SELECT SUM(accuracy) FROM Char WHERE char = " +
+            char_name + "and run_id = (SELECT save_id FROM Run WHERE save_id =" + game_save + ")"
         )
         count_of_runs = session.execute(
             "SELECT COUNT(accuracy) FROM Char WHERE run_id = (SELECT save_id FROM Run WHERE save_id =" + game_save + ")"
@@ -239,7 +242,7 @@ def show_last_char_results(game_save):
     last_run_id = get_last_run_id(game_save)
     with new_session() as session:
         char_list = session.execute(
-            "SELECT char, preset_char_count, typed_char_count, vg_time_per_char FROM Char WHERE run_id =" +
+            "SELECT char, preset_char_count, typed_char_count, avg_time_per_char, accuracy FROM Char WHERE run_id =" +
             last_run_id +
             ")"
         )
@@ -254,7 +257,7 @@ def show_three_best_chars(game_save, search_filter):
     last_run_id = get_last_run_id(game_save)
     with new_session() as session:
         char_list = session.execute(
-            "SELECT char, preset_char_count, typed_char_count, vg_time_per_char FROM Char WHERE run_id =" +
+            "SELECT char, preset_char_count, typed_char_count, avg_time_per_char, accuracy FROM Char WHERE run_id =" +
             last_run_id + " ORDER BY " + search_filter + " ASC LIMIT 3)"
         )
     for data_row in char_list:
@@ -268,7 +271,7 @@ def show_three_worst_chars(game_save, search_filter):
     last_run_id = get_last_run_id(game_save)
     with new_session() as session:
         char_list = session.execute(
-            "SELECT char, preset_char_count, typed_char_count, vg_time_per_char FROM Char WHERE run_id =" +
+            "SELECT char, preset_char_count, typed_char_count, avg_time_per_char, accuracy FROM Char WHERE run_id =" +
             last_run_id + " ORDER BY " + search_filter + "DESC LIMIT 3)"
         )
     for data_row in char_list:
