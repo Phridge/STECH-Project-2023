@@ -5,10 +5,10 @@ from typing import Any
 
 import pyglet.shapes
 import reactivex
-from reactivex import Observer
-from reactivex.disposable import CompositeDisposable
+from reactivex import Observer, using, Observable
+from reactivex.disposable import CompositeDisposable, SerialDisposable
 
-from events import Disposable, Var
+from events import Disposable, Var, Event
 
 
 class Rect(namedtuple("Rect", ["x", "y", "w", "h"])):
@@ -108,8 +108,38 @@ class BorderedLabel(UIElement):
         self._subs.add(text.subscribe(partial(setattr, text_layout, "text")))
 
 
+class TypeTracker(Disposable):
+    def __init__(self, preset_text, typed):
+
+        def on_subscribe(subscriber, scheduler):
+            typer_disposable = SerialDisposable()
+
+            def text_typer(preset):
+                _preset = preset
+
+                def on_type(text):
+                    nonlocal _preset
+                    if text == _preset[0]:
+                        _preset = _preset[1:]
+                    if len(_preset) == 0:
+                        self.finished.on_next(None)
+                        _preset = preset
+                    subscriber.on_next(_preset)
+                subscriber.on_next(_preset)
+
+                typer_disposable.disposable = typed.subscribe(on_type)
+
+            return CompositeDisposable(
+                typer_disposable,
+                preset_text.subscribe(text_typer)
+            )
+
+        self.text = Observable(on_subscribe)
+        self.finished = Event()
+
+
 class Button(UIElement):
-    def __init__(self, text, pos, style, events, on_click: Observer, batch=None, group=None):
+    def __init__(self, text, pos, style, events, on_click: Observer, type_in=True, batch=None, group=None):
         super().__init__()
         text, pos = rx(text), rx(pos)
         self._subs.add(on_click)
@@ -125,7 +155,12 @@ class Button(UIElement):
         # Text
         text_layout = pyglet.text.Label("", style.font, style.font_size, color=style.color.text, anchor_x="center", anchor_y="center", batch=batch, group=group)
         self._subs.add(pos.pipe(map_center_anchor()).subscribe(partial(position_pyglet_text, text_layout)))
-        self._subs.add(text.subscribe(partial(setattr, text_layout, "text")))
+
+        self._subs.add(text.subscribe(print))
+        # eingabetracker wie von janek
+        type_tracker = TypeTracker(text, events.text if type_in else reactivex.never())
+        self._subs.add(type_tracker.text.subscribe(partial(setattr, text_layout, "text")))
+        self._subs.add(type_tracker.finished.subscribe(on_click))
 
         self.down = False
         self.hover = False
@@ -174,7 +209,7 @@ class Button(UIElement):
 
 
 class ToggleButton(UIElement):
-    def __init__(self, text, pos, style, events, batch=None, group=None):
+    def __init__(self, text, pos, style, events, type_in=True, batch=None, group=None):
         super().__init__()
         text, pos = rx(text), rx(pos)
 
@@ -190,6 +225,14 @@ class ToggleButton(UIElement):
         text_layout = pyglet.text.Label("", style.font, style.font_size, color=style.color.text, anchor_x="center", anchor_y="center", batch=batch, group=group)
         self._subs.add(pos.pipe(map_center_anchor()).subscribe(partial(position_pyglet_text, text_layout)))
         self._subs.add(text.subscribe(partial(setattr, text_layout, "text")))
+
+        def on_typed_in(_):
+            self.toggle.on_next(not self.toggle.value)
+            update_style()
+
+        type_tracker = TypeTracker(text, events.text if type_in else reactivex.never())
+        self._subs.add(type_tracker.text.subscribe(partial(setattr, text_layout, "text")))
+        self._subs.add(type_tracker.finished.subscribe(on_typed_in))
 
         def update_style():
             if self.toggle.value:

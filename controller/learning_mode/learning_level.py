@@ -77,6 +77,7 @@ class LearningLevel(Screen):
             small_style,
             events,
             Observer(lambda _: self.push_screen(SettingsScreen.init_fn(save))),
+            False,
             batch,
             foreground
         )
@@ -86,6 +87,7 @@ class LearningLevel(Screen):
             small_style,
             events,
             Observer(lambda _: self.go_back()),
+            False,
             batch,
             foreground
         )

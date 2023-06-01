@@ -76,14 +76,15 @@ class MainLearningScreen(Screen):
             style,
             events,
             select_level_event,
-            batch)
+            batch=batch
+        )
         self.prev_level = Button(
             "<",
             pos.pipe(map_inner_perc(15, 20, 10, 40)),
             style,
             events,
             Observer(lambda _: change_level_index.on_next(-1)),
-            batch
+            batch=batch
         )
         self.next_level = Button(
             ">",
@@ -91,7 +92,7 @@ class MainLearningScreen(Screen):
             style,
             events,
             Observer(lambda _: change_level_index.on_next(+1)),
-            batch
+            batch=batch
         )
         self.level_index_label = BorderedLabel(
             level_index.pipe(
@@ -99,7 +100,7 @@ class MainLearningScreen(Screen):
             ),
             pos.pipe(map_inner_perc(40, 62, 20, 7)),
             style,
-            batch
+            batch=batch
         )
 
 

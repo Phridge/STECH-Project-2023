@@ -57,13 +57,13 @@ class SandboxLevel(Screen):
 
         button_region = pos.pipe(map_inner_perc(10, 60, 80, 10))
 
-        self.new_text_button = Button("Neu", button_region.pipe(map_inner_perc(100*(0/6), 0, 100/6, 100)), style, events, regenerate, batch, foreground)
+        self.new_text_button = Button("Neu", button_region.pipe(map_inner_perc(100*(0/6), 0, 100/6, 100)), style, events, regenerate, False, batch, foreground)
 
-        self.lower_case_toggle = ToggleButton("a-z", button_region.pipe(map_inner_perc(100*(1/6), 0, 100/6, 100)), style, events, batch, foreground)
-        self.upper_case_toggle = ToggleButton("A-Z", button_region.pipe(map_inner_perc(100*(2/6), 0, 100/6, 100)), style, events, batch, foreground)
-        self.numbers_toggle = ToggleButton("0-9", button_region.pipe(map_inner_perc(100*(3/6), 0, 100/6, 100)), style, events, batch, foreground)
-        self.easy_punct_toggle = ToggleButton(".,?*", button_region.pipe(map_inner_perc(100*(4/6), 0, 100/6, 100)), style, events, batch, foreground)
-        self.all_punct_toggle = ToggleButton("[]\\()", button_region.pipe(map_inner_perc(100*(5/6), 0, 100/6, 100)), style, events, batch, foreground)
+        self.lower_case_toggle = ToggleButton("a-z", button_region.pipe(map_inner_perc(100*(1/6), 0, 100/6, 100)), style, events, False, batch, foreground)
+        self.upper_case_toggle = ToggleButton("A-Z", button_region.pipe(map_inner_perc(100*(2/6), 0, 100/6, 100)), style, events, False, batch, foreground)
+        self.numbers_toggle = ToggleButton("0-9", button_region.pipe(map_inner_perc(100*(3/6), 0, 100/6, 100)), style, events, False, batch, foreground)
+        self.easy_punct_toggle = ToggleButton(".,?*", button_region.pipe(map_inner_perc(100*(4/6), 0, 100/6, 100)), style, events, False, batch, foreground)
+        self.all_punct_toggle = ToggleButton("[]\\()", button_region.pipe(map_inner_perc(100*(5/6), 0, 100/6, 100)), style, events, False, batch, foreground)
 
         self.lower_case_toggle.toggle.on_next(True)
 
@@ -91,8 +91,9 @@ class SandboxLevel(Screen):
             small_style,
             events,
             Observer(lambda _: self.push_screen(SettingsScreen.init_fn(save))),
-            batch,
-            foreground
+            False,
+            batch=batch,
+            group=foreground
         )
         self.leave_button = Button(
             "Verlassen",
@@ -100,8 +101,9 @@ class SandboxLevel(Screen):
             small_style,
             events,
             Observer(lambda _: self.go_back()),
-            batch,
-            foreground
+            False,
+            batch=batch,
+            group=foreground
         )
 
 
