@@ -54,8 +54,8 @@ class MainStoryScreen(Screen):
 
         self._subs.add(self.level1_button.clicked.subscribe(lambda _: self.push_screen(Level1.init_fn(save))))
         self._subs.add(self.level1_label.clicked.subscribe(lambda _: self.push_screen(Level1.init_fn(save))))
-        self._subs.add(self.level2_button.clicked.subscribe(lambda _: self.push_screen(Level2Screen.init_fn())))
-        self._subs.add(self.level2_label.clicked.subscribe(lambda _: self.push_screen(Level2Screen.init_fn())))
+        self._subs.add(self.level2_button.clicked.subscribe(lambda _: self.push_screen(Level2Screen.init_fn(save))))
+        self._subs.add(self.level2_label.clicked.subscribe(lambda _: self.push_screen(Level2Screen.init_fn(save))))
         self._subs.add(self.level3_button.clicked.subscribe(lambda _: self.push_screen(Level3Screen.init_fn())))
         self._subs.add(self.level3_label.clicked.subscribe(lambda _: self.push_screen(Level3Screen.init_fn())))
         self._subs.add(self.level4_button.clicked.subscribe(lambda _: self.push_screen(Level4Screen.init_fn())))

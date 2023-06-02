@@ -1,28 +1,24 @@
-import itertools
-import logging
-import time
-from functools import partial
-
-import pyglet
-import pygame
-from pygame import mixer
 import contextlib
+import itertools
 
+import pygame
+import pyglet
+from pygame import mixer
 from pyglet.graphics import Group
-from pyglet.resource import animation
-from reactivex import Observable, just, interval
-from reactivex.operators import combine_latest, map as rmap, share, starmap, multicast, scan
+from reactivex import Observable, just, concat
+from reactivex.disposable import CompositeDisposable, SerialDisposable
+from reactivex.operators import combine_latest, map as rmap, share, starmap, scan
 
 import color_scheme
+import textprovider.statistical
 import ui_elements
-from reactivex.subject import Subject
-from reactivex.disposable import CompositeDisposable
-
-from controller import Screen
-from controller.actors import Player, Enemy, ThePlayer, combine_offset, StaticActor, continuous_sum
-from ui_elements_ex import rx, Rect, Style, map_inner_perc
-from events import Event, Var
-from . import Level, Machine, animate
+from controller.actors import ThePlayer, combine_offset, StaticActor
+from events import Var
+from input_tracker import InputAnalysis, TextTracker
+from tools.save_and_open import save_run
+from ui_elements_ex import rx, Rect, Style, map_inner_perc, BorderedLabel, Rectangle
+from . import Level, animate
+from ..inputbox import InputBox
 
 """
 Eine Vorlage für einen Screen. ab Zeile 22 können Elemente eingefügt werde. Ein paar der ui-Elements sind als Beispiel gezeigt.
@@ -31,181 +27,267 @@ Lasst euch dieses Template anzeigen, indem ihr es im main_controller als initial
 """
 
 
-def game_object(image, pos, batch=None, group=None) -> Observable:
-    image = rx(image)
-    pos = rx(pos)
-
-    def create_sprite(old_sprite: pyglet.sprite.Sprite | None, img):
-        if old_sprite:
-            old_sprite.delete()
-        sprite = pyglet.sprite.Sprite(img, subpixel=True, batch=batch, group=group)
-        return sprite
-
-    def position_sprite(sprite, pos):
-        sprite.position = pos.x, pos.y, 0
-        if pos.w * pos.h > 0:
-            sprite.scale_x = pos.w * sprite.scale_x / sprite.width
-            sprite.scale_y = pos.h * sprite.scale_y / sprite.height
-
-    sprite = image.pipe(
-        scan(create_sprite, None),
-        share(),
-        combine_latest(pos),
-        starmap(position_sprite)
-    )
-
-    return sprite
-
-
 class Level2Screen(Level):
-    def __init__(self, events):
+    def __init__(self, events, save):
         super().__init__()
         self.events = events
         window = events.size.pipe(
             rmap(lambda s: Rect(0, 0, *s))
         )
         style = Style(events.color_scheme, "Monocraft", 15)
+
         player_group = Group(0, parent=self.foreground)
         bush_group = Group(1, parent=self.foreground)
         enemy_group = Group(2, parent=self.foreground)
-        # dient, um Objekte manuell nach vorne und hinten zu schieben. Je weniger er genutzt wird, umso performanter ist alles.
-        # Standardmäßig ist alles im Mittelgrund zwischen Vorder- und Hintergrund
 
         # im folgenden Block können Elemente eingefügt werden. Die Elemente die schon da sind dienen nur als Beispiele
-        self.gif = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, self.background)
-
-
-        def generate_bush_enemy_positions():
-            curr = 0
-            inc = 500
-            iinc = 1.01
-            while True:
-                yield Rect(curr, -30, 150, 100), Rect(curr + inc / 2, -10, 100, 130)
-                curr += inc
-                inc *= iinc
-
-
-        positions = list(itertools.islice(generate_bush_enemy_positions(), 1000))
-
-        level_progress = Var(0)
+        self.scroll_background = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, self.background)
+        self.header = ui_elements.BorderedRectangle("Level 2: Der Wald des Widerstands", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.batch, self.foreground)
 
         sprite_sheet = pyglet.resource.image('assets/images/enemy_idle.png')
         image_grid = pyglet.image.ImageGrid(sprite_sheet, rows=1, columns=4)
-        enemy_animation = pyglet.image.Animation.from_image_sequence(image_grid, duration=0.3); del sprite_sheet, image_grid
+        enemy_static_animation = pyglet.image.Animation.from_image_sequence(image_grid, duration=0.3)
+        del sprite_sheet, image_grid
         bush_animation = pyglet.image.load("assets/images/bush.png")
+        enemy_run_animation = pyglet.image.load_animation("assets/images/enemy_walk.gif")
 
-        object_area = window.pipe(
-            map_inner_perc(0, 10, 100, 90)
-        )
+        def state_machine(msg):
+            def generate_bush_enemy_positions():
+                curr = 0
+                enemy_offset = 200
+                inc = 500
+                iinc = 10
+                while True:
+                    yield Rect(curr, -30, 150, 100), Rect(curr + enemy_offset, -10, 100, 130)
+                    curr += inc
+                    inc += iinc
 
-        scroll = Var(0)
-        scroll_off = scroll.pipe(
-            rmap(lambda o: Rect(-o, 0, 0, 0))
-        )
-
-        # Player-Objekt
-
-        player_stationary = Rect(100, -10, 130, 130)
-        player_pos = Var(player_stationary)
-        self.player = ThePlayer(
-            pos=player_pos.pipe(combine_offset(object_area)),
-            state=Var(ThePlayer.Running(4.0)),
-            batch=self.batch,
-            group=player_group,
-        )
+            positions = list(itertools.islice(generate_bush_enemy_positions(), 1000))
 
 
-        level_enemies = []
+            object_area = window.pipe(
+                map_inner_perc(0, 9, 100, 91)
+            )
 
-        def generate_enemies(index):
-            bush_pos, enemy_pos = positions[index]
+            scroll = Var(-1500)
+            scroll_off = scroll.pipe(
+                rmap(lambda o: Rect(-o, 0, 0, 0))
+            )
 
-            enemy = StaticActor(
-                enemy_animation,
-                just(enemy_pos).pipe(
+            # scroll.subscribe(print)
+
+            # Player-Objekt
+
+            player_stationary = Rect(100, -10, 130, 130)
+            player_pos = Var(player_stationary)
+            self.player = ThePlayer(
+                pos=player_pos.pipe(combine_offset(object_area)),
+                state=Var(ThePlayer.Running(4.0)),
+                look_dir=Var(1),
+                batch=self.batch,
+                group=player_group,
+            )
+
+            level_objects = []
+
+            def generate_enemies(index):
+                bush_pos, enemy_pos = positions[index]
+
+                enemy = StaticActor(
+                    enemy_static_animation,
+                    just(enemy_pos).pipe(
+                        combine_offset(scroll_off),
+                        combine_offset(object_area)
+                    ),
+                    look_dir=-1,
+                    batch=self.batch,
+                    group=enemy_group
+                )
+
+                bush = StaticActor(
+                    bush_animation,
+                    just(bush_pos).pipe(
+                        combine_offset(scroll_off),
+                        combine_offset(object_area),
+                    ),
+                    batch=self.batch,
+                    group=bush_group
+                )
+
+                return bush, enemy
+
+            generate_ahead = 3
+
+            for i in range(generate_ahead):
+                level_objects.append(generate_enemies(i))
+
+            def rotate_enemies(index):
+                level_objects.pop(0)
+                level_objects.append(generate_enemies(index + generate_ahead))
+
+            self.player.state.on_next(ThePlayer.Running(5.0))
+            yield CompositeDisposable(
+                animate(-1500, -player_stationary.x, 4.0, events.update).subscribe(scroll.on_next, on_completed=msg),
+            )
+
+            level_progress = 0
+            max_fails = 10
+            fails_left = Var(max_fails)
+            long_enough = False
+            animate(0, 0, 3 * 60, events.update).subscribe(on_completed=lambda: locals().update(long_enough=True))
+
+            fails_left_display = BorderedLabel(
+                fails_left.pipe(rmap(lambda n: f"Verdächtig: {max_fails-n}/{max_fails}")),
+                window.pipe(
+                    map_inner_perc(35, 70, 30, 5)
+                ),
+                style.scale_font_size(0.7),
+                batch=self.batch,
+                group=self.foreground
+            )
+
+
+
+            ia = InputAnalysis()
+            text_provider = textprovider.statistical.StatisticalTextProvider.from_pickle("assets/text_statistics/stats_1.pickle")
+
+            while not long_enough:
+                # spieler anhalten, da am busch
+                self.player.state.on_next(ThePlayer.Idle())
+                self.scroll_background.paused = True
+
+                # inputbox kreieren und positionieren
+                current_enemy_pos = positions[level_progress][1]
+                box_pos = just(Rect(-50, 0, 300, 50)).pipe(
+                    combine_offset(just(current_enemy_pos)),
                     combine_offset(scroll_off),
                     combine_offset(object_area)
+                )
+                generation_args = textprovider.TextProviderArgs(20, 20 + level_progress * 2, textprovider.Charset.ALPHA)
+                text = text_provider.get_text(generation_args)
+                inputbox = InputBox(text, box_pos, style, events, ia, batch=self.batch, group=enemy_group)
+
+                def react_to_input(tt: TextTracker):
+                    if tt.is_finished:
+                        msg(True)
+                    elif not tt.last_input_correct:
+                        msg(False)
+
+                # auf spielereingabe fertig warten
+                result = yield CompositeDisposable(
+                    inputbox.text_tracker.subscribe(react_to_input)
+                )
+
+                # fehler zählen
+                if not result:
+                    yield animate(0, 0, 0.3, events.update).subscribe(on_completed=msg)
+                    fails_left.on_next(fails_left.value - 1)
+
+                # inputbox weg
+                inputbox.dispose()
+
+                if fails_left.value == 0:
+                    break
+
+                # vorwärts rennen
+                self.player.state.on_next(ThePlayer.Running(5.0))
+                self.scroll_background.paused = False
+                yield CompositeDisposable(
+                    animate(
+                        positions[level_progress][0].x - player_stationary.x,
+                        positions[level_progress+1][0].x - player_stationary.x,
+                        1, events.update
+                    ).subscribe(scroll.on_next, on_completed=msg)
+                )
+
+                rotate_enemies(level_progress)
+
+                level_progress += 1
+
+
+            # wegrennen, sodass die gegner außer sichtweite kommen
+            self.player.state.on_next(ThePlayer.Running(5.0))
+            self.scroll_background.paused = False
+            yield CompositeDisposable(
+                animate(
+                    positions[level_progress][0].x - player_stationary.x,
+                    positions[level_progress + generate_ahead][0].x - player_stationary.x + 1000,
+                    3,
+                    events.update
+                ).subscribe(scroll.on_next, on_completed=msg)
+            )
+
+            #stehenbleiben
+            self.player.state.on_next(ThePlayer.Idle())
+            self.scroll_background.paused = True
+            yield CompositeDisposable(
+                animate(0, 0, 2, events.update).subscribe(on_completed=msg)
+            )
+
+            # umschauen
+            self.player.look_dir.on_next(-1)
+            yield CompositeDisposable(
+                animate(0, 0, 1, events.update).subscribe(on_completed=msg)
+            )
+
+            # umschauen
+            self.player.look_dir.on_next(1)
+            yield CompositeDisposable(
+                animate(0, 0, 1, events.update).subscribe(on_completed=msg)
+            )
+
+            # !!WEGRENNEN!
+            self.player.state.on_next(ThePlayer.Running(5.0))
+            self.scroll_background.paused = False
+            enemy_advance = Var(-200)
+            enemy1 = StaticActor(
+                enemy_run_animation,
+                enemy_advance.pipe(
+                    rmap(lambda x: Rect(x, 0, 100, 130)),
+                    combine_offset(object_area),
                 ),
-                look_dir=-1,
+                batch=self.batch,
+                group=enemy_group
+            )
+            enemy2 = StaticActor(
+                enemy_run_animation,
+                enemy_advance.pipe(
+                    rmap(lambda x: Rect(x-200, -10, 100, 130)),
+                    combine_offset(object_area),
+                ),
                 batch=self.batch,
                 group=enemy_group
             )
 
 
-            bush = StaticActor(
-                bush_animation,
-                just(bush_pos).pipe(
-                    combine_offset(scroll_off),
-                    combine_offset(object_area),
-                ),
-                batch=self.batch,
-                group=bush_group
+            animation = concat(
+                animate(0, 0, 1, events.update, lambda v: (0, 0, 0, int(v))),
+                animate(0, 255, 4, events.update, lambda v: (0, 0, 0, int(v))),
             )
 
-            return bush, enemy
+            yield CompositeDisposable(
+                animate(-200, 3000, 30, events.update).subscribe(enemy_advance.on_next),
+                animate(0, 3000, 20, events.update, lambda x: player_stationary.offset((x, 0))).subscribe(player_pos.on_next),
+                Rectangle(window, animation, batch=self.batch, group=self.overlay),
+                animation.subscribe(on_completed=msg)
+            )
 
-        generate_ahead = 5
-
-        for i in range(generate_ahead):
-            level_enemies.append(generate_enemies(i))
-
-
-        def rotate_enemies(index):
-            level_enemies.pop(0)
-            level_enemies.append(generate_enemies(index + generate_ahead))
-
-        self._subs.add(level_progress.subscribe(rotate_enemies))
+            # ergebnisse speichern
+            save_run(save, "story_level_2", ia)
 
 
-        def scroll_to_progress(index):
-            if index == 0:
-                lo = -1500
-                time = 4
-            else:
-                lo = positions[index-1][0].x - 100
-                time = 1
-            hi = positions[index][0].x - 100
-
-            disposable = animate(lo, hi, time, events.update).subscribe(scroll.on_next, on_completed=lambda: disposable.dispose())
-
-
-        self._subs.add(level_progress.subscribe(scroll_to_progress))
-
-        self.events.text.subscribe(lambda _: level_progress.on_next(level_progress.value + 1))
-
-        def player_enter():
-
-            return CompositeDisposable([
-
-            ])
-
-        machine = Machine([
-            player_enter,
-        ])
+        self.machine_disposable = SerialDisposable()
+        def switch_state(data=None):
+            self.machine_disposable.disposable = None
+            try:
+                self.machine_disposable.disposable = machine.send(data)
+            except StopIteration:
+                pass
+        machine = state_machine(switch_state)
+        switch_state(None)
 
 
 
-
-        self.header = ui_elements.BorderedRectangle("Level 2: Der Wald des Widerstands", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.batch, self.foreground)
-
-        # Hier muss für jeden Button eine Subscription erstellt werden.
-        # In der Lambda-Funktion wird dann die Funktion angebgeben, die aufgerufen werden soll wenn der jeweilige Button gedrückt wird
-        # self._subs.add(self.mech.clicked.subscribe(lambda _: self.mech_hurt(True)))
-        # self.mech_sub = None
-
-    #  Falls die Funktionen namentlich nicht passen erstellte einfach neue!
-
-    def mech_hurt(self, data):
-        if data:
-            logging.warning("AUA")
-            self.mech.delete()
-            self.mech = ui_elements.GifButton("assets/images/mech_hurt.gif", 30, 12, 13, 20, 0.25, True, self.events, self.batch)
-            self.mech_sub = self.mech.loop_finished.subscribe(lambda _: self.mech_hurt(False))
-        else:
-            self.mech.delete()
-            self.mech = ui_elements.GifButton("assets/images/mech_walk.gif", 30, 12, 13, 20, 0.75, True, self.events, self.batch)
-            if self.mech_sub:
-                self.mech_sub.dispose()
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch

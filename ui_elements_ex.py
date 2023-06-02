@@ -83,6 +83,9 @@ class Style:
     font: str
     font_size: float
 
+    def scale_font_size(self, factor):
+        return Style(self.color, self.font, self.font_size * factor)
+
 
 class UIElement(Disposable):
     def __init__(self):
@@ -105,6 +108,10 @@ class BorderedLabel(UIElement):
         # Text
         text_layout = pyglet.text.Label("", style.font, style.font_size, color=style.color.text, anchor_x="center", anchor_y="center", batch=batch, group=group)
         self._subs.add(pos.pipe(map_center_anchor()).subscribe(partial(position_pyglet_text, text_layout)))
+        def test(text):
+            print(text)
+            print(text_layout)
+        self._subs.add(text.subscribe(test))
         self._subs.add(text.subscribe(partial(setattr, text_layout, "text")))
 
 

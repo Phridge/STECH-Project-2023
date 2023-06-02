@@ -145,7 +145,7 @@ Und jetzt los, wir haben viel zu tun!\
         # dann Spieler exit
         machine = Machine(
             [player_entry]
-            + [display_text(text) for text in self.TEXTS[:1]]
+            + [display_text(text) for text in self.TEXTS]
             + [player_exit]
         )
 

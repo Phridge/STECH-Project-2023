@@ -162,7 +162,7 @@ class StatisticalTextProvider(TextProvider):
         try:
             table = self.table.retain(lambda c1, c2: (c1 in args.chars or c1 == " ") and c2 in args.chars)
 
-            target_len = random.randrange(args.min_length, args.max_length)
+            target_len = random.randint(args.min_length, args.max_length)
 
             acc = ""
             while len(acc) < target_len:

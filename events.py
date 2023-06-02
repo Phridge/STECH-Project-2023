@@ -17,6 +17,9 @@ class Disposable:
             if isinstance(value, (Disposable, DisposableBase)):
                 value.dispose()
 
+    def __del__(self):
+        self.dispose()
+
 
 Unset = object()
 
