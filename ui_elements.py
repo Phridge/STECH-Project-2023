@@ -590,7 +590,7 @@ class Sprite(pyglet.sprite.Sprite, UIElement):
         x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet das Bild in der richtigen Größe
-        image = pyglet.image.load(path)
+        image = pyglet.image.load(path) if isinstance(path, str) else path
         pyglet.sprite.Sprite.__init__(self, image, x_px, y_px, batch=batch, group=group)
 
         # speichert die Standard-Maße des Bildes ab
