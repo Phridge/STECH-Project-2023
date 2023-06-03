@@ -20,19 +20,20 @@ class LevelFinishedScreen(Screen):
         foreground = pyglet.graphics.Group(order=1)
 
         # Erstes Layout für den HomeScreen
-        # self.background = pyglet.shapes.Rectangle(0, 0, 100, 100, (0, 0, 0), self.batch, background)
+        self.background = ui_elements.Sprite("assets/images/tearoom.png", 0, 0, 100, 100, events, self.batch, background)
+        self.maxwell = ui_elements.Sprite("assets/images/mech_tea.png", 40, 17.5, 20, 40, events, self.batch)
 
         if successful:  headline = "Level abgeschlossen!"
         else: headline = "Level fehlgeschlagen"
         self.header = ui_elements.BorderedRectangle(headline, 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 5, events, self.batch)
-        self.back = ui_elements.InputButton("Modus verlassen", 15, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
-        self.statistics = ui_elements.InputButton("Auswertung", 40, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, self.batch)
+        self.back = ui_elements.InputButton("Modus verlassen", 15, 5, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
+        self.statistics = ui_elements.InputButton("Auswertung", 40, 5, 20, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, self.batch)
 
         if successful:
-            self.points_achieved = ui_elements.BorderedRectangle(str(points), 35, 55, 30, 15, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
-            self.next_level = ui_elements.InputButton("Nächstes Level", 65, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
+            self.points_achieved = ui_elements.BorderedRectangle(str(points) + " Punkte", 35, 55, 30, 15, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
+            self.next_level = ui_elements.InputButton("Nächstes Level", 65, 5, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
         else:
-            self.retry = ui_elements.InputButton("Neuer Versuch", 65, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
+            self.retry = ui_elements.InputButton("Neuer Versuch", 65, 5, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
 
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
