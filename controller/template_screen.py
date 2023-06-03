@@ -28,7 +28,6 @@ class TemplateScreen(Screen):
         # self.gif = ui_elements.Gif("assets/images/popcat.gif", 35, 42.5, 30, 10, 1, True, events, self.batch)
         self.button1 = ui_elements.BorderedRectangleButton("Spielstand 1", 35, 55, 30, 10, events.color_scheme, color_scheme.Minecraft, 6, events, self.batch)
         # self.button2 = ui_elements.GifButton("assets/images/popcat.gif", 35, 30, 30, 10, 1, True, events, self.batch)
-        self.button3 = ui_elements.BorderedSpriteButton("assets/images/popcat.png", 35, 17.5, 30, 10, events.color_scheme, events, self.batch)
 
         # Hier muss für jeden Button eine Subscription erstellt werden.
         # In der Lambda-Funktion wird dann die Funktion angebgeben, die aufgerufen werden soll wenn der jeweilige Button gedrückt wird

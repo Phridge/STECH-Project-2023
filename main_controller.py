@@ -1,7 +1,5 @@
-import contextlib
 from contextlib import suppress
 from dataclasses import dataclass
-from collections import namedtuple
 from typing import Any, Callable, Optional
 
 import pygame
@@ -13,26 +11,8 @@ from reactivex import Observer
 from reactivex.subject import BehaviorSubject, Subject
 from reactivex.disposable import CompositeDisposable, MultipleAssignmentDisposable, SerialDisposable
 import color_scheme
-from controller.sandbox_mode.sandbox_level import SandboxLevel
 from controller import Screen
-from controller.settings import SettingsScreen
-from controller.statistics import StatisticsScreen
 from controller.start_screen import StartScreen
-from controller.home_screen import HomeScreen
-from controller.error_screen import ErrorScreen
-from controller.delete_save_screen import DeleteSaveScreen
-from controller.pause_screen import PauseScreen
-from controller.story_mode.level1_screen import Level1Screen
-from controller.story_mode.level2_screen import Level2Screen
-from controller.story_mode.level3_screen import Level3Screen
-from controller.story_mode.level4_screen import Level4Screen
-from controller.story_mode.main_screen import MainStoryScreen
-from controller.learning_mode.main_screen import MainLearningScreen
-from controller.sandbox_mode.main_screen import MainSandboxScreen
-
-
-# Beispiel-Bildschirm
-from controller.template_screen import TemplateScreen
 from events import Events, Event, Var, Disposable
 
 
@@ -81,7 +61,7 @@ class ChangeSetting:
 
 class GameWindow(pyglet.window.Window, Disposable):
     def __init__(self):
-        super().__init__(resizable=True)
+        super().__init__(resizable=True, caption="Typerpunk: The Rise of Maxwell")
         self.events = Events(
             key=Event(),
             text=Event(),
@@ -107,6 +87,7 @@ class GameWindow(pyglet.window.Window, Disposable):
 
         # self.push_screen(Level1Screen)
         self.push_screen(StartScreen)
+        self.set_icon(pyglet.image.load("assets/images/mech_tea.png"))
 
 
     def push_screen(self, screen_init):
