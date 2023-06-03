@@ -6,6 +6,7 @@ import contextlib
 import color_scheme
 import main_controller
 import ui_elements
+from reactivex import concat
 from reactivex.operators import delay, map as rmap, combine_latest, do_action, starmap, filter as rfilter, share
 from reactivex.disposable import CompositeDisposable, Disposable
 from controller import Screen
@@ -123,7 +124,10 @@ Und jetzt los, wir haben viel zu tun!\
             # save game
             save_run(save, "story_level_1", input_analysis)
 
-            color = animate(0, 255, 3.0, events.update, lambda o: (0, 0, 0, int(o))).pipe(delay(3.0))
+            color = concat(
+                animate(0, 0, 2.0, events.update, lambda o: (0, 0, 0, int(o))),
+                animate(0, 255, 3.0, events.update, lambda o: (0, 0, 0, int(o)))
+            )
             pos_anim = animate(100, 2000, 10.0, events.update, lambda v: Rect(v, 0, 150, 150))
 
             overlay_rect = Rectangle(pos, color, self.batch, self.overlay)
@@ -153,7 +157,7 @@ Und jetzt los, wir haben viel zu tun!\
         # dann Spieler exit
         machine = Machine(
             [player_entry]
-            + [display_text(text) for text in self.TEXTS]
+            + [display_text(text) for text in self.TEXTS[:1]]
             + [player_exit]
             + [show_results]
         )
