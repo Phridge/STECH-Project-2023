@@ -6,7 +6,7 @@ import pyglet
 from pygame import mixer
 from pyglet.graphics import Group
 from reactivex import Observable, just, concat
-from reactivex.disposable import CompositeDisposable, SerialDisposable
+from reactivex.disposable import CompositeDisposable, SerialDisposable, Disposable
 from reactivex.operators import combine_latest, map as rmap, share, starmap, scan
 
 import color_scheme
@@ -17,7 +17,7 @@ from events import Var
 from input_tracker import InputAnalysis, TextTracker
 from tools.save_and_open import save_run
 from ui_elements_ex import rx, Rect, Style, map_inner_perc, BorderedLabel, Rectangle
-from . import Level, animate
+from . import Level, animate, LevelMachine
 from ..inputbox import InputBox
 
 """
@@ -51,8 +51,13 @@ class Level2Screen(Level):
         bush_animation = pyglet.image.load("assets/images/bush.png")
         enemy_run_animation = pyglet.image.load_animation("assets/images/enemy_walk.gif")
 
-        def state_machine(msg):
+        def level_generator(msg):
             def generate_bush_enemy_positions():
+                """
+                Generiert positionen von Büschen und Gegnern. Da dieses Level im prinzip ein endlos-scroller ist,
+                gibt es unendlich viele positionen, die generiert werden können.
+                :return: ein Generator, welcher per next() neue tupel für busch- und Gegnerpositionen liefert.
+                """
                 curr = 0
                 enemy_offset = 200
                 inc = 500
@@ -62,22 +67,23 @@ class Level2Screen(Level):
                     curr += inc
                     inc += iinc
 
+            # positionen vorgenerieren, da auf diese hier über index zugegriffen werden muss.
+            # bitte nicht weiter spielen als 1000 gegner !!
             positions = list(itertools.islice(generate_bush_enemy_positions(), 1000))
 
-
+            # bereich für spielobjekte. Bildet u.A. den Boden.
             object_area = window.pipe(
                 map_inner_perc(0, 9, 100, 91)
             )
 
+            # es ist ein scroller level, hier ist die aktuelle scroll-weite
             scroll = Var(-1500)
             scroll_off = scroll.pipe(
                 rmap(lambda o: Rect(-o, 0, 0, 0))
             )
 
-            # scroll.subscribe(print)
-
             # Player-Objekt
-
+            # position ändert sich nicht, aber durch bewegen der anderen Objekte im spiel sieht es so aus, als würde sich der Spieler bewegen.
             player_stationary = Rect(100, -10, 130, 130)
             player_pos = Var(player_stationary)
             self.player = ThePlayer(
@@ -88,6 +94,7 @@ class Level2Screen(Level):
                 group=player_group,
             )
 
+            # hier werden die aktuell angezeigten objekte (busch, gegner) gespeiechert.
             level_objects = []
 
             def generate_enemies(index):
@@ -116,26 +123,37 @@ class Level2Screen(Level):
 
                 return bush, enemy
 
+            # es werden immer nur 3 (4) gegner und büsche angezeigt.
             generate_ahead = 3
 
+            # generiere ein paar gegner
             for i in range(generate_ahead):
                 level_objects.append(generate_enemies(i))
 
             def rotate_enemies(index):
+                """
+                Lösche nicht mehr sichtbare gegner und generiere neue voraus.
+                """
                 level_objects.pop(0)
                 level_objects.append(generate_enemies(index + generate_ahead))
 
+            # spielbeginn: spieler kommt angerannt.
             self.player.state.on_next(ThePlayer.Running(5.0))
             yield CompositeDisposable(
                 animate(-1500, -player_stationary.x, 4.0, events.update).subscribe(scroll.on_next, on_completed=msg),
             )
 
+            # spieler sitzt nun hinterm busch.
             level_progress = 0
             max_fails = 10
             fails_left = Var(max_fails)
             long_enough = False
-            animate(0, 0, 3 * 60, events.update).subscribe(on_completed=lambda: locals().update(long_enough=True))
+            self._subs.add(  # nach 3 minuten wird das level beendet (flag wird auf true gesetzt)
+                animate(0, 0, 3 * 60, events.update)
+                .subscribe(on_completed=lambda: locals().update(long_enough=True))
+            )
 
+            # wie viele versuche noch - Display
             fails_left_display = BorderedLabel(
                 fails_left.pipe(rmap(lambda n: f"Verdächtig: {max_fails-n}/{max_fails}")),
                 window.pipe(
@@ -145,8 +163,6 @@ class Level2Screen(Level):
                 batch=self.batch,
                 group=self.foreground
             )
-
-
 
             ia = InputAnalysis()
             text_provider = textprovider.statistical.StatisticalTextProvider.from_pickle("assets/text_statistics/stats_1.pickle")
@@ -158,14 +174,14 @@ class Level2Screen(Level):
 
                 # inputbox kreieren und positionieren
                 current_enemy_pos = positions[level_progress][1]
-                box_pos = just(Rect(-50, 0, 300, 50)).pipe(
+                box_pos = just(Rect(-30, -20, 200, 50)).pipe(
                     combine_offset(just(current_enemy_pos)),
                     combine_offset(scroll_off),
                     combine_offset(object_area)
                 )
                 generation_args = textprovider.TextProviderArgs(20, 20 + level_progress * 2, textprovider.Charset.ALPHA)
                 text = text_provider.get_text(generation_args)
-                inputbox = InputBox(text, box_pos, style, events, ia, batch=self.batch, group=enemy_group)
+                inputbox = InputBox(text, box_pos, style.scale_font_size(.7), events, ia, batch=self.batch, group=enemy_group)
 
                 def react_to_input(tt: TextTracker):
                     if tt.is_finished:
@@ -180,11 +196,28 @@ class Level2Screen(Level):
 
                 # fehler zählen
                 if not result:
-                    yield animate(0, 0, 0.3, events.update).subscribe(on_completed=msg)
+                    # ausrufezeichen über gegner anzeigen
                     fails_left.on_next(fails_left.value - 1)
+                    alert_box = just(Rect(40, 100, 40, 60)).pipe(
+                        combine_offset(just(current_enemy_pos)),
+                        combine_offset(scroll_off),
+                        combine_offset(object_area)
+                    )
+                    alert_box = BorderedLabel(
+                        "!",
+                        alert_box,
+                        style.scale_font_size(2.0),
+                        batch=self.batch,
+                        group=enemy_group,
+                    )
+                    yield animate(0, 0, 0.3, events.update).subscribe(on_completed=msg)
+                else:
+                    alert_box = Disposable()
+
 
                 # inputbox weg
                 inputbox.dispose()
+
 
                 if fails_left.value == 0:
                     break
@@ -201,6 +234,7 @@ class Level2Screen(Level):
                 )
 
                 rotate_enemies(level_progress)
+                alert_box.dispose()
 
                 level_progress += 1
 
@@ -217,7 +251,7 @@ class Level2Screen(Level):
                 ).subscribe(scroll.on_next, on_completed=msg)
             )
 
-            #stehenbleiben
+            # stehenbleiben
             self.player.state.on_next(ThePlayer.Idle())
             self.scroll_background.paused = True
             yield CompositeDisposable(
@@ -239,6 +273,8 @@ class Level2Screen(Level):
             # !!WEGRENNEN!
             self.player.state.on_next(ThePlayer.Running(5.0))
             self.scroll_background.paused = False
+
+            # verfolgende gegner erstellen
             enemy_advance = Var(-200)
             enemy1 = StaticActor(
                 enemy_run_animation,
@@ -259,7 +295,7 @@ class Level2Screen(Level):
                 group=enemy_group
             )
 
-
+            # fadeout animation
             animation = concat(
                 animate(0, 0, 1, events.update, lambda v: (0, 0, 0, int(v))),
                 animate(0, 255, 4, events.update, lambda v: (0, 0, 0, int(v))),
@@ -276,15 +312,7 @@ class Level2Screen(Level):
             save_run(save, "story_level_2", ia)
 
 
-        self.machine_disposable = SerialDisposable()
-        def switch_state(data=None):
-            self.machine_disposable.disposable = None
-            try:
-                self.machine_disposable.disposable = machine.send(data)
-            except StopIteration:
-                pass
-        machine = state_machine(switch_state)
-        switch_state(None)
+        self.machine = LevelMachine(level_generator)
 
 
 
