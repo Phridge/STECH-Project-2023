@@ -264,11 +264,27 @@ class Level2Screen(Level):
                 animate(0, 0, 1, events.update).subscribe(on_completed=msg)
             )
 
+            # erschrecken (ausrufezeichen über Maxwell anzeigen)
+            fails_left.on_next(fails_left.value - 1)
+            alert_box = just(Rect(40, 120, 40, 60)).pipe(
+                combine_offset(just(player_stationary)),
+                combine_offset(object_area)
+            )
+            alert_box = BorderedLabel(
+                "!",
+                alert_box,
+                style.scale_font_size(2.0),
+                batch=self.batch,
+                group=enemy_group,
+            )
+            yield animate(0, 0, 0.3, events.update).subscribe(on_completed=msg)
+
             # umschauen
             self.player.look_dir.on_next(1)
             yield CompositeDisposable(
                 animate(0, 0, 1, events.update).subscribe(on_completed=msg)
             )
+            alert_box.dispose() # Ausrufezeichen geht weg
 
             # !!WEGRENNEN!
             self.player.state.on_next(ThePlayer.Running(5.0))
