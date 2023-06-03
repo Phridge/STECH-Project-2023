@@ -12,6 +12,8 @@ from controller import Screen
 from controller.story_mode.level2_screen import Level2Screen
 from controller.story_mode.level3_screen import Level3Screen
 from controller.story_mode.level4_screen import Level4Screen
+
+
 # from controller.story_mode.level5_screen import Level5Screen
 
 
@@ -26,16 +28,18 @@ class LevelFinishedScreen(Screen):
         # Erstes Layout für den HomeScreen
         # self.background = pyglet.shapes.Rectangle(0, 0, 100, 100, (0, 0, 0), self.batch, background)
 
+
         self.header = ui_elements.BorderedRectangle("Level Abgeschlossen!", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 5, events, self.batch)
+        self.points_achieved = ui_elements.BorderedRectangle(str(points), 35, 55, 30, 15, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
 
         self.back = ui_elements.InputButton("Modus verlassen", 15, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
         self.statistics = ui_elements.InputButton("Auswertung", 40, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, self.batch)
         self.next_level = ui_elements.InputButton("Nächstes Level", 65, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
-        from main_controller import PopScreen
+        from controller.story_mode.main_screen import MainStoryScreen
 
-        self._subs.add(self.back.clicked.subscribe(lambda _: self.game_command.on_next(PopScreen()), lambda _: self.game_command.on_next(PopScreen())))
+        self._subs.add(self.back.clicked.subscribe(lambda _: self.push_screen(MainStoryScreen.init_fn(save_file))))
         self._subs.add(self.next_level.clicked.subscribe(lambda _: self.push_next_level(next_screen, save_file)))
         self._subs.add(self.statistics.clicked.subscribe(lambda _: print("AHHHHHHH HIER KOMMEN MARTINS STATS")))
 

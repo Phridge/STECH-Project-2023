@@ -10,7 +10,7 @@ from reactivex.disposable import CompositeDisposable
 from controller import Controller, Screen
 from controller.settings import SettingsScreen
 from controller.statistics import StatisticsScreen
-from controller.story_mode.level1_screen import Level1
+from controller.story_mode.level1_screen import Level1Screen
 
 
 class MainStoryScreen(Screen):
