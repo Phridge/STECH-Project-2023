@@ -16,6 +16,7 @@ from input_tracker import InputAnalysis
 from tools.save_and_open import save_run
 from ui_elements_ex import Rect, map_inner_perc, Style, Rectangle
 from events import Event, Var
+from ..level_finished import LevelFinishedScreen
 
 """
 Eine Vorlage für einen Screen. ab Zeile 22 können Elemente eingefügt werde. Ein paar der ui-Elements sind als Beispiel gezeigt.
@@ -132,8 +133,19 @@ Und jetzt los, wir haben viel zu tun!\
             self.p.state.on_next(ThePlayer.Running(4.0))
             return CompositeDisposable(
                 overlay_rect,
-                pos_anim.subscribe(player_pos.on_next, on_completed=lambda: machine.next()),
+                pos_anim.subscribe(player_pos.on_next),
+                color.subscribe(on_completed=lambda: machine.next())
             )
+
+        def show_results():
+            print("Level abgeschlossen")
+            self.push_screen(LevelFinishedScreen.init_fn(save, "Level2", calculate_points(input_analysis)))
+
+
+        from main_controller import PushScreen
+        def goto(screen_init):
+            return lambda _: self.game_command.on_next(PushScreen(screen_init))
+
 
         # Erstellung der State Machine aus allen nötigen Zuständen:
         # Spieler entry
@@ -143,11 +155,12 @@ Und jetzt los, wir haben viel zu tun!\
             [player_entry]
             + [display_text(text) for text in self.TEXTS]
             + [player_exit]
+            + [show_results]
         )
+
 
         def calculate_points(input_analysis: InputAnalysis):
             return int((input_analysis.correct_char_count / input_analysis.time) ** 2 * 100)
-
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
