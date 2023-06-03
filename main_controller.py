@@ -22,7 +22,7 @@ from controller.home_screen import HomeScreen
 from controller.error_screen import ErrorScreen
 from controller.delete_save_screen import DeleteSaveScreen
 from controller.pause_screen import PauseScreen
-from controller.story_mode.level1_screen import Level1
+from controller.story_mode.level1_screen import Level1Screen
 from controller.story_mode.level2_screen import Level2Screen
 from controller.story_mode.level3_screen import Level3Screen
 from controller.story_mode.level4_screen import Level4Screen
@@ -105,7 +105,7 @@ class GameWindow(pyglet.window.Window, Disposable):
 
         self.controller_subs = SerialDisposable()
 
-        # self.push_screen(Level1)
+        # self.push_screen(Level1Screen)
         self.push_screen(StartScreen)
 
 
@@ -166,12 +166,10 @@ class GameWindow(pyglet.window.Window, Disposable):
                     case "size": self.set_size(*value)
                     case "color_scheme": self.events.color_scheme = value
             case Exit(restart):
-                if restart:  # funzt ni ganz irgendwie
+                if restart:
                     pyglet.app.exit()
-                    pyglet.app.run(1/30)
                 else:
-                    pyglet.app.exit()
-
+                    exit(0)
     def on_draw(self, *args):
         self.clear()
         view = self.controller.get_view()

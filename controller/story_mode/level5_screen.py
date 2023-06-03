@@ -2,10 +2,6 @@ import logging
 import time
 
 import pyglet
-import pygame
-from pygame import mixer
-import contextlib
-
 import color_scheme
 import ui_elements
 from reactivex.subject import Subject
@@ -19,7 +15,7 @@ In dieser Datei sind nur die absoluten Essentials drin. Hinzufügen ist kein Pro
 Lasst euch dieses Template anzeigen, indem ihr es im main_controller als initialen Controller setzt :D
 """
 
-class Level3Screen(Screen):
+class Level5Screen(Screen):
     def __init__(self, events):
         super().__init__()
         self.events = events
@@ -40,10 +36,14 @@ class Level3Screen(Screen):
         # Enemy-Objekt
         enemy = Enemy(self.events, self.batch, 70, 12, 7.5, 15)
 
-        self.header = ui_elements.BorderedRectangle("Level 3: Die dampfbetriebene Brücke", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.batch)
+        self.header = ui_elements.BorderedRectangle("Level 5: Die Teestube <<Ruhe und Genuss>>' ", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.batch)
 
         # Hier muss für jeden Button eine Subscription erstellt werden.
         player.subs.add(player.gif.clicked.subscribe(player.jump))
+        player.walk()
+
+        self.change_controller = Subject()
+        self.event = Subject()  # separates Subject für eventuelle Events die in diesem Screen stattfinden
 
     #  Falls die Funktionen namentlich nicht passen erstellte einfach neue!
 
@@ -52,10 +52,3 @@ class Level3Screen(Screen):
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
-
-    def play_music(self, nextmusic):
-        with contextlib.suppress(pygame.error):
-            mixer.init()
-            mixer.music.load(nextmusic)
-            mixer.music.play()
-            mixer.music.play(-1)
