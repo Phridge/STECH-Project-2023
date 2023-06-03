@@ -166,10 +166,11 @@ class GameWindow(pyglet.window.Window, Disposable):
                     case "size": self.set_size(*value)
                     case "color_scheme": self.events.color_scheme = value
             case Exit(restart):
-                if restart:
+                if restart:  # funzt ni ganz irgendwie
                     pyglet.app.exit()
+                    pyglet.app.run(1/30)
                 else:
-                    exit(0)
+                    pyglet.app.exit()
 
     def on_draw(self, *args):
         self.clear()
