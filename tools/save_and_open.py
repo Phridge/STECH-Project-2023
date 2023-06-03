@@ -4,6 +4,7 @@ from datetime import timedelta
 
 from sqlalchemy.exc import NoResultFound
 
+import color_scheme
 from database import new_session, Save, Run, Char, Level
 from sqlalchemy import update, select
 
@@ -194,7 +195,7 @@ def get_settings(save):
         try:
             save_line = session.execute(select(Save).where(Save.id == save)).scalar_one()
         except NoResultFound:
-            return None
+            return False, 0, color_scheme.BlackWhite, None
         else:
             settings_data = pickle.loads(getattr(save_line, "settings"))
             return settings_data

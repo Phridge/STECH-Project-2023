@@ -77,12 +77,11 @@ class GameWindow(pyglet.window.Window, Disposable):
 
         settings = save_and_open.get_settings(0)
         self.events.color_scheme = settings[2]
-        self.events.volume = Var(settings[1])
+        self.events.volume.on_next(settings[1])
         self.events.fullscreen = settings[0]
         self.set_fullscreen(self.events.fullscreen)
         self.events.size.subscribe(print)
         if settings[3] and not self.events.fullscreen:
-            self.events.size.on_next(settings[3])
             self._handle_command(ChangeSetting("size", settings[3]))
 
         with suppress(pygame.error):
@@ -161,6 +160,7 @@ class GameWindow(pyglet.window.Window, Disposable):
                     pyglet.app.exit()
                 else:
                     exit(0)
+
     def on_draw(self, *args):
         self.clear()
         view = self.controller.get_view()
