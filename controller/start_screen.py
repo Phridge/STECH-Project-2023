@@ -48,11 +48,11 @@ class StartScreen(Screen):
         def goto(screen_init):
             return lambda _: self.game_command.on_next(PushScreen(screen_init))
 
-        self._subs.add(self.save1.clicked.subscribe(self.load_settings(1)))
+        self._subs.add(self.save1.clicked.subscribe(lambda _: self.load_settings(1)))
         self._subs.add(self.save1.clicked.subscribe(goto(HomeScreen.init_fn(1))))
-        self._subs.add(self.save2.clicked.subscribe(self.load_settings(2)))
+        self._subs.add(self.save2.clicked.subscribe(lambda _: self.load_settings(2)))
         self._subs.add(self.save2.clicked.subscribe(goto(HomeScreen.init_fn(2))))
-        self._subs.add(self.save3.clicked.subscribe(self.load_settings(3)))
+        self._subs.add(self.save3.clicked.subscribe(lambda _: self.load_settings(3)))
         self._subs.add(self.save3.clicked.subscribe(goto(HomeScreen.init_fn(3))))
         self._subs.add(self.delete_save1.clicked.subscribe(goto(DeleteSaveScreen.init_fn(1))))
         self._subs.add(self.delete_save2.clicked.subscribe(goto(DeleteSaveScreen.init_fn(2))))
