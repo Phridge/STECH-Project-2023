@@ -10,6 +10,9 @@ from pygame import mixer
 
 from controller import Screen
 from controller.story_mode.level2_screen import Level2Screen
+from controller.story_mode.level3_screen import Level3Screen
+from controller.story_mode.level4_screen import Level4Screen
+# from controller.story_mode.level5_screen import Level5Screen
 
 
 class LevelFinishedScreen(Screen):
@@ -33,18 +36,22 @@ class LevelFinishedScreen(Screen):
         from main_controller import PopScreen
 
         self._subs.add(self.back.clicked.subscribe(lambda _: self.game_command.on_next(PopScreen()), lambda _: self.game_command.on_next(PopScreen())))
-        # self._subs.add(self.next_level.clicked.subscribe(lambda _: self.push_next_level(next_screen)))
+        self._subs.add(self.next_level.clicked.subscribe(lambda _: self.push_next_level(next_screen, save_file)))
         self._subs.add(self.statistics.clicked.subscribe(lambda _: print("AHHHHHHH HIER KOMMEN MARTINS STATS")))
 
         self.play_music()
 
-    def push_next_level(self, next_screen):
+    def push_next_level(self, next_screen, save_file):
         pass
-        #match next_screen:
-            #case "Level2":
-            #case "Level3":
-            #case "Level4":
+        match next_screen:
+            case "Level2":
+                self.push_screen(Level2Screen.init_fn(save_file))
+            case "Level3":
+                self.push_screen(Level3Screen.init_fn(save_file))
+            case "Level4":
+                self.push_screen(Level4Screen.init_fn(save_file))
             #case "Level5":
+                #self.push_screen(Level5Screen.init_fn(save_file))
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch

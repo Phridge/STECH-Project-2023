@@ -25,7 +25,7 @@ Lasst euch dieses Template anzeigen, indem ihr es im main_controller als initial
 """
 
 
-class Level1(Level):
+class Level1Screen(Level):
 
     TEXTS = """\
 Hallo! Ich bin Maxwell.
