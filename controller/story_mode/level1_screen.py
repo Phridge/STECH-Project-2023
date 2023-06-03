@@ -81,7 +81,7 @@ Und jetzt los, wir haben viel zu tun!\
         )
 
         # Überschrift.
-        self.header = ui_elements.BorderedRectangle("Level 1: Der Hafen der Freiheit", 30, 80, 40, 15, self.events.color_scheme, color_scheme.Minecraft, 4, self.events, self.batch, self.foreground)
+        self.header = ui_elements.BorderedRectangle("Level 1: Der Hafen der Freiheit", 25, 80, 50, 15, self.events.color_scheme, color_scheme.Minecraft, 3.5, self.events, self.batch, self.foreground)
 
         def display_text(display_text):
             """
@@ -109,14 +109,10 @@ Und jetzt los, wir haben viel zu tun!\
             # den Spieler zum Laufen bringen.
             self.p.state.on_next(ThePlayer.Running(2.0))
 
-            # moonwalk ;)
-            self.p.look_dir.on_next(-1)
-
             return CompositeDisposable(
                 overlay_rect,
                 player_anim.subscribe(player_pos.on_next, on_completed=lambda: machine.next()),
                 Disposable(lambda: self.p.state.on_next(ThePlayer.Idle())),  # wenn fertig, dann spieler stoppen.
-                Disposable(lambda: self.p.look_dir.on_next(1))  # wenn fertig, dann twist
             )
 
         def player_exit():

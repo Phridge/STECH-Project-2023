@@ -12,8 +12,6 @@ from events import Events, Event, Var, Disposable
 import ui_elements
 import color_scheme
 import math
-import main_controller
-import statistics_controller
 
 
 class CharView:
