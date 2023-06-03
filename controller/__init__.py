@@ -24,6 +24,10 @@ class Screen(Controller):
         from main_controller import PushScreen
         self.game_command.on_next(PushScreen(screen))
 
+    def reload_screen(self, screen):
+        from main_controller import ReloadScreen
+        self.game_command.on_next(ReloadScreen(screen))
+
     def go_to(self, screen):
         from main_controller import SwitchScreen
         self.game_command.on_next(SwitchScreen(screen))
