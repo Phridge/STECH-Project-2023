@@ -17,7 +17,7 @@ from events import Var
 from input_tracker import InputAnalysis, TextTracker
 from tools.save_and_open import save_run
 from ui_elements_ex import rx, Rect, Style, map_inner_perc, BorderedLabel, Rectangle
-from . import Level, animate, LevelMachine
+from . import Level, animate, LevelMachine, load_enemy_idle, load_bush, load_enemy_run
 from ..inputbox import InputBox
 from ..level_finished import LevelFinishedScreen
 
@@ -45,12 +45,9 @@ class Level2Screen(Level):
         self.scroll_background = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, self.background)
         self.header = ui_elements.BorderedRectangle("Level 2: Der Wald des Widerstands", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.batch, self.foreground)
 
-        sprite_sheet = pyglet.resource.image('assets/images/enemy_idle.png')
-        image_grid = pyglet.image.ImageGrid(sprite_sheet, rows=1, columns=4)
-        enemy_static_animation = pyglet.image.Animation.from_image_sequence(image_grid, duration=0.3)
-        del sprite_sheet, image_grid
-        bush_animation = pyglet.image.load("assets/images/bush.png")
-        enemy_run_animation = pyglet.image.load_animation("assets/images/enemy_walk.gif")
+        enemy_idle_animation = load_enemy_idle()
+        bush_animation = load_bush()
+        enemy_run_animation = load_enemy_run()
 
         def level_generator(msg):
             def generate_bush_enemy_positions():
@@ -102,7 +99,7 @@ class Level2Screen(Level):
                 bush_pos, enemy_pos = positions[index]
 
                 enemy = StaticActor(
-                    enemy_static_animation,
+                    enemy_idle_animation,
                     just(enemy_pos).pipe(
                         combine_offset(scroll_off),
                         combine_offset(object_area)

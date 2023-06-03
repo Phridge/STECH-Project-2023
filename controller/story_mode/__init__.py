@@ -1,5 +1,9 @@
+from functools import lru_cache
 from typing import Callable, Any, Generator
 
+import pyglet
+import pyglet.resource
+import pyglet.image
 from pyglet.graphics import Group
 from reactivex import Observable
 from reactivex.abc import DisposableBase
@@ -37,7 +41,7 @@ class Machine(DisposableBase):
         self.disposable.dispose()
 
 
-class LevelMachine:
+class LevelMachine(DisposableBase):
     """
     Eine State Machine für Level, welche über python-Generator-Funktionen implementiert ist.
 
@@ -68,6 +72,9 @@ class LevelMachine:
             self.machine_disposable.disposable = self.generator.send(data)
         except StopIteration:
             pass
+
+    def dispose(self) -> None:
+        self.machine_disposable.dispose()
 
 
 class Level(Screen):
@@ -110,3 +117,27 @@ def animate(lo, hi, time, update_event, map=lambda x: x, interp=linear) -> Obser
         rmap(map)
     )
     return animation
+
+
+@lru_cache()
+def load_enemy_idle(duration=0.3):
+    sprite_sheet = pyglet.resource.image('assets/images/enemy_idle.png')
+    image_grid = pyglet.image.ImageGrid(sprite_sheet, rows=1, columns=4)
+    return pyglet.image.Animation.from_image_sequence(image_grid, duration)
+
+
+@lru_cache()
+def load_enemy_barrel_run(duration=0.1):
+    sprite_sheet = pyglet.resource.image('assets/images/enemy_barrel_run.png')
+    image_grid = pyglet.image.ImageGrid(sprite_sheet, rows=1, columns=4)
+    return pyglet.image.Animation.from_image_sequence(image_grid, duration)
+
+
+@lru_cache()
+def load_enemy_run():
+    return pyglet.image.load_animation("assets/images/enemy_run.gif")
+
+
+@lru_cache()
+def load_bush():
+    return pyglet.image.load("assets/images/bush.png")

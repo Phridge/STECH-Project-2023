@@ -1,3 +1,4 @@
+import random
 from collections import namedtuple
 
 import pyglet
@@ -120,22 +121,9 @@ class Actor(Disposable):
         self.pos = rx(pos, Rect.zero())  # rx() wrappt nicht-Observable-Argumente und macht welche draus, wenn dies nicht sind
         self.look_dir = rx(look_dir, 1)
         self.state = rx(state, self.Idle())
+        self.batch = batch
+        self.group = group
 
-        def create_sprite(old_sprite: pyglet.sprite.Sprite | None, image):
-            """
-            Mapper-Funktion, die auf Änderungen des anzuzeigenden Bildes reagiert und ein Sprite-Objekt anpasst.
-            :param old_sprite: die vorherige Sprite (beim ersten mal None)
-            :param image: neues bild, geladen durch _get_image(self)
-            :return: aktualisierte Sprite. Es ändert sich nur die Animation.
-            """
-            if old_sprite is None:
-                sprite = Sprite(image, 0, 0, 0, batch=batch, group=group)
-                sprite.visible = False
-            else:
-                sprite = old_sprite
-                sprite.image = image
-
-            return sprite
 
         def update_sprite_transform(sprite, look_dir, pos):
             """
@@ -164,13 +152,29 @@ class Actor(Disposable):
 
         sprite = self.state.pipe(
             rmap(self._get_image),
-            scan(create_sprite, None),
+            scan(self.create_sprite, None),
             combine_latest(self.look_dir, self.pos),
             starmap(update_sprite_transform),
         )
 
-        self._sub = sprite.subscribe()  # muss gemacht werden, damit auch was passiert (lol)
+        self._sub = sprite.subscribe(lambda s: setattr(self, "sprite", s))  # muss gemacht werden, damit auch was passiert (lol)
+        self._on_dispose = reactivex.disposable.Disposable(lambda: self.sprite.delete())
 
+    def create_sprite(self, old_sprite: pyglet.sprite.Sprite | None, image):
+        """
+        Mapper-Funktion, die auf Änderungen des anzuzeigenden Bildes reagiert und ein Sprite-Objekt anpasst.
+        :param old_sprite: die vorherige Sprite (beim ersten mal None)
+        :param image: neues bild, geladen durch _get_image(self)
+        :return: aktualisierte Sprite. Es ändert sich nur die Animation.
+        """
+        if old_sprite is None:
+            sprite = Sprite(image, 0, 0, 0, batch=self.batch, group=self.group)
+            sprite.visible = False
+        else:
+            sprite = old_sprite
+            sprite.image = image
+
+        return sprite
 
     def _get_image(self, state):
         """
@@ -194,6 +198,8 @@ class ThePlayer(Actor):
 
     Running = namedtuple("Running", "speed")
     Jumping = namedtuple("Jumping", "")
+    Hurt = namedtuple("Hurt", "")
+    Attacking = namedtuple("Attacking", "attack")
 
     def __init__(self, pos=None, look_dir=None, state=None, batch=None, group=None):
         super().__init__(pos, look_dir, state, batch, group)
@@ -209,6 +215,20 @@ class ThePlayer(Actor):
                 for frame in anim.frames:
                     frame.duration = (1 / speed) / len(anim.frames)
                 return anim
+            case self.Hurt():
+                return pyglet.image.load_animation("assets/images/mech_hurt.gif")
+            case self.Attacking(attack):
+                if attack is None:
+                    attack_id, frames, duration = random.choice([
+                        (1, 4, 0.3),
+                        (2, 6, 1),
+                        (3, 4, 0.3),
+                        (4, 6, 1)
+                    ])
+                    path = f"assets/images/mech_attack_{attack_id}.png"
+                    sprite_sheet = pyglet.resource.image(path)
+                    image_grid = pyglet.image.ImageGrid(sprite_sheet, rows=1, columns=frames)
+                    return pyglet.image.Animation.from_image_sequence(image_grid, duration / frames)
             case _:
                 raise NotImplementedError
 

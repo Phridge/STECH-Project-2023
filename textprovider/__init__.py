@@ -28,6 +28,7 @@ class Charset(str, Enum):
     ALPHA = "abcdefghijklmnopqrstuvwxyzäöüß"
     UPPER = ALPHA.upper()
     NUMBERS = "1234567890"
+    ALNUM = ALPHA + UPPER + NUMBERS
     EASY_PUNCT = ".,-;:?!"
     ALL_PUNCT = ",.-!\"§$%&/()=?^#+;:_*'~°´`€@[]{}\\<>|"
     EVERYTHING = ALPHA + UPPER + NUMBERS + ALL_PUNCT

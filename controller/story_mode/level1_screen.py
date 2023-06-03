@@ -79,7 +79,7 @@ Und jetzt los, wir haben viel zu tun!\
         self._subs.add(
             self.input_box.text_tracker.pipe(
                 rfilter(lambda tt: tt.is_finished)
-            ).subscribe(lambda _: machine.next())
+            ).subscribe(lambda _: self.machine.next())
         )
 
         # Überschrift.
@@ -113,7 +113,7 @@ Und jetzt los, wir haben viel zu tun!\
 
             return CompositeDisposable(
                 overlay_rect,
-                player_anim.subscribe(player_pos.on_next, on_completed=lambda: machine.next()),
+                player_anim.subscribe(player_pos.on_next, on_completed=lambda: self.machine.next()),
                 Disposable(lambda: self.p.state.on_next(ThePlayer.Idle())),  # wenn fertig, dann spieler stoppen.
             )
 
@@ -138,7 +138,7 @@ Und jetzt los, wir haben viel zu tun!\
             return CompositeDisposable(
                 overlay_rect,
                 pos_anim.subscribe(player_pos.on_next),
-                color.subscribe(on_completed=lambda: machine.next())
+                color.subscribe(on_completed=lambda: self.machine.next())
             )
 
         def show_results():
@@ -154,7 +154,7 @@ Und jetzt los, wir haben viel zu tun!\
         # Spieler entry
         # dann die ganzen texte
         # dann Spieler exit
-        machine = Machine(
+        self.machine = Machine(
             [player_entry]
             + [display_text(text) for text in self.TEXTS[:1]]
             + [player_exit]

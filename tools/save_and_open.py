@@ -6,7 +6,7 @@ from sqlalchemy.exc import NoResultFound
 
 import color_scheme
 from database import new_session, Save, Run, Char, Level
-from sqlalchemy import update, select
+from sqlalchemy import update, select, func
 
 from input_tracker import TextTracker, InputAnalysis
 
@@ -97,6 +97,7 @@ def save_run(game_save_nr: int, level_name: str, input_analysis: InputAnalysis):
     with new_session() as session:
         try:
             level = session.execute(select(Level).where(Level.name == level_name)).scalar_one()
+            select(func.sum(Char.accuracy) / func.count(Char)).where(Char.char == "a" and Char.run.id)
         except NoResultFound:
             level = Level(
                 name=level_name,

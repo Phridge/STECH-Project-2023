@@ -52,16 +52,16 @@ class MainStoryScreen(Screen):
         from controller.story_mode.level4_screen import Level4Screen
         # from controller.story_mode.level5_screen import Level5Screen
 
-        self._subs.add(self.level1_button.clicked.subscribe(lambda _: self.go_to(Level1Screen.init_fn(save))))
-        self._subs.add(self.level1_label.clicked.subscribe(lambda _: self.go_to(Level1Screen.init_fn(save))))
-        self._subs.add(self.level2_button.clicked.subscribe(lambda _: self.go_to(Level2Screen.init_fn(save))))
-        self._subs.add(self.level2_label.clicked.subscribe(lambda _: self.go_to(Level2Screen.init_fn(save))))
-        self._subs.add(self.level3_button.clicked.subscribe(lambda _: self.go_to(Level3Screen.init_fn())))
-        self._subs.add(self.level3_label.clicked.subscribe(lambda _: self.go_to(Level3Screen.init_fn())))
-        self._subs.add(self.level4_button.clicked.subscribe(lambda _: self.go_to(Level4Screen.init_fn())))
-        self._subs.add(self.level4_label.clicked.subscribe(lambda _: self.go_to(Level4Screen.init_fn())))
-        # self._subs.add(self.level5_button.clicked.subscribe(lambda _: self.go_to(Level5Screen.init_fn())))
-        # self._subs.add(self.level5_label.clicked.subscribe(lambda _: self.go_to(Level5Screen.init_fn())))
+        self._subs.add(self.level1_button.clicked.subscribe(lambda _: self.reload_screen(Level1Screen.init_fn(save))))
+        self._subs.add(self.level1_label.clicked.subscribe(lambda _: self.reload_screen(Level1Screen.init_fn(save))))
+        self._subs.add(self.level2_button.clicked.subscribe(lambda _: self.reload_screen(Level2Screen.init_fn(save))))
+        self._subs.add(self.level2_label.clicked.subscribe(lambda _: self.reload_screen(Level2Screen.init_fn(save))))
+        self._subs.add(self.level3_button.clicked.subscribe(lambda _: self.reload_screen(Level3Screen.init_fn())))
+        self._subs.add(self.level3_label.clicked.subscribe(lambda _: self.reload_screen(Level3Screen.init_fn())))
+        self._subs.add(self.level4_button.clicked.subscribe(lambda _: self.reload_screen(Level4Screen.init_fn(save))))
+        self._subs.add(self.level4_label.clicked.subscribe(lambda _: self.reload_screen(Level4Screen.init_fn(save))))
+        # self._subs.add(self.level5_button.clicked.subscribe(lambda _: self.reload_screen(Level5Screen.init_fn())))
+        # self._subs.add(self.level5_label.clicked.subscribe(lambda _: self.reload_screen(Level5Screen.init_fn())))
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
