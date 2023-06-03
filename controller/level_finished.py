@@ -21,7 +21,7 @@ class LevelFinishedScreen(Screen):
 
         # Erstes Layout für den HomeScreen
         self.background = ui_elements.Sprite("assets/images/tearoom.png", 0, 0, 100, 100, events, self.batch, background)
-        self.maxwell = ui_elements.Sprite("assets/images/mech_tea.png", 40, 17.5, 20, 40, events, self.batch)
+        self.maxwell = ui_elements.Sprite("assets/images/mech_tea.png", 40, 17.5, 20, 37.5, events, self.batch)
 
         if successful:  headline = "Level abgeschlossen!"
         else: headline = "Level fehlgeschlagen"

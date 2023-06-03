@@ -1,4 +1,5 @@
 import json
+import pickle
 from datetime import timedelta
 
 from sqlalchemy.exc import NoResultFound
@@ -167,6 +168,36 @@ def save_game(game_save_nr, level_id, preset_text, written_text, time_needed_for
 
             session.add(c)
             session.commit()
+
+
+def save_settings_to_db(save, fullscreen, volume, preview_color_scheme, new_screen_size):
+    with new_session() as session:
+        settings_pickle = pickle.dumps((fullscreen, volume, preview_color_scheme, new_screen_size))
+        print((fullscreen, volume, preview_color_scheme, new_screen_size))
+        try:
+            save_line = session.execute(select(Save).where(Save.id == save)).scalar_one()
+        except NoResultFound:
+            s = Save(
+                id=save,
+                level_progress=0,
+                settings=settings_pickle
+            )
+            session.add(s)
+            session.commit()
+        else:
+            setattr(save_line, "settings", settings_pickle)
+            session.commit()
+            #  der Save existiert
+
+def get_settings(save):
+    with new_session() as session:
+        try:
+            save_line = session.execute(select(Save).where(Save.id == save)).scalar_one()
+        except NoResultFound:
+            return None
+        else:
+            settings_data = pickle.loads(getattr(save_line, "settings"))
+            return settings_data
 
 
 # Nicht wirklich sicher, ob das geht, da das MySQL statt SQL code ist

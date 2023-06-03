@@ -3,6 +3,7 @@ import pyglet
 import color_scheme
 import ui_elements
 from controller import Screen
+from tools.save_and_open import save_settings_to_db
 
 
 class SettingsScreen(Screen):
@@ -82,11 +83,12 @@ class SettingsScreen(Screen):
         self.game_command.on_next(ChangeSetting("volume", self.volume_value))
 
         if not self.fullscreen and self.new_screen_size:
-            # self.event.on_next(("ChangeScreenSize", self.new_screen_size[0], self.new_screen_size[1]))
+            #  self.event.on_next(("ChangeScreenSize", self.new_screen_size[0], self.new_screen_size[1]))
             self.game_command.on_next(ChangeSetting("size", self.new_screen_size))
 
         # self.change_controller.on_next(("ReloadSettings", previous_controller, data))
         self.game_command.on_next(ReloadScreen())
+        save_settings_to_db(save, self.fullscreen, self.volume_value, self.preview_color_scheme, self.new_screen_size)
 
     def change_color(self, _):
         """

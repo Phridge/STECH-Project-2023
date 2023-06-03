@@ -14,7 +14,7 @@ import color_scheme
 from controller import Screen
 from controller.start_screen import StartScreen
 from events import Events, Event, Var, Disposable
-
+from tools import save_and_open
 
 ScreenInit = Callable[[Events], Screen]
 
@@ -74,6 +74,16 @@ class GameWindow(pyglet.window.Window, Disposable):
             volume=Var(0),
             fullscreen=False,
         )
+
+        settings = save_and_open.get_settings(0)
+        self.events.color_scheme = settings[2]
+        self.events.volume = Var(settings[1])
+        self.events.fullscreen = settings[0]
+        self.set_fullscreen(self.events.fullscreen)
+        self.events.size.subscribe(print)
+        if settings[3] and not self.events.fullscreen:
+            self.events.size.on_next(settings[3])
+            self._handle_command(ChangeSetting("size", settings[3]))
 
         with suppress(pygame.error):
             mixer.init()
