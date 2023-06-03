@@ -161,7 +161,8 @@ class SettingsScreen(Screen):
         self.fullscreen = state
         self.fullscreen_toggle_button.label.text = "Vollbild an" if not state else "Vollbild aus"
 
-        self.event.on_next(("ToggleFullscreen", state))
+        from main_controller import SetFullscreen
+        self.game_command.on_next(SetFullscreen(state))
 
     def change_size(self, data):
         x = y = None
