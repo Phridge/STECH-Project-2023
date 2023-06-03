@@ -75,6 +75,7 @@ class GameWindow(pyglet.window.Window, Disposable):
             fullscreen=False,
         )
 
+        # Updated die Settings aus der Datenbank
         settings = save_and_open.get_settings(0)
         self.events.color_scheme = settings[2]
         self.events.volume.on_next(settings[1])
@@ -159,7 +160,7 @@ class GameWindow(pyglet.window.Window, Disposable):
                 if restart:
                     pyglet.app.exit()
                 else:
-                    exit(0)
+                    pyglet.app.exit()
 
     def on_draw(self, *args):
         self.clear()

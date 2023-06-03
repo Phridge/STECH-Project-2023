@@ -14,6 +14,7 @@ from controller.delete_save_screen import DeleteSaveScreen
 from controller.home_screen import HomeScreen
 from controller.settings import SettingsScreen
 from controller.statistics import StatisticsScreen
+from tools import save_and_open
 
 
 class StartScreen(Screen):
@@ -46,8 +47,12 @@ class StartScreen(Screen):
 
         def goto(screen_init):
             return lambda _: self.game_command.on_next(PushScreen(screen_init))
+
+        self._subs.add(self.save1.clicked.subscribe(lambda _: self.load_settings(1)))
         self._subs.add(self.save1.clicked.subscribe(goto(HomeScreen.init_fn(1))))
+        self._subs.add(self.save2.clicked.subscribe(lambda _: self.load_settings(2)))
         self._subs.add(self.save2.clicked.subscribe(goto(HomeScreen.init_fn(2))))
+        self._subs.add(self.save3.clicked.subscribe(lambda _: self.load_settings(3)))
         self._subs.add(self.save3.clicked.subscribe(goto(HomeScreen.init_fn(3))))
         self._subs.add(self.delete_save1.clicked.subscribe(goto(DeleteSaveScreen.init_fn(1))))
         self._subs.add(self.delete_save2.clicked.subscribe(goto(DeleteSaveScreen.init_fn(2))))
@@ -58,6 +63,15 @@ class StartScreen(Screen):
 
         self.play_music(events.volume)
 
+    def load_settings(self, save):
+        from main_controller import ChangeSetting, SetFullscreen
+        if save_and_open.get_settings(save):
+            fullscreen, volume, color, size = save_and_open.get_settings(save)
+            print((fullscreen, volume, color, size))
+            self.game_command.on_next(ChangeSetting("color_scheme", color))
+            self.game_command.on_next(SetFullscreen(fullscreen))
+            self.game_command.on_next(ChangeSetting("volume", volume))
+            if size: self.game_command.on_next(ChangeSetting("size", size))
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
