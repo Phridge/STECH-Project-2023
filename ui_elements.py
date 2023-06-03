@@ -774,6 +774,11 @@ class Gif(pyglet.sprite.Sprite, UIElement):  # lädt ein Gif
         self.loop_finished.on_next(True)
 
 
+    def dispose(self) -> None:
+        self.delete()
+        super().dispose()
+
+
 class GifButton(pyglet.sprite.Sprite, UIElement):
     def __init__(self, path, x, y, width, height, duration, loop, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """

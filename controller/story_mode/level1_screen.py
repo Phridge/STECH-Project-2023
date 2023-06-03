@@ -1,27 +1,23 @@
-import math
-import time
-from collections import namedtuple
-from enum import Enum
-from typing import NewType
-
 import pyglet
 import pygame
 from pygame import mixer
 import contextlib
+
 import color_scheme
+import main_controller
 import ui_elements
-from reactivex.subject import Subject
-from reactivex import just, concat
-from reactivex.operators import delay, scan, map as rmap, combine_latest, do_action, starmap, filter as rfilter, \
-    take_while, share
-from reactivex.disposable import CompositeDisposable, SerialDisposable, Disposable
+from reactivex import concat
+from reactivex.operators import delay, map as rmap, combine_latest, do_action, starmap, filter as rfilter, share
+from reactivex.disposable import CompositeDisposable, Disposable
 from controller import Screen
-from controller.actors import Player, ThePlayer
+from controller.actors import ThePlayer, combine_offset
 from controller.inputbox import InputBox
+from . import Machine, animate, Level
 from input_tracker import InputAnalysis
-from tools.save_and_open import save_text_tracker, save_run
+from tools.save_and_open import save_run
 from ui_elements_ex import Rect, map_inner_perc, Style, Rectangle
-from events import Var, Event
+from events import Event, Var
+from ..level_finished import LevelFinishedScreen
 
 """
 Eine Vorlage für einen Screen. ab Zeile 22 können Elemente eingefügt werde. Ein paar der ui-Elements sind als Beispiel gezeigt.
@@ -30,31 +26,7 @@ Lasst euch dieses Template anzeigen, indem ihr es im main_controller als initial
 """
 
 
-def linear(t):
-    return t
-
-
-def animate(lo, hi, time, update_event, map=lambda x: x, interp=linear):
-    """
-    Animiert einen Wert von lo nach hi über gegebene Zeit.
-    :param lo: startwert.
-    :param hi: endwert.*--
-    :param time: zeitspanne der animation.
-    :param update_event: observable, welches das "timing" vorgibt (z.B. events.update)
-    :param map: optionale mapping-funktion, die den Animierten wert in etwas anderes konvertiert.
-    :param interp: Interpolierungsfunktion. zur verfügung steht aktuell "linear", welches gleichmäßig vom einen zum anderen wert animiert.
-    :return: Ein Observable, welches schrittweise den animierten wert liefert
-    """
-    animation = update_event.pipe(
-        scan(float.__add__, 0.0),
-        take_while(lambda t: t <= time, inclusive=True),
-        rmap(lambda t: lo + (hi - lo) * interp(min(t, time) / time)),
-        rmap(map)
-    )
-    return animation
-
-
-class Level1Screen(Screen):
+class Level1Screen(Level):
 
     TEXTS = """\
 Hallo! Ich bin Maxwell.
@@ -63,13 +35,13 @@ Schön, dass du dich entschieden hast, das 10-Finger-Schreiben zu lernen.
 
 Je schneller du schreibst, desto mehr Punkte warten am Ende jeden Levels auf dich.
 
-Doch zunächst muss ich erstmal meine Freunde, die vom Maschinenkönig in der Dampfstadt gefangen halten werden, befreien!
+Bitte hilf mir meine Freunde, die vom Maschinenkönig in der Dampfstadt gefangen halten werden, zu befreien!
 
-Die Reise wird lang und herausfordernd, hoffentlich habe ich genug Ersatz-Teetassen mit. Ohne mein Lebenselixier geht nichts!
+Hoffentlich habe ich genug Ersatz-Teetassen mit. Ohne mein Lebenselixier geht nichts!
 
-*SSSSSSSsssssssssssssssssip*
+*Schlürf* Tee ist einfach das Beste!
 
-...genug Tee, nun gehts los!\
+Und jetzt los, wir haben viel zu tun!\
 """.split("\n\n")
 
     def __init__(self, events, save):
@@ -79,26 +51,22 @@ Die Reise wird lang und herausfordernd, hoffentlich habe ich genug Ersatz-Teetas
             rmap(lambda s: Rect(0, 0, *s))
         )
         style = Style(events.color_scheme, "Monocraft", 15)
-        self.batch = pyglet.graphics.Batch()
-
-        # dient, um Objekte manuell nach vorne und hinten zu schieben. Je weniger er genutzt wird, umso performanter ist alles.
-        # Standardmäßig ist alles im Mittelgrund zwischen Vorder- und Hintergrund
-        background = pyglet.graphics.Group(order=-1)
-        foreground = pyglet.graphics.Group(order=1)
-        overlay = pyglet.graphics.Group(order=2)
 
         # hintergrund
-        self.gif = ui_elements.Gif("assets/images/port.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, background)
+        self.gif = ui_elements.Gif("assets/images/port.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, self.background)
 
-        # Player-Objekt
-        # player = Player(self.events, self.batch, 20, 40, 20, 30)
-
-
-        # Spieler-Objekt. Bis is eine Position erhält, ist es nicht sichtbar.
-        self.p = ThePlayer(batch=self.batch, group=foreground)
         # Region, in dem sich der spieler bewegen darf. Die untere kante stellt den laufsteg dar.
         player_area = pos.pipe(
             map_inner_perc(0, 40, 100, 60)
+        )
+
+        # Spieler-Objekt.
+        player_pos = Event()  # um seine Position zu steuern
+        self.p = ThePlayer(
+            pos=player_pos.pipe(combine_offset(player_area)),  #position brauch globales offset
+            look_dir=Var(1),
+            state=Var(ThePlayer.Idle()), # von außen dann über self.p.state steuerbar
+            batch=self.batch, group=self.foreground
         )
 
         # event, welches von der Machine s. unten den anzuzeigenden Text erhält-
@@ -106,7 +74,7 @@ Die Reise wird lang und herausfordernd, hoffentlich habe ich genug Ersatz-Teetas
 
         # um die Spielereingaben Textübergreifend zu sammeln und in die Datenbank zu speicher.
         input_analysis = InputAnalysis()
-        self.input_box = InputBox(text, pos.pipe(map_inner_perc(10, 5, 80, 20)), style, events, input_analysis, batch=self.batch, group=foreground)
+        self.input_box = InputBox(text, pos.pipe(map_inner_perc(10, 5, 80, 20)), style, events, input_analysis, batch=self.batch, group=self.foreground)
         # ist ein Text fertig geschrieben, wird die Machine um einen Schritt vorangebracht.
         self._subs.add(
             self.input_box.text_tracker.pipe(
@@ -115,30 +83,7 @@ Die Reise wird lang und herausfordernd, hoffentlich habe ich genug Ersatz-Teetas
         )
 
         # Überschrift.
-        self.header = ui_elements.BorderedRectangle("Level 1: Der Hafen der Freiheit", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.batch)
-
-        class Machine:
-            """
-            Stellt den Ablauf des Levels in einer Finite State Machine dar.
-            Hat mehrere Schritte, die nacheinander abgearbeitet werden (durch machine.next()).
-            """
-            def __init__(self, stuff):
-                self.stuff = stuff
-                self.index = -1
-                self.disposable = SerialDisposable()
-                self.next()
-
-            def next(self):
-                """
-                Die Maschine in den nächsten Zustand bringen
-
-                Die Ressourcen vom vorherigen Schritt, falls existierend, werden gelöscht, und die
-                Funktion des nächsten Zustands wird ausgeführt.
-                """
-                self.index += 1
-                if self.index >= len(self.stuff):
-                    return
-                self.disposable.disposable = self.stuff[self.index]()
+        self.header = ui_elements.BorderedRectangle("Level 1: Der Hafen der Freiheit", 25, 80, 50, 15, self.events.color_scheme, color_scheme.Minecraft, 3.5, self.events, self.batch, self.foreground)
 
         def display_text(display_text):
             """
@@ -159,20 +104,17 @@ Die Reise wird lang und herausfordernd, hoffentlich habe ich genug Ersatz-Teetas
             color = animate(255, 0, 3.0, events.update, lambda o: (0, 0, 0, int(o)))
             # spielerpositionsanimation.
             # Sieht kompliziert aus, da noch die Position des Laufstegs mit berücksichtigt werden muss.
-            player_pos = animate(-300, 100, 5.0, events.update).pipe(
-                do_action(on_completed=lambda: machine.next()),  # wenn die animation durch ist, nächster Zustand
-                combine_latest(player_area),
-                starmap(lambda xoff, area: Rect(xoff, 0, 150, 150).offset(area)),
-            )
+            player_anim = animate(-300, 100, 5.0, events.update, lambda v: Rect(v, 0, 150, 150))
             # Das Rechteck für den FAde
-            overlay_rect = Rectangle(pos, color, self.batch, overlay)
+            overlay_rect = Rectangle(pos, color, self.batch, self.overlay)
 
             # den Spieler zum Laufen bringen.
-            self.p.running_speed.on_next(2.0)
+            self.p.state.on_next(ThePlayer.Running(2.0))
+
             return CompositeDisposable(
                 overlay_rect,
-                player_pos.subscribe(self.p.pos),
-                Disposable(lambda: self.p.running_speed.on_next(0.0))  # wenn fertig, dann spieler stoppen.
+                player_anim.subscribe(player_pos.on_next, on_completed=lambda: machine.next()),
+                Disposable(lambda: self.p.state.on_next(ThePlayer.Idle())),  # wenn fertig, dann spieler stoppen.
             )
 
         def player_exit():
@@ -182,20 +124,31 @@ Die Reise wird lang und herausfordernd, hoffentlich habe ich genug Ersatz-Teetas
             # save game
             save_run(save, "story_level_1", input_analysis)
 
-            color = animate(0, 255, 3.0, events.update, lambda o: (0, 0, 0, int(o))).pipe(delay(3.0))
-            player_pos = animate(100, 2000, 10.0, events.update).pipe(
-                do_action(on_completed=lambda: machine.next()),
-                combine_latest(player_area),
-                starmap(lambda xoff, area: Rect(xoff, 0, 150, 150).offset(area)),
+            color = concat(
+                animate(0, 0, 2.0, events.update, lambda o: (0, 0, 0, int(o))),
+                animate(0, 255, 3.0, events.update, lambda o: (0, 0, 0, int(o)))
             )
+            pos_anim = animate(100, 2000, 10.0, events.update, lambda v: Rect(v, 0, 150, 150))
 
-            overlay_rect = Rectangle(pos, color, self.batch, overlay)
+            overlay_rect = Rectangle(pos, color, self.batch, self.overlay)
 
-            self.p.running_speed.on_next(4.0)
+            print(calculate_points(input_analysis))
+
+            self.p.state.on_next(ThePlayer.Running(4.0))
             return CompositeDisposable(
                 overlay_rect,
-                player_pos.subscribe(self.p.pos),
+                pos_anim.subscribe(player_pos.on_next),
+                color.subscribe(on_completed=lambda: machine.next())
             )
+
+        def show_results():
+            self.push_screen(LevelFinishedScreen.init_fn(save, 1, calculate_points(input_analysis), True))  # Abschlussbildschirm des Levels (Save, next_level, Punkte, Erfolgreich)
+
+
+        from main_controller import PushScreen
+        def goto(screen_init):
+            return lambda _: self.game_command.on_next(PushScreen(screen_init))
+
 
         # Erstellung der State Machine aus allen nötigen Zuständen:
         # Spieler entry
@@ -203,10 +156,14 @@ Die Reise wird lang und herausfordernd, hoffentlich habe ich genug Ersatz-Teetas
         # dann Spieler exit
         machine = Machine(
             [player_entry]
-            + [display_text(text) for text in self.TEXTS]
+            + [display_text(text) for text in self.TEXTS[:1]]
             + [player_exit]
+            + [show_results]
         )
 
+
+        def calculate_points(input_analysis: InputAnalysis):
+            return int((input_analysis.correct_char_count / input_analysis.time) ** 2 * 100)
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch

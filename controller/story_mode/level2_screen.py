@@ -19,6 +19,7 @@ from tools.save_and_open import save_run
 from ui_elements_ex import rx, Rect, Style, map_inner_perc, BorderedLabel, Rectangle
 from . import Level, animate, LevelMachine
 from ..inputbox import InputBox
+from ..level_finished import LevelFinishedScreen
 
 """
 Eine Vorlage für einen Screen. ab Zeile 22 können Elemente eingefügt werde. Ein paar der ui-Elements sind als Beispiel gezeigt.
@@ -264,11 +265,26 @@ class Level2Screen(Level):
                 animate(0, 0, 1, events.update).subscribe(on_completed=msg)
             )
 
+            # erschrecken (ausrufezeichen über Maxwell anzeigen)
+            alert_box = just(Rect(40, 120, 40, 60)).pipe(
+                combine_offset(just(player_stationary)),
+                combine_offset(object_area)
+            )
+            alert_box = BorderedLabel(
+                "!",
+                alert_box,
+                style.scale_font_size(2.0),
+                batch=self.batch,
+                group=enemy_group,
+            )
+            yield animate(0, 0, 0.3, events.update).subscribe(on_completed=msg)
+
             # umschauen
             self.player.look_dir.on_next(1)
             yield CompositeDisposable(
                 animate(0, 0, 1, events.update).subscribe(on_completed=msg)
             )
+            alert_box.dispose() # Ausrufezeichen geht weg
 
             # !!WEGRENNEN!
             self.player.state.on_next(ThePlayer.Running(5.0))
@@ -311,11 +327,15 @@ class Level2Screen(Level):
             # ergebnisse speichern
             save_run(save, "story_level_2", ia)
 
+            # Lädt Abschluss-Screen, egal ob
+            successful = False
+            if fails_left.value > 0: successful = True
+            self.push_screen(LevelFinishedScreen.init_fn(save, 2, calculate_points(ia), successful))  # Abschlussbildschirm des Levels (Save, next_level, Punkte, Erfolgreich)
 
         self.machine = LevelMachine(level_generator)
 
-
-
+        def calculate_points(input_analysis: InputAnalysis):
+            return int((input_analysis.correct_char_count / input_analysis.time) ** 2 * 100)
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch

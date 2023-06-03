@@ -149,8 +149,6 @@ class SettingsScreen(Screen):
             self.volume_value = int(self.volume_picker.text) / 100
         else:
             self.volume_value = 0
-        from main_controller import ChangeSetting
-        self.game_command.on_next(ChangeSetting("volume", self.volume_value))
 
     def set_fullscreen(self, state):
         """

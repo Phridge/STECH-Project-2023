@@ -9,14 +9,10 @@ from reactivex.disposable import CompositeDisposable
 from pygame import mixer
 
 from controller import Screen
-from controller.story_mode.level2_screen import Level2Screen
-from controller.story_mode.level3_screen import Level3Screen
-from controller.story_mode.level4_screen import Level4Screen
-# from controller.story_mode.level5_screen import Level5Screen
 
 
 class LevelFinishedScreen(Screen):
-    def __init__(self, events, save_file, next_screen, points):
+    def __init__(self, events, save_file, previous_screen, points, successful):
         super().__init__()
         # dient, um Objekte manuell nach vorne und hinten zu schieben. Je weniger er genutzt wird, umso performanter ist alles.
         # Standardmäßig ist alles im Mittelgrund zwischen Vorder- und Hintergrund
@@ -26,32 +22,49 @@ class LevelFinishedScreen(Screen):
         # Erstes Layout für den HomeScreen
         # self.background = pyglet.shapes.Rectangle(0, 0, 100, 100, (0, 0, 0), self.batch, background)
 
-        self.header = ui_elements.BorderedRectangle("Level Abgeschlossen!", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 5, events, self.batch)
-
+        if successful:  headline = "Level abgeschlossen!"
+        else: headline = "Level fehlgeschlagen"
+        self.header = ui_elements.BorderedRectangle(headline, 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 5, events, self.batch)
         self.back = ui_elements.InputButton("Modus verlassen", 15, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
         self.statistics = ui_elements.InputButton("Auswertung", 40, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, self.batch)
-        self.next_level = ui_elements.InputButton("Nächstes Level", 65, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
+
+        if successful:
+            self.points_achieved = ui_elements.BorderedRectangle(str(points), 35, 55, 30, 15, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
+            self.next_level = ui_elements.InputButton("Nächstes Level", 65, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
+        else:
+            self.retry = ui_elements.InputButton("Neuer Versuch", 65, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
+
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
-        from main_controller import PopScreen
+        from controller.story_mode.main_screen import MainStoryScreen
 
-        self._subs.add(self.back.clicked.subscribe(lambda _: self.game_command.on_next(PopScreen()), lambda _: self.game_command.on_next(PopScreen())))
-        self._subs.add(self.next_level.clicked.subscribe(lambda _: self.push_next_level(next_screen, save_file)))
+        self._subs.add(self.back.clicked.subscribe(lambda _: self.push_screen(MainStoryScreen.init_fn(save_file))))
         self._subs.add(self.statistics.clicked.subscribe(lambda _: print("AHHHHHHH HIER KOMMEN MARTINS STATS")))
+        if successful:
+            self._subs.add(self.next_level.clicked.subscribe(lambda _: self.push_next_level(previous_screen+1, save_file)))
+        else:
+            self._subs.add(self.retry.clicked.subscribe(lambda _: self.push_next_level(previous_screen, save_file)))
 
         self.play_music()
 
     def push_next_level(self, next_screen, save_file):
-        pass
+        from controller.story_mode.level1_screen import Level1Screen
+        from controller.story_mode.level2_screen import Level2Screen
+        from controller.story_mode.level3_screen import Level3Screen
+        from controller.story_mode.level4_screen import Level4Screen
+        # from controller.story_mode.level5_screen import Level5Screen
+
         match next_screen:
-            case "Level2":
-                self.push_screen(Level2Screen.init_fn(save_file))
-            case "Level3":
-                self.push_screen(Level3Screen.init_fn(save_file))
-            case "Level4":
-                self.push_screen(Level4Screen.init_fn(save_file))
-            #case "Level5":
-                #self.push_screen(Level5Screen.init_fn(save_file))
+            case 1:
+                self.reload_screen(Level1Screen.init_fn(save_file))
+            case 2:
+                self.reload_screen(Level2Screen.init_fn(save_file))
+            case 3:
+                self.reload_screen(Level3Screen.init_fn(save_file))
+            case 4:
+                self.reload_screen(Level4Screen.init_fn(save_file))
+            #case 5:
+                #self.reload_screen(Level5Screen.init_fn(save_file))
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
