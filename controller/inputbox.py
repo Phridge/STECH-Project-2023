@@ -77,6 +77,8 @@ class InputBox(Controller):
             def accept_char(cmd):
                 tt.accept_char(cmd)
                 self.text_tracker.on_next(tt)
+                if tt.is_finished:
+                    tt_sub.disposable = None
 
             tt_sub.disposable = CompositeDisposable([
                 events.text.subscribe(accept_char),
