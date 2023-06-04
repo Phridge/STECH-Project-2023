@@ -14,9 +14,7 @@ from controller import Screen
 from controller.actors import Player
 
 """
-Eine Vorlage für einen Screen. ab Zeile 22 können Elemente eingefügt werde. Ein paar der ui-Elements sind als Beispiel gezeigt.
-In dieser Datei sind nur die absoluten Essentials drin. Hinzufügen ist kein Problem, löschen schon.
-Lasst euch dieses Template anzeigen, indem ihr es im main_controller als initialen Controller setzt :D
+Level4 noch nicht implementiert
 """
 
 class Level4Screen(Screen):
