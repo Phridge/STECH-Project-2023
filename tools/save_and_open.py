@@ -6,7 +6,7 @@ from sqlalchemy.exc import NoResultFound
 
 import color_scheme
 from database import new_session, Save, Run, Char, Level
-from sqlalchemy import update, select, func
+from sqlalchemy import update, select, func, delete
 from sqlalchemy.sql import text
 from input_tracker import TextTracker, InputAnalysis
 
@@ -181,13 +181,8 @@ def delete_save(save):
     :param save: zu löschender Speicherstand
     """
     with new_session() as session:
-        try:
-            save_line = session.execute(select(Save).where(Save.id == save)).scalar_one()
-        except NoResultFound:
-            pass
-        else:
-            session.delete(save_line)
-            session.commit()
+        session.execute(delete(Save).where(Save.id == save))
+        session.commit()
 
 def get_settings(save):
     """
