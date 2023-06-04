@@ -142,7 +142,7 @@ Und jetzt los, wir haben viel zu tun!\
             )
 
         def show_results():
-            self.push_screen(LevelFinishedScreen.init_fn(save, 1, calculate_points(input_analysis), True))  # Abschlussbildschirm des Levels (Save, next_level, Punkte, Erfolgreich)
+            self.reload_screen(LevelFinishedScreen.init_fn(save, 1, calculate_points(input_analysis), True))  # Abschlussbildschirm des Levels (Save, next_level, Punkte, Erfolgreich)
 
 
         from main_controller import PushScreen

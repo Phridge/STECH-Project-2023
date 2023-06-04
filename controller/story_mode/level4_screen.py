@@ -248,7 +248,7 @@ class Level4Screen(Level):
 
 
             from controller.level_finished import LevelFinishedScreen
-            self.push_screen(LevelFinishedScreen.init_fn(save, 2, points, True))  # Abschlussbildschirm des Levels (Save, next_level, Punkte, Erfolgreich)
+            self.reload_screen(LevelFinishedScreen.init_fn(save, 2, points, True))  # Abschlussbildschirm des Levels (Save, next_level, Punkte, Erfolgreich)
 
         self.machine = LevelMachine(level_generator)
 

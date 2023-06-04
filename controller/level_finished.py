@@ -39,7 +39,7 @@ class LevelFinishedScreen(Screen):
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
         from controller.story_mode.main_screen import MainStoryScreen
 
-        self._subs.add(self.back.clicked.subscribe(lambda _: self.push_screen(MainStoryScreen.init_fn(save_file))))
+        self._subs.add(self.back.clicked.subscribe(lambda _: self.reload_screen(MainStoryScreen.init_fn(save_file))))
         self._subs.add(self.statistics.clicked.subscribe(lambda _: print("AHHHHHHH HIER KOMMEN MARTINS STATS")))
         if successful:
             self._subs.add(self.next_level.clicked.subscribe(lambda _: self.push_next_level(previous_screen+1, save_file)))

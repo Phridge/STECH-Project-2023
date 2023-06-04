@@ -327,7 +327,7 @@ class Level2Screen(Level):
             # Lädt Abschluss-Screen, egal ob
             successful = False
             if fails_left.value > 0: successful = True
-            self.push_screen(LevelFinishedScreen.init_fn(save, 2, calculate_points(ia), successful))  # Abschlussbildschirm des Levels (Save, next_level, Punkte, Erfolgreich)
+            self.reload_screen(LevelFinishedScreen.init_fn(save, 2, calculate_points(ia), successful))  # Abschlussbildschirm des Levels (Save, next_level, Punkte, Erfolgreich)
 
         self.machine = LevelMachine(level_generator)
 
