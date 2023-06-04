@@ -251,6 +251,6 @@ def bigu_graphu(fig, count_array, data_array1, data_array2, char_to_analyse):
 
 
 def draw_head_box(display_char, events, batch):
-    return ui_elements.BorderedRectangle('Statistics for the char: ' + display_char, 27, 93, 46, 7,
+    return ui_elements.BorderedRectangle("Drücke einen Buchstaben!", 27, 93, 46, 7,
                                          color_scheme.BlackWhite,
                                          color_scheme.Minecraft, 3, events, batch=batch)

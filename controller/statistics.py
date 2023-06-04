@@ -30,12 +30,12 @@ class StatisticsScreen(Screen):
         background = pyglet.graphics.Group(order=-1)
         foreground = pyglet.graphics.Group(order=1)
 
-        # Layout für den Statistik-Bildschirm
-        sv.draw_accuracy_chart(self.fig, 98.6, 37.5, self.current_char.get_char())
-        sv.draw_char_pressed_chart(self.fig, 378, 820, self.current_char.get_char())
-        sv.draw_time_per_char_chart(self.fig, 997, 222, self.current_char.get_char())
-        sv.bigu_graphu(self.fig, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [1, 7.5, 3, 7, 5, 4, 7, 9, 8, 4, 1],
-                       [5, 1, 2, 3, 6.5, 2, 1, 5, 6, 2, 7], self.current_char.get_char())
+        # Sample-Diagramme --> werden erstmal nicht angezeigt
+        #sv.draw_accuracy_chart(self.fig, 98.6, 37.5, self.current_char.get_char())
+        #sv.draw_char_pressed_chart(self.fig, 378, 820, self.current_char.get_char())
+        #sv.draw_time_per_char_chart(self.fig, 997, 222, self.current_char.get_char())
+        #sv.bigu_graphu(self.fig, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [1, 7.5, 3, 7, 5, 4, 7, 9, 8, 4, 1],
+        #               [5, 1, 2, 3, 6.5, 2, 1, 5, 6, 2, 7], self.current_char.get_char())
 
         sv.update_image(self.fig, self.image)
         self.background = ui_elements.Sprite(self.image, 0, 0, 100, 100, events, self.batch)
@@ -46,7 +46,6 @@ class StatisticsScreen(Screen):
                                                       color_scheme.BlackWhite,
                                                       color_scheme.Minecraft, 7, events, batch=self.batch)
         self.batch.draw()
-
         from main_controller import PopScreen
         self._subs.add(events.text.subscribe(self.update_view_on_char_input))
         self._subs.add(self.button_back.clicked.subscribe(lambda _: self.game_command.on_next(PopScreen())))
@@ -62,7 +61,7 @@ class StatisticsScreen(Screen):
         """
         self.current_char.change_char(char)
         print(self.current_char.get_char())
-        self.header.label.text = 'Statistics for the char: ' + self.current_char.get_char()
+        self.header.label.text = 'Statistiken für den Char: ' + self.current_char.get_char()
         self.fig.clf()
         last_char_data = sc.get_last_results_of_char(self.game_save, self.current_char.get_char())
         # graphen zeichnen

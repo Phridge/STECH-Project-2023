@@ -52,7 +52,7 @@ class Level3Screen(Level):
 
         def level_generator(msg):
             """
-            Generiert das dritte Level un ddie komplette Aktions-Abfolge
+            Generiert das dritte Level und die komplette Aktions-Abfolge
             """
             resources = CompositeDisposable()
 
