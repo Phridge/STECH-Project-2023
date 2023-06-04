@@ -1,5 +1,6 @@
 from pyglet.graphics import Batch, Group
 
+import color_scheme
 import textprovider
 import ui_elements
 import ui_elements_ex
@@ -74,27 +75,13 @@ class LearningLevel(Screen):
         from ..settings import SettingsScreen
         from ..home_screen import HomeScreen
 
-        small_style = Style(style.color, style.font, 10)
-        self.settings_button = Button(
-            "Einstellungen",
-            pos.pipe(map_inner_perc(2.5, 85, 12.5, 10)),
-            small_style,
-            events,
-            Observer(lambda _: self.push_screen(SettingsScreen.init_fn(save))),
-            False,
-            batch,
-            foreground
-        )
-        self.leave_button = Button(
-            "Verlassen",
-            pos.pipe(map_inner_perc(85, 85, 12.5, 10)),
-            small_style,
-            events,
-            Observer(lambda _: self.go_back()),
-            False,
-            batch,
-            foreground
-        )
+        self.settings_button = ui_elements.BorderedRectangleButton("Einstellungen", 2.5, 85, 12.5, 10,
+                                                                   events.color_scheme, color_scheme.Minecraft, 7,
+                                                                   events, batch, foreground)
+        self.leave_button = ui_elements.BorderedRectangleButton("Verlassen", 85, 85, 12.5, 10, events.color_scheme,
+                                                                color_scheme.Minecraft, 8, events, batch, foreground)
+        self._subs.add(self.settings_button.clicked.subscribe(lambda _: self.push_screen(SettingsScreen.init_fn(save))))
+        self._subs.add(self.leave_button.clicked.subscribe(lambda _: self.go_back()))
 
     def get_view(self):
         return self.batch
