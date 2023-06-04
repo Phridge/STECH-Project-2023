@@ -98,6 +98,12 @@ class Level(Screen):
 
 
     def pause(self, events, save):
+        """
+        Blendet über dem aktuellen Level einen komplett neuen Bildschirm ein, pausiert im Hintergrund die Funktionen des Levels
+
+        :param events: Events des Levels
+        :param save: aktuelle Save-File
+        """
         from controller.story_mode.main_screen import MainStoryScreen
         background = pyglet.graphics.Group(order=2)
         middleground = pyglet.graphics.Group(order=3)
@@ -115,20 +121,23 @@ class Level(Screen):
         pause_subs.add(pause_continue_level.clicked.subscribe(lambda _: self.unpause(pause_header, pause_maxwell, pause_background, pause_subs, pause_back, pause_continue_level)))
 
     def unpause(self, pause_header, pause_maxwell, pause_background, pause_subs, pause_back, pause_continue_level):
-        print("subs")
+        """
+        Löscht die in pause() erstellten Elemente und setzt die Funktionen des Levels fort
+
+        :param pause_header: zu löschendes Element
+        :param pause_maxwell: zu löschendes Element
+        :param pause_background: zu löschendes Element
+        :param pause_subs: zu löschendes Element
+        :param pause_back: zu löschendes Element
+        :param pause_continue_level: zu löschendes Element
+        """
         pause_subs.dispose()
-        print("back")
         pause_back.stop_timer()
         pause_back.dispose()
-
-        print("continue")
         pause_continue_level.stop_timer()
         pause_continue_level.dispose()
-        print("BG")
         pause_background.delete()
-        print("maxwell")
         pause_maxwell.delete()
-        print("header")
         pause_header.delete()
 
 

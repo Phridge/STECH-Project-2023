@@ -35,7 +35,11 @@ class LearningLevel(Screen):
 
 
         def text_for_round(round):
-            "Abhängig von der aktuellen runde wird mit dieser funktion ein Text generiert."
+            """
+            Abhängig von der aktuellen Runde wird mit dieser Funktion ein Text generiert.
+
+            :param round: Aktuelle Runde
+            """
             provider = self.focus_text_provider if round == 0 else self.text_provider
             args = TextProviderArgs(100, 150, focus_chars) if round == 0 else TextProviderArgs(100, 150, all_chars)
             return provider.get_text(args)

@@ -18,6 +18,11 @@ from operator import itemgetter
 
 
 def make_levels(focus_chars):
+    """
+    Erstellt die Level für die verschiedenen Buchstabengruppen
+
+    :param focus_chars: Chars, für die das Level erstellt wird
+    """
     levels = []
     all_chars = ""
     for focus in focus_chars:
