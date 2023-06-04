@@ -201,6 +201,7 @@ class GameWindow(pyglet.window.Window, Disposable):
 
 def main():
     window = GameWindow()
+    l.debug("WORKS")
 
     # startet das Spiel
     pyglet.app.run(1/30)
