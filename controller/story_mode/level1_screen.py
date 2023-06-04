@@ -16,6 +16,8 @@ from input_tracker import InputAnalysis
 from tools.save_and_open import save_run
 from ui_elements_ex import Rect, map_inner_perc, Style, Rectangle
 from events import Event, Var
+from ..level_finished import LevelFinishedScreen
+from reactivex import concat
 
 """
 Eine Vorlage für einen Screen. ab Zeile 22 können Elemente eingefügt werde. Ein paar der ui-Elements sind als Beispiel gezeigt.
@@ -44,6 +46,7 @@ Und jetzt los, wir haben viel zu tun!\
 
     def __init__(self, events, save):
         super().__init__()
+        self.save = save
         self.events = events
         pos = events.size.pipe(
             rmap(lambda s: Rect(0, 0, *s))
@@ -77,10 +80,15 @@ Und jetzt los, wir haben viel zu tun!\
         self._subs.add(
             self.input_box.text_tracker.pipe(
                 rfilter(lambda tt: tt.is_finished)
-            ).subscribe(lambda _: machine.next())
+            ).subscribe(lambda _: self.machine.next())
         )
 
         # Überschrift.
+        self.header = ui_elements.BorderedRectangle("Level 1: Der Hafen der Freiheit", 25, 80, 50, 15, self.events.color_scheme, color_scheme.Minecraft, 3.5, self.events, self.batch, self.foreground)
+        self.pause_visible = ui_elements.BorderedRectangleButton("Pause (Esc)", 2.5, 85, 15, 10, self.events.color_scheme, color_scheme.Minecraft, 6, self.events, self.batch, self.foreground)
+
+        self._subs.add(self.events.key.subscribe(self.test_for_escape))
+        self._subs.add(self.pause_visible.clicked.subscribe(lambda _: self.pause(self.events, self.save)))
         self.header = ui_elements.BorderedRectangle("Level 1: Der Hafen der Freiheit", 30, 80, 40, 15, self.events.color_scheme, color_scheme.Minecraft, 4, self.events, self.batch, self.foreground)
 
         def display_text(display_text):
@@ -99,7 +107,10 @@ Und jetzt los, wir haben viel zu tun!\
             :return: Nachher zu löschenden Ressourcen.
             """
             # farbanimation
-            color = animate(255, 0, 3.0, events.update, lambda o: (0, 0, 0, int(o)))
+            color = concat(
+                animate(0, 0, 2.0, events.update, lambda o: (0, 0, 0, int(o))),
+                animate(0, 255, 3.0, events.update, lambda o: (0, 0, 0, int(o)))
+            )
             # spielerpositionsanimation.
             # Sieht kompliziert aus, da noch die Position des Laufstegs mit berücksichtigt werden muss.
             player_anim = animate(-300, 100, 5.0, events.update, lambda v: Rect(v, 0, 150, 150))
@@ -109,12 +120,9 @@ Und jetzt los, wir haben viel zu tun!\
             # den Spieler zum Laufen bringen.
             self.p.state.on_next(ThePlayer.Running(2.0))
 
-            # moonwalk ;)
-            self.p.look_dir.on_next(-1)
-
             return CompositeDisposable(
                 overlay_rect,
-                player_anim.subscribe(player_pos.on_next, on_completed=lambda: machine.next()),
+                player_anim.subscribe(player_pos.on_next, on_completed=lambda: self.machine.next()),
                 Disposable(lambda: self.p.state.on_next(ThePlayer.Idle())),  # wenn fertig, dann spieler stoppen.
                 Disposable(lambda: self.p.look_dir.on_next(1))  # wenn fertig, dann twist
             )
@@ -136,21 +144,34 @@ Und jetzt los, wir haben viel zu tun!\
             self.p.state.on_next(ThePlayer.Running(4.0))
             return CompositeDisposable(
                 overlay_rect,
-                pos_anim.subscribe(player_pos.on_next, on_completed=lambda: machine.next()),
+                pos_anim.subscribe(player_pos.on_next),
+                color.subscribe(on_completed=lambda: self.machine.next())
             )
+
+        def show_results():
+            self.reload_screen(LevelFinishedScreen.init_fn(save, 1, calculate_points(input_analysis), True))  # Abschlussbildschirm des Levels (Save, next_level, Punkte, Erfolgreich)
+
+
+        from main_controller import PushScreen
+        def goto(screen_init):
+            return lambda _: self.game_command.on_next(PushScreen(screen_init))
 
         # Erstellung der State Machine aus allen nötigen Zuständen:
         # Spieler entry
         # dann die ganzen texte
         # dann Spieler exit
-        machine = Machine(
+        self.machine = Machine(
             [player_entry]
             + [display_text(text) for text in self.TEXTS[:1]]
             + [player_exit]
+            + [show_results]
         )
 
         def calculate_points(input_analysis: InputAnalysis):
             return int((input_analysis.correct_char_count / input_analysis.time) ** 2 * 100)
+
+    def test_for_escape(self, data):
+        if data[0] == 65307: self.pause(self.events, self.save)
 
 
     def get_view(self):  # Erzeugt den aktuellen View
