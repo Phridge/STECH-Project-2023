@@ -14,6 +14,7 @@ from controller.delete_save_screen import DeleteSaveScreen
 from controller.home_screen import HomeScreen
 from controller.settings import SettingsScreen
 from controller.statistics import StatisticsScreen
+from controller.user_documentation import UserDocumentationScreen
 from tools import save_and_open
 
 
@@ -38,8 +39,9 @@ class StartScreen(Screen):
         self.delete_save3 = ui_elements.InputButton("Neu 3", 67.5, 30, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 16, events, self.batch)
         self.info = ui_elements.BorderedRectangle("Hinweis: Gib mal \"Erster Spielstand\" auf der Tastatur ein!", 10, 17.5, 80, 10, events.color_scheme, color_scheme.Minecraft, 1.9, events, self.batch)
 
-        self.leave = ui_elements.InputButton("Verlassen", 40, 2.5, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
+        self.leave = ui_elements.InputButton("Verlassen", 40, 2.5, 20, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
         self.settings = ui_elements.InputButton("Einstellungen", 2.5, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
+        self.help = ui_elements.InputButton("Hilfe", 67.5, 2.5, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 12, events, self.batch)
         #self.statistics = ui_elements.InputButton("Statistiken", 85, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
@@ -60,6 +62,7 @@ class StartScreen(Screen):
         self._subs.add(self.settings.clicked.subscribe(goto(SettingsScreen.init_fn(0))))
         #self._subs.add(self.statistics.clicked.subscribe(goto(StatisticsScreen.init_fn(0))))
         self._subs.add(self.leave.clicked.subscribe(lambda _: self.game_command.on_next(Exit())))
+        self._subs.add(self.help.clicked.subscribe(goto(UserDocumentationScreen.init_fn())))
 
         self.play_music(events.volume)
 
