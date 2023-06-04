@@ -50,6 +50,9 @@ class Level2Screen(Level):
         enemy_run_animation = load_enemy_run()
 
         def level_generator(msg):
+            """
+            Generiert das zweite Level und alle Aktionen darin
+            """
             def generate_bush_enemy_positions():
                 """
                 Generiert positionen von Büschen und Gegnern. Da dieses Level im prinzip ein endlos-scroller ist,
@@ -96,6 +99,11 @@ class Level2Screen(Level):
             level_objects = []
 
             def generate_enemies(index):
+                """
+                Generiert die Gegner an ihren berechneten Standorten
+                :param index: position des Gegners
+                :return:
+                """
                 bush_pos, enemy_pos = positions[index]
 
                 enemy = StaticActor(
@@ -332,6 +340,11 @@ class Level2Screen(Level):
         self.machine = LevelMachine(level_generator)
 
         def calculate_points(input_analysis: InputAnalysis):
+            """
+            Berechnet einen Punktwert, je höher desto besser hat der Spieler getippt.
+            :param input_analysis: Eingabe-Historie, aus der die Punkte berechnet werden
+            :return: Punkte
+            """
             return int((input_analysis.correct_char_count / input_analysis.time) ** 2 * 100)
 
     def get_view(self):  # Erzeugt den aktuellen View
