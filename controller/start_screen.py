@@ -14,6 +14,7 @@ from controller.delete_save_screen import DeleteSaveScreen
 from controller.home_screen import HomeScreen
 from controller.settings import SettingsScreen
 from controller.statistics import StatisticsScreen
+from tools import save_and_open
 
 
 class StartScreen(Screen):
@@ -28,7 +29,7 @@ class StartScreen(Screen):
 
         # Erstes Layout für den Hauptbildschirm
         self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, self.batch)
-        self.header = ui_elements.BorderedRectangle("Die Maschinen-Revolution", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 4.5, events, self.batch)
+        self.header = ui_elements.BorderedRectangle("Typerpunk: The Rise of Maxwell", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 3.5, events, self.batch)
         self.save1 = ui_elements.InputButton("Erster Spielstand", 35, 55, 30, 10, events.color_scheme, color_scheme.Minecraft, 5.5, events, self.batch)
         self.save2 = ui_elements.InputButton("Zweiter Spielstand", 35, 42.5, 30, 10, events.color_scheme, color_scheme.Minecraft, 5.5, events, self.batch)
         self.save3 = ui_elements.InputButton("Dritter Spielstand", 35, 30, 30, 10, events.color_scheme, color_scheme.Minecraft, 5.5, events, self.batch)
@@ -39,25 +40,38 @@ class StartScreen(Screen):
 
         self.leave = ui_elements.InputButton("Verlassen", 40, 2.5, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
         self.settings = ui_elements.InputButton("Einstellungen", 2.5, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
-        self.statistics = ui_elements.InputButton("Statistiken", 85, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, self.batch)
+        #self.statistics = ui_elements.InputButton("Statistiken", 85, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
         from main_controller import PushScreen, Exit
 
         def goto(screen_init):
             return lambda _: self.game_command.on_next(PushScreen(screen_init))
+
+        self._subs.add(self.save1.clicked.subscribe(lambda _: self.load_settings(1)))
         self._subs.add(self.save1.clicked.subscribe(goto(HomeScreen.init_fn(1))))
+        self._subs.add(self.save2.clicked.subscribe(lambda _: self.load_settings(2)))
         self._subs.add(self.save2.clicked.subscribe(goto(HomeScreen.init_fn(2))))
+        self._subs.add(self.save3.clicked.subscribe(lambda _: self.load_settings(3)))
         self._subs.add(self.save3.clicked.subscribe(goto(HomeScreen.init_fn(3))))
         self._subs.add(self.delete_save1.clicked.subscribe(goto(DeleteSaveScreen.init_fn(1))))
         self._subs.add(self.delete_save2.clicked.subscribe(goto(DeleteSaveScreen.init_fn(2))))
         self._subs.add(self.delete_save3.clicked.subscribe(goto(DeleteSaveScreen.init_fn(3))))
         self._subs.add(self.settings.clicked.subscribe(goto(SettingsScreen.init_fn(0))))
-        self._subs.add(self.statistics.clicked.subscribe(goto(StatisticsScreen.init_fn(0))))
+        #self._subs.add(self.statistics.clicked.subscribe(goto(StatisticsScreen.init_fn(0))))
         self._subs.add(self.leave.clicked.subscribe(lambda _: self.game_command.on_next(Exit())))
 
         self.play_music(events.volume)
 
+    def load_settings(self, save):
+        from main_controller import ChangeSetting, SetFullscreen
+        if save_and_open.get_settings(save):
+            fullscreen, volume, color, size = save_and_open.get_settings(save)
+            print((fullscreen, volume, color, size))
+            self.game_command.on_next(ChangeSetting("color_scheme", color))
+            self.game_command.on_next(SetFullscreen(fullscreen))
+            self.game_command.on_next(ChangeSetting("volume", volume))
+            if size: self.game_command.on_next(ChangeSetting("size", size))
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch

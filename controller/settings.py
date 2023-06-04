@@ -3,6 +3,7 @@ import pyglet
 import color_scheme
 import ui_elements
 from controller import Screen
+from tools.save_and_open import save_settings_to_db
 
 
 class SettingsScreen(Screen):
@@ -82,11 +83,12 @@ class SettingsScreen(Screen):
         self.game_command.on_next(ChangeSetting("volume", self.volume_value))
 
         if not self.fullscreen and self.new_screen_size:
-            # self.event.on_next(("ChangeScreenSize", self.new_screen_size[0], self.new_screen_size[1]))
+            #  self.event.on_next(("ChangeScreenSize", self.new_screen_size[0], self.new_screen_size[1]))
             self.game_command.on_next(ChangeSetting("size", self.new_screen_size))
 
         # self.change_controller.on_next(("ReloadSettings", previous_controller, data))
         self.game_command.on_next(ReloadScreen())
+        save_settings_to_db(save, self.fullscreen, self.volume_value, self.preview_color_scheme, self.new_screen_size)
 
     def change_color(self, _):
         """
@@ -149,8 +151,6 @@ class SettingsScreen(Screen):
             self.volume_value = int(self.volume_picker.text) / 100
         else:
             self.volume_value = 0
-        from main_controller import ChangeSetting
-        self.game_command.on_next(ChangeSetting("volume", self.volume_value))
 
     def set_fullscreen(self, state):
         """
@@ -161,7 +161,8 @@ class SettingsScreen(Screen):
         self.fullscreen = state
         self.fullscreen_toggle_button.label.text = "Vollbild an" if not state else "Vollbild aus"
 
-        self.event.on_next(("ToggleFullscreen", state))
+        from main_controller import SetFullscreen
+        self.game_command.on_next(SetFullscreen(state))
 
     def change_size(self, data):
         x = y = None

@@ -5,7 +5,7 @@ import pyglet
 from pyglet.graphics import Group
 from reactivex import Observable, concat, just
 from reactivex.operators import scan, combine_latest, map as rmap, filter as rfilter, merge, do_action, share
-from reactivex.disposable import SerialDisposable, CompositeDisposable
+from reactivex.disposable import SerialDisposable, CompositeDisposable, Disposable
 
 from events import Events, Event
 import input_tracker
@@ -77,6 +77,8 @@ class InputBox(Controller):
             def accept_char(cmd):
                 tt.accept_char(cmd)
                 self.text_tracker.on_next(tt)
+                if tt.is_finished:
+                    tt_sub.disposable = None
 
             tt_sub.disposable = CompositeDisposable([
                 events.text.subscribe(accept_char),
@@ -89,4 +91,5 @@ class InputBox(Controller):
             self.text_tracker.on_next(tt)
 
         self._subs.add(text.subscribe(init_text_tracker))
+        self._subs.add(Disposable(lambda: text_layout.delete()))
 

@@ -72,8 +72,13 @@ class UIElement(Disposable):
 
         # skaliert Bilder und Gifs, falls es welche gibt
         if isinstance(self, (Sprite, BorderedSprite, BorderedSpriteButton, GifButton, Gif)):
+            self.x = self.x_px + border
+            self.y = self.y_px + border
             self.scale_x = (self.width_px - 2 * border) / self.normal_width  # skaliert das Bild auf die angegebene Pixelzahl
             self.scale_y = (self.height_px - 2 * border) / self.normal_height
+
+    def stop_timer(self):
+        pyglet.clock.unschedule(self.pulse_label)
 
 
 class BorderedRectangle(UIElement):
@@ -590,8 +595,8 @@ class Sprite(pyglet.sprite.Sprite, UIElement):
         x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
 
         # zeichnet das Bild in der richtigen Größe
-        image = pyglet.image.load(path)
-        pyglet.sprite.Sprite.__init__(self, image, x_px, y_px, batch=batch, group=group)
+        image = pyglet.image.load(path) if isinstance(path, str) else path
+        self.sprite = pyglet.sprite.Sprite.__init__(self, image, x_px, y_px, batch=batch, group=group)
 
         # speichert die Standard-Maße des Bildes ab
         self.normal_width = self.width
@@ -631,7 +636,7 @@ class BorderedSpriteButton(pyglet.sprite.Sprite, UIElement):
 
         # zeichnet das Bild in der richtigen Größe
         image = pyglet.image.load(path)
-        pyglet.sprite.Sprite.__init__(self, image,
+        self.sprite = pyglet.sprite.Sprite.__init__(self, image,
                                       x_px + color_scheme.border_thickness,
                                       y_px + color_scheme.border_thickness, batch=batch, group=group)
 
@@ -712,7 +717,7 @@ class BorderedSprite(pyglet.sprite.Sprite, UIElement):
 
         # zeichnet das Bild in der richtigen Größe
         image = pyglet.image.load(path)
-        pyglet.sprite.Sprite.__init__(self, image,
+        self.sprite = pyglet.sprite.Sprite.__init__(self, image,
                                       x_px + color_scheme.border_thickness,
                                       y_px + color_scheme.border_thickness, batch=batch, group=group)
 
@@ -756,7 +761,7 @@ class Gif(pyglet.sprite.Sprite, UIElement):  # lädt ein Gif
 
         # erstellt aus den einzelnen Bildern eine Animation der gewünschten Länge. Loop erlaubt ununterbrochene Wiederholung der Animation
         animation = image.from_image_sequence(animation_frames, duration=duration / len(animation_frames), loop=loop)
-        pyglet.sprite.Sprite.__init__(self, animation, x_px, y_px, batch=batch, group=group)
+        self.sprite = pyglet.sprite.Sprite.__init__(self, animation, x_px, y_px, batch=batch, group=group)
 
         # speichert die Standard-Maße des Gifs
         self.normal_width = self.width
@@ -772,6 +777,11 @@ class Gif(pyglet.sprite.Sprite, UIElement):  # lädt ein Gif
 
     def on_animation_end(self):
         self.loop_finished.on_next(True)
+
+
+    def dispose(self) -> None:
+        self.delete()
+        super().dispose()
 
 
 class GifButton(pyglet.sprite.Sprite, UIElement):
@@ -802,7 +812,7 @@ class GifButton(pyglet.sprite.Sprite, UIElement):
 
         # erstellt aus den einzelnen Bildern eine Animation der gewünschten Länge. Loop erlaubt ununterbrochene Wiederholung der Animation
         animation = Animation.from_image_sequence(animation_frames, duration=duration / len(animation_frames), loop=loop)
-        pyglet.sprite.Sprite.__init__(self, animation, x_px, y_px, batch=batch, group=group)
+        self.sprite = pyglet.sprite.Sprite.__init__(self, animation, x_px, y_px, batch=batch, group=group)
 
         # speichert die Standard-Maße des Gifs
         self.normal_width = self.width

@@ -1,7 +1,9 @@
-import contextlib
+import logging as l
+l.basicConfig(filename="log.log", level=l.DEBUG)
+
 from contextlib import suppress
 from dataclasses import dataclass
-from collections import namedtuple
+from sys import stdout
 from typing import Any, Callable, Optional
 
 import pygame
@@ -13,28 +15,10 @@ from reactivex import Observer
 from reactivex.subject import BehaviorSubject, Subject
 from reactivex.disposable import CompositeDisposable, MultipleAssignmentDisposable, SerialDisposable
 import color_scheme
-from controller.sandbox_mode.sandbox_level import SandboxLevel
 from controller import Screen
-from controller.settings import SettingsScreen
-from controller.statistics import StatisticsScreen
 from controller.start_screen import StartScreen
-from controller.home_screen import HomeScreen
-from controller.error_screen import ErrorScreen
-from controller.delete_save_screen import DeleteSaveScreen
-from controller.pause_screen import PauseScreen
-from controller.story_mode.level1_screen import Level1
-from controller.story_mode.level2_screen import Level2Screen
-from controller.story_mode.level3_screen import Level3Screen
-from controller.story_mode.level4_screen import Level4Screen
-from controller.story_mode.main_screen import MainStoryScreen
-from controller.learning_mode.main_screen import MainLearningScreen
-from controller.sandbox_mode.main_screen import MainSandboxScreen
-
-
-# Beispiel-Bildschirm
-from controller.template_screen import TemplateScreen
 from events import Events, Event, Var, Disposable
-
+from tools import save_and_open
 
 ScreenInit = Callable[[Events], Screen]
 
@@ -81,7 +65,7 @@ class ChangeSetting:
 
 class GameWindow(pyglet.window.Window, Disposable):
     def __init__(self):
-        super().__init__(resizable=True)
+        super().__init__(resizable=True, caption="Typerpunk: The Rise of Maxwell")
         self.events = Events(
             key=Event(),
             text=Event(),
@@ -95,6 +79,16 @@ class GameWindow(pyglet.window.Window, Disposable):
             fullscreen=False,   
         )
 
+        # Updated die Settings aus der Datenbank
+        settings = save_and_open.get_settings(0)
+        self.events.color_scheme = settings[2]
+        self.events.volume.on_next(settings[1])
+        self.events.fullscreen = settings[0]
+        self.set_fullscreen(self.events.fullscreen)
+        self.events.size.subscribe(print)
+        if settings[3] and not self.events.fullscreen:
+            self._handle_command(ChangeSetting("size", settings[3]))
+
         with suppress(pygame.error):
             mixer.init()
         self.volume_sub = self.events.volume.subscribe(mixer.music.set_volume, on_error=lambda e: None)
@@ -105,8 +99,9 @@ class GameWindow(pyglet.window.Window, Disposable):
 
         self.controller_subs = SerialDisposable()
 
-        # self.push_screen(Level1)
+        # self.push_screen(Level1Screen)
         self.push_screen(StartScreen)
+        self.set_icon(pyglet.image.load("assets/images/icon.png"))
 
 
     def push_screen(self, screen_init):
@@ -169,13 +164,15 @@ class GameWindow(pyglet.window.Window, Disposable):
                 if restart:
                     pyglet.app.exit()
                 else:
-                    exit(0)
+                    pyglet.app.exit()
+
     def on_draw(self, *args):
         self.clear()
         view = self.controller.get_view()
         view.draw()
 
     def on_key_press(self, keycode, mods):
+        print(keycode)
         self.events.key.on_next((keycode, mods))
 
     def on_text(self, text):
@@ -202,8 +199,10 @@ class GameWindow(pyglet.window.Window, Disposable):
     def on_refresh(self, dt):
         self.events.update.on_next(dt)
 
+
 def main():
     window = GameWindow()
+    l.debug("WORKS")
 
     # startet das Spiel
     pyglet.app.run(1/30)

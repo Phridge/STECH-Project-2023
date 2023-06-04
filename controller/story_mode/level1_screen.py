@@ -82,7 +82,7 @@ Und jetzt los, wir haben viel zu tun!\
 
         # Überschrift.
         self.header = ui_elements.BorderedRectangle("Level 1: Der Hafen der Freiheit", 30, 80, 40, 15, self.events.color_scheme, color_scheme.Minecraft, 4, self.events, self.batch, self.foreground)
-        self.play_music()
+
         def display_text(display_text):
             """
             Factory-Funktion, um einfach den nächsten Text in der Input-Box anzuzeigen.
@@ -118,7 +118,6 @@ Und jetzt los, wir haben viel zu tun!\
                 Disposable(lambda: self.p.state.on_next(ThePlayer.Idle())),  # wenn fertig, dann spieler stoppen.
                 Disposable(lambda: self.p.look_dir.on_next(1))  # wenn fertig, dann twist
             )
-
 
         def player_exit():
             """
@@ -157,8 +156,9 @@ Und jetzt los, wir haben viel zu tun!\
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
 
-    def play_music(self):
+    def play_music(self, nextmusic):
         with contextlib.suppress(pygame.error):
             mixer.init()
-            mixer.music.load("assets/sounds/Home.mp3")
+            mixer.music.load(nextmusic)
+            mixer.music.play()
             mixer.music.play(-1)

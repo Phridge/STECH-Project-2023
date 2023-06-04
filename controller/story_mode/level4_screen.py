@@ -38,7 +38,7 @@ class Level4Screen(Screen):
         player = Player(self.events, self.batch, 40, 27.5, 15, 22.5)
 
         self.header = ui_elements.BorderedRectangle("Level 4: Die Dampfstadt", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.batch)
-        self.play_music()
+
         # Hier muss für jeden Button eine Subscription erstellt werden.
         player.subs.add(player.gif.clicked.subscribe(player.jump))
 
@@ -48,8 +48,9 @@ class Level4Screen(Screen):
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
-    def play_music(self):
+    def play_music(self, nextmusic):
         with contextlib.suppress(pygame.error):
             mixer.init()
-            mixer.music.load("assets/sounds/MEGALOVANIA.mp3")
+            mixer.music.load(nextmusic)
+            mixer.music.play()
             mixer.music.play(-1)

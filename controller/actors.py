@@ -1,3 +1,4 @@
+import random
 from collections import namedtuple
 
 import pyglet
@@ -24,24 +25,31 @@ class Player:
         self.batch = batch
         self.events = events
 
-        self.gif = ui_elements.GifButton("assets/images/mech_idle.gif", self.x, self.y, self.own_width, self.own_height, 0.75, True, self.events, self.batch)
+        self.gif = ui_elements.GifButton("assets/images/mech_idle.gif", self.x, self.y, self.own_width, self.own_height, self.duration,
+                                   True, self.events, self.batch)
         self.subs = CompositeDisposable()
 
     def idle(self):
-        self.gif = ui_elements.Gif("assets/images/mech_idle.gif", self.x, self.y, self.own_width, self.own_height, 0.75, True, self.events, self.batch)
+        self.gif = ui_elements.Gif("assets/images/mech_idle.gif", self.x, self.y, self.own_width, self.own_height, 0.75,
+                                   True, self.events, self.batch)
 
     def walk(self):
-        self.gif = ui_elements.Gif("assets/images/mech_walk.gif", self.x, self.y, self.own_width, self.own_height, 0.75, True, self.events, self.batch)
+        #vself.gif = ui_elements.Gif("assets/images/mech_walk.gif", self.x, self.y, self.own_width, self.own_height, 0.75,
+         #                          True, self.events, self.batch)
+        self.gif = ui_elements.Gif("assets/images/mech_walk.gif", self.x, self.y, self.own_width, self.own_height, self.duration,
+                                 True, self.events, self.batch)
 
     def jump(self, data):
         # von Janek übernommen, funktioniert hier noch nicht, wollte mir den schnipsel nur aufheben
         if data:
             self.gif.delete()
-            self.gif = ui_elements.GifButton("assets/images/mech_jump.gif", self.x, self.y, self.own_width, self.own_height, 1, True, self.events, self.batch)
-            self.subs = self.gif.loop_finished.subscribe(lambda _: self.hurt(False))
+            self.gif = ui_elements.Gif("assets/images/mech_jump.gif", self.x*0.965, self.y, self.own_width,
+                                             self.own_height, 0.5, True, self.events, self.batch)
+            self.subs = self.gif.loop_finished.subscribe(lambda _: self.jump(False))
         else:
             self.gif.delete()
-            self.gif = ui_elements.GifButton("assets/images/mech_walk.gif", self.x, self.y, self.own_width, self.own_height, 0.75, True, self.events, self.batch)
+            self.gif = ui_elements.GifButton("assets/images/mech_idle.gif", self.x, self.y, self.own_width,
+                                             self.own_height, self.duration, True, self.events, self.batch)
             if self.subs:
                 self.subs.dispose()
 
@@ -51,17 +59,16 @@ class Player:
             self.gif.delete()
             self.gif = ui_elements.GifButton("assets/images/mech_hurt.gif", 30, 12, 13, 20, 0.25, True, self.events,
                                              self.batch)
-            self.subs = self.gif.loop_finished.subscribe(lambda _: self.hurt(False))
+            self.gif_sub = self.gif.loop_finished.subscribe(lambda _: self.mech_hurt(False))
         else:
             self.gif.delete()
             self.gif = ui_elements.GifButton("assets/images/mech_walk.gif", 30, 12, 13, 20, 0.75, True, self.events,
                                              self.batch)
-            if self.subs:
-                self.subs.dispose()
-
+            if self.gif_sub:
+                self.gif_sub.dispose()
 
     def die(self):
-        self.gif = ui_elements.Gif("assets/images/mech_hurt.gif", 20, 40, 20, 30, 0.75, True, self.events, self.batch)
+        self.gif = ui_elements.Gif("assets/images/mech_death.gif", 20, 40, 20, 30, 0.75, True, self.events, self.batch)
         time.sleep(1)
         self.idle()
 
@@ -114,22 +121,9 @@ class Actor(Disposable):
         self.pos = rx(pos, Rect.zero())  # rx() wrappt nicht-Observable-Argumente und macht welche draus, wenn dies nicht sind
         self.look_dir = rx(look_dir, 1)
         self.state = rx(state, self.Idle())
+        self.batch = batch
+        self.group = group
 
-        def create_sprite(old_sprite: pyglet.sprite.Sprite | None, image):
-            """
-            Mapper-Funktion, die auf Änderungen des anzuzeigenden Bildes reagiert und ein Sprite-Objekt anpasst.
-            :param old_sprite: die vorherige Sprite (beim ersten mal None)
-            :param image: neues bild, geladen durch _get_image(self)
-            :return: aktualisierte Sprite. Es ändert sich nur die Animation.
-            """
-            if old_sprite is None:
-                sprite = Sprite(image, 0, 0, 0, batch=batch, group=group)
-                sprite.visible = False
-            else:
-                sprite = old_sprite
-                sprite.image = image
-
-            return sprite
 
         def update_sprite_transform(sprite, look_dir, pos):
             """
@@ -158,13 +152,29 @@ class Actor(Disposable):
 
         sprite = self.state.pipe(
             rmap(self._get_image),
-            scan(create_sprite, None),
+            scan(self.create_sprite, None),
             combine_latest(self.look_dir, self.pos),
             starmap(update_sprite_transform),
         )
 
-        self._sub = sprite.subscribe()  # muss gemacht werden, damit auch was passiert (lol)
+        self._sub = sprite.subscribe(lambda s: setattr(self, "sprite", s))  # muss gemacht werden, damit auch was passiert (lol)
+        self._on_dispose = reactivex.disposable.Disposable(lambda: self.sprite.delete())
 
+    def create_sprite(self, old_sprite: pyglet.sprite.Sprite | None, image):
+        """
+        Mapper-Funktion, die auf Änderungen des anzuzeigenden Bildes reagiert und ein Sprite-Objekt anpasst.
+        :param old_sprite: die vorherige Sprite (beim ersten mal None)
+        :param image: neues bild, geladen durch _get_image(self)
+        :return: aktualisierte Sprite. Es ändert sich nur die Animation.
+        """
+        if old_sprite is None:
+            sprite = Sprite(image, 0, 0, 0, batch=self.batch, group=self.group)
+            sprite.visible = False
+        else:
+            sprite = old_sprite
+            sprite.image = image
+
+        return sprite
 
     def _get_image(self, state):
         """
@@ -188,6 +198,8 @@ class ThePlayer(Actor):
 
     Running = namedtuple("Running", "speed")
     Jumping = namedtuple("Jumping", "")
+    Hurt = namedtuple("Hurt", "")
+    Attacking = namedtuple("Attacking", "attack")
 
     def __init__(self, pos=None, look_dir=None, state=None, batch=None, group=None):
         super().__init__(pos, look_dir, state, batch, group)
@@ -203,6 +215,20 @@ class ThePlayer(Actor):
                 for frame in anim.frames:
                     frame.duration = (1 / speed) / len(anim.frames)
                 return anim
+            case self.Hurt():
+                return pyglet.image.load_animation("assets/images/mech_hurt.gif")
+            case self.Attacking(attack):
+                if attack is None:
+                    attack_id, frames, duration = random.choice([
+                        (1, 4, 0.3),
+                        (2, 6, 1),
+                        (3, 4, 0.3),
+                        (4, 6, 1)
+                    ])
+                    path = f"assets/images/mech_attack_{attack_id}.png"
+                    sprite_sheet = pyglet.resource.image(path)
+                    image_grid = pyglet.image.ImageGrid(sprite_sheet, rows=1, columns=frames)
+                    return pyglet.image.Animation.from_image_sequence(image_grid, duration / frames)
             case _:
                 raise NotImplementedError
 
@@ -232,12 +258,13 @@ class StaticActor(Actor):
         return self.image
 
 
-class Enemy():
+class Enemy:
     def __init__(self, events, batch, fx, fy, fwidth, fheight):
         self.x = fx
         self.y = fy
         self.own_width = fwidth
         self.own_height = fheight
+        self.duration = 0.75
         self.batch = batch
         self.events = events
 
@@ -246,3 +273,6 @@ class Enemy():
 
         self.header = ui_elements.BorderedRectangle("Type me", 20, 80, 60, 20, self.events.color_scheme,
                                                     color_scheme.Minecraft, 2, self.events, self.batch)
+
+
+

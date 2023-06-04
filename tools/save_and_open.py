@@ -1,11 +1,13 @@
 import json
+import pickle
 from datetime import timedelta
 
 from sqlalchemy.exc import NoResultFound
 
+import color_scheme
 from database import new_session, Save, Run, Char, Level
-from sqlalchemy import update, select
-
+from sqlalchemy import update, select, func
+from sqlalchemy.sql import text
 from input_tracker import TextTracker, InputAnalysis
 
 """
@@ -129,6 +131,8 @@ def save_run(game_save_nr: int, level_name: str, input_analysis: InputAnalysis):
                 accuracy=(count - wrong) / count,
             ))
         session.commit()
+
+
 # -----------------Noch testen---------------------
 def save_game(game_save_nr, level_id, preset_text, written_text, time_needed_for_game, char_array):
     with new_session() as session:
@@ -167,82 +171,140 @@ def save_game(game_save_nr, level_id, preset_text, written_text, time_needed_for
             session.commit()
 
 
+def save_settings_to_db(save, fullscreen, volume, preview_color_scheme, new_screen_size):
+    with new_session() as session:
+        settings_pickle = pickle.dumps((fullscreen, volume, preview_color_scheme, new_screen_size))
+        print((fullscreen, volume, preview_color_scheme, new_screen_size))
+        try:
+            save_line = session.execute(select(Save).where(Save.id == save)).scalar_one()
+        except NoResultFound:
+            s = Save(
+                id=save,
+                level_progress=0,
+                settings=settings_pickle
+            )
+            session.add(s)
+            session.commit()
+        else:
+            setattr(save_line, "settings", settings_pickle)
+            session.commit()
+            #  der Save existiert
+
+
+def set_level_progress(save, level):
+    with new_session() as session:
+        try:
+            save_line = session.execute(select(Save).where(Save.id == save)).scalar_one()
+        except NoResultFound:
+            pass
+        else:
+            setattr(save_line, "level_progress", level)
+            session.commit()
+
+
+def get_settings(save):
+    with new_session() as session:
+        try:
+            save_line = session.execute(select(Save).where(Save.id == save)).scalar_one()
+        except NoResultFound:
+            return False, 0, color_scheme.BlackWhite, None
+        else:
+            settings_data = pickle.loads(getattr(save_line, "settings"))
+            return settings_data
+
+
+def get_story_progress(save):
+    with new_session() as session:
+        try:
+            save_line = session.execute(select(Save).where(Save.id == save)).scalar_one()
+        except NoResultFound:
+            return 0
+        else:
+            progress_data = getattr(save_line, "level_progress")
+            return progress_data
+
+
 # Nicht wirklich sicher, ob das geht, da das MySQL statt SQL code ist
 def get_last_run_id(game_save):
+    output_id = []
     with new_session() as session:
-        return session.execute("SELECT id FROM Run WHERE save_id = " + game_save + "ORDER BY id DESC LIMIT 1")
+        output_id = session.execute(select(Run.id).where(Run.save_id == str(game_save)).order_by(Run.id.desc())).first()
+    return output_id[0]
 
 
 def get_specific_run_id(game_save, run_id):
     with new_session() as session:
-        return session.execute("SELECT id FROM Run WHERE id =" + run_id + " AND save_id =" + game_save)
+        return session.execute(
+            text('SELECT id FROM Run WHERE id = ' + str(run_id) + ' AND save_id = ' + str(game_save)))
 
 
 def get_current_level(game_save):
     with new_session() as session:
-        return session.execute("SELECT level_progress FROM Save WHERE id =" + game_save)
+        return session.execute(text('SELECT level_progress FROM Save WHERE id = ' + str(game_save)))
 
 
 def get_game_save_language(game_save):
     with new_session() as session:
-        return session.execute("SELECT language FROM Save WHERE id =" + game_save)
+        return session.execute(text('SELECT language FROM Save WHERE id = ' + str(game_save)))
 
 
 def get_game_save_keyboard_layout(game_save):
     with new_session() as session:
-        return session.execute("SELECT keyboard_layout FROM Save WHERE id =" + game_save)
+        return session.execute(text('SELECT keyboard_layout FROM Save WHERE id = ' + str(game_save)))
 
 
-def get_game_save_average_accuracy(game_save):
+def get_avg_accuracy_of_specific_char(game_save, char_name):
     with new_session() as session:
-        value_of_accuracy_sum = session.execute(
-            "SELECT SUM(accuracy) FROM Char WHERE run_id = (SELECT save_id FROM Run WHERE save_id =" + game_save + ")"
-        )
-        count_of_runs = session.execute(
-            "SELECT COUNT(accuracy) FROM Char WHERE run_id = (SELECT save_id FROM Run WHERE save_id =" + game_save + ")"
-        )
-        average_accuracy = value_of_accuracy_sum / count_of_runs
-    return average_accuracy
+        try:
+            count = session.query(func.count(Char.accuracy)).filter(Char.char == char_name and
+                Char.run_id == get_last_run_id(str(game_save))).scalar()
+            sum_value = session.query(func.sum(Char.accuracy)).filter(Char.char == char_name and
+                Char.run_id == get_last_run_id(str(game_save))).scalar()
+            return (sum_value / count) * 100
+        except TypeError:
+            return 0
 
 
 def get_avg_time_for_specific_char(game_save, char_name):
     with new_session() as session:
-        summed_time_for_char = session.execute(
-            "SELECT COUNT(avg_time_per_char) FROM Char WHERE char = " +
-            char_name + "and run_id = (SELECT save_id FROM Run WHERE save_id =" +
-            game_save + ")"
-        )
-    return summed_time_for_char / get_last_run_id(game_save)
+        try:
+            count = session.query(func.count(Char.avg_time_per_char)).filter(
+                Char.char == char_name and Char.run_id == get_last_run_id(str(game_save))).scalar()
+            sum_value = session.query(func.sum(Char.avg_time_per_char)).filter(
+                Char.char == char_name and Char.run_id == get_last_run_id(str(game_save))).scalar()
+            return sum_value / count
+        except TypeError:
+            return 0
 
 
 # Rückgabewert ist ein array (ohne das 2 dimensionale Array mit den Chars)
 def show_last_run_results(game_save):
     last_run_id = get_last_run_id(game_save)
     with new_session() as session:
-        last_level_played = session.execute(
-            "SELECT level_id FROM Run WHERE id =" + last_run_id
-        )
-        last_preset_text = session.execute(
-            "SELECT preset_text FROM Run WHERE id =" + last_run_id
-        )
-        last_typed_text = session.execute(
-            "SELECT typed_text FROM Run WHERE id =" + last_run_id
-        )
-        last_time_taken_for_level = session.execute(
-            "SELECT time FROM Run WHERE id =" + last_run_id
-        )
+        last_level_played = session.execute(text(
+            'SELECT level_id FROM Run WHERE id = ' + str(last_run_id)
+        ))
+        last_preset_text = session.execute(text(
+            'SELECT preset_text FROM Run WHERE id = ' + str(last_run_id)
+        ))
+        last_typed_text = session.execute(text(
+            'SELECT typed_text FROM Run WHERE id = ' + str(last_run_id)
+        ))
+        last_time_taken_for_level = session.execute(text(
+            'SELECT time FROM Run WHERE id = ' + str(last_run_id)
+        ))
     return [last_level_played, last_preset_text, last_typed_text, last_time_taken_for_level]
 
 
 def show_last_char_results(game_save):
     result_array = []
     last_run_id = get_last_run_id(game_save)
+    print(last_run_id)
     with new_session() as session:
-        char_list = session.execute(
-            "SELECT char, preset_char_count, typed_char_count, vg_time_per_char FROM Char WHERE run_id =" +
-            last_run_id +
-            ")"
-        )
+        char_list = session.execute(text(
+            'SELECT char, preset_char_count, typed_char_count, avg_time_per_char, accuracy FROM Char WHERE run_id = ' +
+            str(last_run_id)
+        ))
     for data_row in char_list:
         result_array.append(data_row)
 
@@ -253,10 +315,10 @@ def show_three_best_chars(game_save, search_filter):
     result_array = []
     last_run_id = get_last_run_id(game_save)
     with new_session() as session:
-        char_list = session.execute(
-            "SELECT char, preset_char_count, typed_char_count, vg_time_per_char FROM Char WHERE run_id =" +
-            last_run_id + " ORDER BY " + search_filter + " ASC LIMIT 3)"
-        )
+        char_list = session.execute(text(
+            'SELECT char, preset_char_count, typed_char_count, avg_time_per_char, accuracy FROM Char WHERE run_id = ' +
+            str(last_run_id) + ' ORDER BY ' + search_filter + ' ASC LIMIT 3)'
+        ))
     for data_row in char_list:
         result_array.append(data_row)
 
@@ -267,11 +329,16 @@ def show_three_worst_chars(game_save, search_filter):
     result_array = []
     last_run_id = get_last_run_id(game_save)
     with new_session() as session:
-        char_list = session.execute(
-            "SELECT char, preset_char_count, typed_char_count, vg_time_per_char FROM Char WHERE run_id =" +
-            last_run_id + " ORDER BY " + search_filter + "DESC LIMIT 3)"
-        )
+        char_list = session.execute(text(
+            'SELECT char, preset_char_count, typed_char_count, avg_time_per_char, accuracy FROM Char WHERE run_id = ' +
+            str(last_run_id) + ' ORDER BY ' + search_filter + ' DESC LIMIT 3)'
+        ))
     for data_row in char_list:
         result_array.append(data_row)
 
     return result_array
+
+
+def show_time_progression(game_save, char):
+    with new_session() as session:
+        return list(session.execute(select(Char.avg_time_per_char).join(Char.run).where(Run.save_id == game_save, Char.char == char)))

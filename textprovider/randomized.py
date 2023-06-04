@@ -20,7 +20,7 @@ class RandomTextProvider(TextProvider):
         Entsprechend den Vorgaben in args.
         :return: generierten Text
         """
-        target_length = random.randrange(args.min_length, args.max_length)
+        target_length = random.randint(args.min_length, args.max_length)
         acc = ""
         while len(acc) < target_length:
             wordlen = random_word_len()
