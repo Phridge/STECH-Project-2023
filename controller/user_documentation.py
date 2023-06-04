@@ -29,13 +29,15 @@ class UserDocumentationScreen(Screen):
 
         # Erstes Layout für den Hauptbildschirm
         self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, self.batch)
-        self.header = ui_elements.BorderedRectangle("So funktioniert alles:", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 3.5, events, self.batch)
-        self.maneuvering = ui_elements.BorderedRectangle("Manövrierung:", 30, 62.5, 40, 10, events.color_scheme, color_scheme.Minecraft, 6, events, self.batch)
-        self.maneuvering_text = ui_elements.BorderedRectangle("Du brauchst keine Maus, alle Buttons die blinken kannst du über die Tastatur eingeben!", 5, 53.375, 90, 7.5, events.color_scheme, color_scheme.Minecraft, 1.3, events, self.batch)
-        self.settings = ui_elements.BorderedRectangle("Einstellungen:", 30, 42.5, 40, 10, events.color_scheme, color_scheme.Minecraft, 6, events, self.batch)
-        self.settings_text = ui_elements.BorderedRectangle("In den Einstellungen kannst du mit \"Tab\" und \"Shift+Tab\" manövrieren", 5, 33.375, 90, 7.5, events.color_scheme, color_scheme.Minecraft, 1.7, events, self.batch)
-        self.settings = ui_elements.BorderedRectangle("10-Finger-Schreiben:", 30, 22.5, 40, 10, events.color_scheme, color_scheme.Minecraft, 5, events, self.batch)
-        self.settings_text = ui_elements.BorderedRectangle("Versuche beim Tippen nicht auf die Tastatur zu schauen!", 5, 12.375, 90, 7.5, events.color_scheme, color_scheme.Minecraft, 2, events, self.batch)
+        self.header = ui_elements.BorderedRectangle("So funktioniert alles:", 20, 85, 60, 10, events.color_scheme, color_scheme.Minecraft, 3.5, events, self.batch)
+        self.maneuvering = ui_elements.BorderedRectangle("Manövrierung:", 30, 72.5, 40, 7.5, events.color_scheme, color_scheme.Minecraft, 5, events, self.batch)
+        self.maneuvering_text = ui_elements.BorderedRectangle("Du brauchst keine Maus, alle Buttons die blinken kannst du über die Tastatur eingeben!", 5, 64, 90, 7.5, events.color_scheme, color_scheme.Minecraft, 1.3, events, self.batch)
+        self.settings = ui_elements.BorderedRectangle("Nutze Tab:", 30, 55.5, 40, 7.5, events.color_scheme, color_scheme.Minecraft, 5, events, self.batch)
+        self.settings_text = ui_elements.BorderedRectangle("In den Einstellungen kannst du mit \"Tab\" und \"Shift+Tab\" manövrieren", 5, 47, 90, 7.5, events.color_scheme, color_scheme.Minecraft, 1.6, events, self.batch)
+        self.settings = ui_elements.BorderedRectangle("10-Finger-Schreiben:", 30, 38.5, 40, 7.5, events.color_scheme, color_scheme.Minecraft, 4, events, self.batch)
+        self.settings_text = ui_elements.BorderedRectangle("Versuche beim Tippen nicht auf die Tastatur zu schauen!", 5, 30, 90, 7.5, events.color_scheme, color_scheme.Minecraft, 2, events, self.batch)
+        self.settings = ui_elements.BorderedRectangle("Einstellungen:", 30, 21.5, 40, 7.5, events.color_scheme, color_scheme.Minecraft, 5, events, self.batch)
+        self.settings_text = ui_elements.BorderedRectangle("Jeder Save hat eigene Einstellungen! Ebenso der Start-Bildschirm!", 5, 13, 90, 7.5, events.color_scheme, color_scheme.Minecraft, 1.7, events, self.batch)
 
         self.back = ui_elements.InputButton("Zurück", 40, 2.5, 20, 7.5, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
 
