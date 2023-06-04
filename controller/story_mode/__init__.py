@@ -7,12 +7,14 @@ import pyglet.image
 from pyglet.graphics import Group
 from reactivex import Observable
 from reactivex.abc import DisposableBase
-from reactivex.disposable import SerialDisposable, CompositeDisposable
+from reactivex.disposable import SerialDisposable, CompositeDisposable, Disposable
 from reactivex.operators import scan, take_while, map as rmap
 
 import color_scheme
 import ui_elements
 from controller import Screen
+from ui_elements_ex import map_inner_perc
+from events import Var, Event
 
 
 class Machine(DisposableBase):
@@ -86,59 +88,75 @@ class Level(Screen):
     Stellt bereit:
     * mehrere gruppen zum reinrendern, gerne auch untergruppen für diese erstellen wenn nötig
     """
-    def __init__(self):
+    def __init__(self, events, save):
         super().__init__()
 
+        # zugehöriger save dieses levels.
+        self.save = save
+        # ob pausiert ist.
+        self.is_paused = Var(False)
+        # events für das level an sich, kann ausgeschaltet werden.
+        self.events = events.add_lever(self.is_paused.pipe(rmap(lambda p: not p)))
+        # events für das is_paused menü, funktioniert immer.
+        self.pause_events = events
 
         # dient, um Objekte manuell nach vorne und hinten zu schieben. Je weniger er genutzt wird, umso performanter ist alles.
         # Standardmäßig ist alles im Mittelgrund zwischen Vorder- und Hintergrund
         self.background = Group(0)
         self.foreground = Group(1)
-        self.overlay = Group(2)
+        self.hud = Group(2)
+        self.overlay = Group(3)
+        self.pause_background = Group(4)
+        self.pause_foreground = Group(5)
 
+        self.pause_visible = ui_elements.BorderedRectangleButton("Pause (Esc)", 2.5, 85, 15, 10,
+                                                                 self.events.color_scheme, color_scheme.Minecraft, 6,
+                                                                 self.events, self.batch, self.foreground)
+        self._subs.add(self.events.key.subscribe(self.test_for_escape))
+        self._subs.add(self.pause_visible.clicked.subscribe(lambda _: self.pause()))
 
-    def pause(self, events, save):
+        # disposable objekte für den is_paused screen.
+        self.pause_sub = SerialDisposable()
+        self._subs.add(self.is_paused.subscribe(self._show_pause))
+
+    def test_for_escape(self, data):
+        if data[0] == 65307:
+            self.pause()
+
+    def pause(self):
+        self.is_paused.on_next(True)
+
+    def unpause(self):
+        self.is_paused.on_next(False)
+
+    def _show_pause(self, show):
         """
         Blendet über dem aktuellen Level einen komplett neuen Bildschirm ein, pausiert im Hintergrund die Funktionen des Levels
 
-        :param events: Events des Levels
-        :param save: aktuelle Save-File
+        :param show: ob das is_paused menü angezeigt werden soll. angezeigt werden soll.
         """
+        if not show:
+            self.pause_sub.disposable = None
+            return
+
         from controller.story_mode.main_screen import MainStoryScreen
-        background = pyglet.graphics.Group(order=2)
-        middleground = pyglet.graphics.Group(order=3)
 
         # Erstes Layout für den HomeScreen
-        pause_back = ui_elements.InputButton("Level verlassen", 15, 5, 15, 7.5, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch, middleground)
-        pause_continue_level = ui_elements.InputButton("Fortsetzen", 40, 5, 20, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, self.batch, middleground)
-        pause_background = ui_elements.Sprite("assets/images/tearoom.png", 0, 0, 100, 100, events, self.batch, background)
-        pause_maxwell = ui_elements.Sprite("assets/images/mech_tea.png", 40, 17.5, 20, 37.5, events, self.batch, middleground)
+        pause_back = ui_elements.InputButton("Level verlassen", 15, 5, 15, 7.5, self.pause_events.color_scheme, color_scheme.Minecraft, 7, self.pause_events, self.batch, self.pause_foreground)
+        pause_continue_level = ui_elements.InputButton("Fortsetzen", 40, 5, 20, 10, self.pause_events.color_scheme, color_scheme.Minecraft, 8.4, self.pause_events, self.batch, self.pause_foreground)
+        pause_background = ui_elements.Sprite("assets/images/tearoom.png", 0, 0, 100, 100, self.pause_events, self.batch, self.pause_background)
+        pause_maxwell = ui_elements.Sprite("assets/images/mech_tea.png", 40, 17.5, 20, 37.5, self.pause_events, self.batch, self.pause_foreground)
+        pause_header = ui_elements.BorderedRectangle("Tee-Pause", 20, 75, 60, 20, self.pause_events.color_scheme, color_scheme.Minecraft, 5, self.pause_events, self.batch, self.pause_foreground)
 
-        pause_header = ui_elements.BorderedRectangle("Tee-Pause", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 5, events, self.batch, middleground)
-
-        pause_subs = CompositeDisposable()
-        pause_subs.add(pause_back.clicked.subscribe(lambda _: self.reload_screen(MainStoryScreen.init_fn(save))))
-        pause_subs.add(pause_continue_level.clicked.subscribe(lambda _: self.unpause(pause_header, pause_maxwell, pause_background, pause_subs, pause_back, pause_continue_level)))
-
-    def unpause(self, pause_header, pause_maxwell, pause_background, pause_subs, pause_back, pause_continue_level):
-        """
-        Löscht die in pause() erstellten Elemente und setzt die Funktionen des Levels fort
-
-        :param pause_header: zu löschendes Element
-        :param pause_maxwell: zu löschendes Element
-        :param pause_background: zu löschendes Element
-        :param pause_subs: zu löschendes Element
-        :param pause_back: zu löschendes Element
-        :param pause_continue_level: zu löschendes Element
-        """
-        pause_subs.dispose()
-        pause_back.stop_timer()
-        pause_back.dispose()
-        pause_continue_level.stop_timer()
-        pause_continue_level.dispose()
-        pause_background.delete()
-        pause_maxwell.delete()
-        pause_header.delete()
+        self.pause_sub.disposable = CompositeDisposable(
+            pause_back.clicked.subscribe(lambda _: self.reload_screen(MainStoryScreen.init_fn(self.save))),
+            pause_continue_level.clicked.subscribe(lambda _: self.unpause()),
+            pause_back,
+            pause_continue_level,
+            pause_background,
+            pause_maxwell,
+            pause_header,
+        )
 
 
 def linear(t):

@@ -100,7 +100,7 @@ class BorderedRectangle(UIElement):
         """
 
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
-        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, (1000, 1000))
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -124,7 +124,7 @@ class BorderedRectangle(UIElement):
                                        font_size=width_px // (100 / font_size), color=color_scheme.text, group=group)
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        self._sub = events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value, color_scheme, font_size))
+        self._sub = events.size.subscribe(lambda s: self.resize(x, y, width, height, s, color_scheme, font_size))
 
 
 class BorderedRectangleButton(UIElement):
@@ -146,7 +146,7 @@ class BorderedRectangleButton(UIElement):
         """
 
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
-        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, (1000, 1000))
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -206,7 +206,7 @@ class BorderedRectangleButton(UIElement):
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         self._subs = CompositeDisposable([
-            events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value, color_scheme, font_size)),
+            events.size.subscribe(lambda s: self.resize(x, y, width, height, s, color_scheme, font_size)),
             events.mouse.subscribe(is_hovered),
             events.mouse_button.subscribe(button_clicked)
         ])
@@ -236,7 +236,7 @@ class InputBox(UIElement):
         """
 
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
-        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, (1000, 1000))
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -267,7 +267,7 @@ class InputBox(UIElement):
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         self._subs = CompositeDisposable([
-            events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value, color_scheme, font_size)),
+            events.size.subscribe(lambda s: self.resize(x, y, width, height, s, color_scheme, font_size)),
             events.text.subscribe(update_text)
         ])
 
@@ -277,7 +277,6 @@ class InputBox(UIElement):
 
 class InputButton(UIElement):
     def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, batch=None, group=pyglet.graphics.Group(order=0)):
-        self.hovered = False
         """
         Rechtecktiger Button mit einer Border. Er kann gehovert und geclickt werden.
         Zudem kann der im Button angezeigte Text vollständig eingegeben werden, um ihn ebenfalls zu aktivieren.
@@ -294,12 +293,13 @@ class InputButton(UIElement):
         :param events: events des games
         :param batch: aktueller Pyglet-Batch --> steigert Zeichen-Effizienz
         """
+        self.hovered = False
 
         self.color_scheme = color_scheme
         self.font_size = font_size
 
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
-        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, (1000, 1000))
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -369,7 +369,7 @@ class InputButton(UIElement):
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         self._subs = CompositeDisposable([
-            events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value, color_scheme, font_size)),
+            events.size.subscribe(lambda s: self.resize(x, y, width, height, s, color_scheme, font_size)),
             events.mouse.subscribe(is_hovered),
             events.mouse_button.subscribe(button_clicked),
             events.text.subscribe(update_text),
@@ -384,6 +384,13 @@ class InputButton(UIElement):
         if math.sin(self.pulse*math.pi) > 0 and self.pulse <= 2: text_increase = math.sin(self.pulse*math.pi)/3
         else: text_increase = 0
         if not self.hovered: self.label.color = (int(self.color_scheme.text[0]*(1-text_increase)), int(self.color_scheme.text[1]*(1-text_increase)), int(self.color_scheme.text[2]*(1-text_increase)), 255)
+
+    def dispose(self) -> None:
+        super().dispose()
+        pyglet.clock.unschedule(self.pulse_label)
+        self.borderRectangle.delete()
+        self.label.delete()
+        self.rectangle.delete()
 
 
 class SettingTextField(UIElement):
@@ -410,7 +417,7 @@ class SettingTextField(UIElement):
         self.color_scheme = color_scheme
 
         # konvertiert die Prozentangaben zu Pixeln in Abhängigkeit der Fenstergröße
-        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, (1000, 1000))
         self.active = False
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
@@ -485,7 +492,7 @@ class SettingTextField(UIElement):
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         self._subs = CompositeDisposable([
-            events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value, color_scheme, font_size)),
+            events.size.subscribe(lambda s: self.resize(x, y, width, height, s, color_scheme, font_size)),
             events.mouse.subscribe(is_hovered),
             events.mouse_button.subscribe(button_clicked),
             events.text.subscribe(update_text),
@@ -507,7 +514,7 @@ class SettingTextField(UIElement):
             self.label.color = self.color_scheme.text
 
 
-class SpriteButton(pyglet.sprite.Sprite, UIElement):
+class SpriteButton(UIElement, pyglet.sprite.Sprite):
     def __init__(self, path, x, y, width, height, color_scheme, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiger Button mit einem Bild als Fläche. Er kann gehovert und geclickt werden.
@@ -524,7 +531,7 @@ class SpriteButton(pyglet.sprite.Sprite, UIElement):
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, (1000, 1000))
 
         # zeichnet das Bild in der richtigen Größe
         image = pyglet.image.load(path)
@@ -567,7 +574,7 @@ class SpriteButton(pyglet.sprite.Sprite, UIElement):
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         self._subs = CompositeDisposable([
-            events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value, color_scheme)),
+            events.size.subscribe(lambda s: self.resize(x, y, width, height, s, color_scheme)),
             events.mouse.subscribe(is_hovered),
             events.mouse_button.subscribe(button_clicked),
         ])
@@ -576,7 +583,12 @@ class SpriteButton(pyglet.sprite.Sprite, UIElement):
         self.clicked = Subject()
 
 
-class Sprite(pyglet.sprite.Sprite, UIElement):
+    def dispose(self) -> None:
+        self.delete()
+        super().dispose()
+
+
+class Sprite(UIElement, pyglet.sprite.Sprite):
     def __init__(self, path, x, y, width, height, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiges Element mit einem Bild als Fläche. Nicht klckbar.
@@ -592,7 +604,7 @@ class Sprite(pyglet.sprite.Sprite, UIElement):
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, (1000, 1000))
 
         # zeichnet das Bild in der richtigen Größe
         image = pyglet.image.load(path) if isinstance(path, str) else path
@@ -607,10 +619,15 @@ class Sprite(pyglet.sprite.Sprite, UIElement):
         self.scale_y = height_px / self.normal_height
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        self._sub = events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value))
+        self._sub = events.size.subscribe(lambda s: self.resize(x, y, width, height, s))
+        
+
+    def dispose(self) -> None:
+        self.delete()
+        super().dispose()
 
 
-class BorderedSpriteButton(pyglet.sprite.Sprite, UIElement):
+class BorderedSpriteButton(UIElement, pyglet.sprite.Sprite):
     def __init__(self, path, x, y, width, height, color_scheme, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiger Button mit einem Bild als Fläche und einer Border. Er kann gehovert und geclickt werden.
@@ -627,7 +644,7 @@ class BorderedSpriteButton(pyglet.sprite.Sprite, UIElement):
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, (1000, 1000))
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -685,13 +702,18 @@ class BorderedSpriteButton(pyglet.sprite.Sprite, UIElement):
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         self._subs = CompositeDisposable([
-            events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value, color_scheme)),
+            events.size.subscribe(lambda s: self.resize(x, y, width, height, s, color_scheme)),
             events.mouse.subscribe(is_hovered),
             events.mouse_button.subscribe(button_clicked),
         ])
+        
+
+    def dispose(self) -> None:
+        self.delete()
+        super().dispose()
 
 
-class BorderedSprite(pyglet.sprite.Sprite, UIElement):
+class BorderedSprite(UIElement, pyglet.sprite.Sprite):
     def __init__(self, path, x, y, width, height, color_scheme, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiges Element mit einem Bild als Fläche und einer Border. Nicht klickbar.
@@ -708,7 +730,7 @@ class BorderedSprite(pyglet.sprite.Sprite, UIElement):
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, (1000, 1000))
 
         # zeichnet ein Rechteck in den Hintergrund, welches die Border ergibt
         self.borderRectangle = pyglet.shapes.Rectangle(x_px, y_px, width_px, height_px,
@@ -730,10 +752,16 @@ class BorderedSprite(pyglet.sprite.Sprite, UIElement):
         self.scale_y = (height_px - 2 * color_scheme.border_thickness) / self.height
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        self._sub = events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value, color_scheme))
+        self._sub = events.size.subscribe(lambda s: self.resize(x, y, width, height, s, color_scheme))
+
+        
+
+    def dispose(self) -> None:
+        self.delete()
+        super().dispose()
 
 
-class Gif(pyglet.sprite.Sprite, UIElement):  # lädt ein Gif
+class Gif(UIElement, pyglet.sprite.Sprite):  # lädt ein Gif
     def __init__(self, path, x, y, width, height, duration, loop, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiges Element mit einem Gif als Fläche. Nicht klickbar.
@@ -751,7 +779,7 @@ class Gif(pyglet.sprite.Sprite, UIElement):  # lädt ein Gif
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, (1000, 1000))
 
         # erstellt eine Liste der einzelnen Bilder des Gifs
         image = pyglet.image.load_animation(path)
@@ -772,8 +800,9 @@ class Gif(pyglet.sprite.Sprite, UIElement):  # lädt ein Gif
         self.scale_y = height_px / self.normal_height
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
-        self._sub = events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value))
+        self._sub = events.size.subscribe(lambda s: self.resize(x, y, width, height, s))
         self.loop_finished = Subject()
+
 
     def on_animation_end(self):
         self.loop_finished.on_next(True)
@@ -784,7 +813,7 @@ class Gif(pyglet.sprite.Sprite, UIElement):  # lädt ein Gif
         super().dispose()
 
 
-class GifButton(pyglet.sprite.Sprite, UIElement):
+class GifButton(UIElement, pyglet.sprite.Sprite):
     def __init__(self, path, x, y, width, height, duration, loop, events, batch=None, group=pyglet.graphics.Group(order=0)):
         """
         Rechteckiger Button mit einem Gif als Fläche. Kann geklickt werden..
@@ -802,7 +831,7 @@ class GifButton(pyglet.sprite.Sprite, UIElement):
         """
 
         # konvertiert die Prozentangaben zu Pixeln
-        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, events.size.value)
+        x_px, y_px, width_px, height_px = self.percent_to_pixel(x, y, width, height, (1000, 1000))
 
         # erstellt eine Liste der einzelnen Bilder des Gifs
         image = pyglet.image.load_animation(path)
@@ -837,7 +866,7 @@ class GifButton(pyglet.sprite.Sprite, UIElement):
 
         # erstellt Subscriptions, um auf Events reagieren zu können, und fängt sie ab
         self._sub = CompositeDisposable([
-            events.size.subscribe(lambda _: self.resize(x, y, width, height, events.size.value)),
+            events.size.subscribe(lambda s: self.resize(x, y, width, height, s)),
             events.mouse_button.subscribe(button_clicked),
         ])
 

@@ -5,7 +5,7 @@ import pygame
 import pyglet
 from pygame import mixer
 from pyglet.graphics import Group
-from reactivex import Observable, just, concat
+from reactivex import Observable, just, concat, Observer
 from reactivex.disposable import CompositeDisposable, SerialDisposable, Disposable
 from reactivex.operators import combine_latest, map as rmap, share, starmap, scan
 
@@ -16,7 +16,7 @@ from controller.actors import ThePlayer, combine_offset, StaticActor
 from events import Var
 from input_tracker import InputAnalysis, TextTracker
 from tools.save_and_open import save_run
-from ui_elements_ex import rx, Rect, Style, map_inner_perc, BorderedLabel, Rectangle
+from ui_elements_ex import rx, Rect, Style, map_inner_perc, BorderedLabel, Rectangle, Button
 from . import Level, animate, LevelMachine, load_enemy_idle, load_bush, load_enemy_run
 from ..inputbox import InputBox
 from ..level_finished import LevelFinishedScreen
@@ -30,8 +30,7 @@ Lasst euch dieses Template anzeigen, indem ihr es im main_controller als initial
 
 class Level2Screen(Level):
     def __init__(self, events, save):
-        super().__init__()
-        self.events = events
+        super().__init__(events, save)
         window = events.size.pipe(
             rmap(lambda s: Rect(0, 0, *s))
         )
@@ -43,7 +42,7 @@ class Level2Screen(Level):
 
         # im folgenden Block können Elemente eingefügt werden. Die Elemente die schon da sind dienen nur als Beispiele
         self.scroll_background = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, self.background)
-        self.header = ui_elements.BorderedRectangle("Level 2: Der Wald des Widerstands", 25, 80, 50, 15, self.events.color_scheme, color_scheme.Minecraft, 3, self.events, self.batch, self.foreground)
+        self.header = ui_elements.BorderedRectangle("Level 2: Der Wald des Widerstands", 25, 80, 50, 15, self.events.color_scheme, color_scheme.Minecraft, 3, self.events, self.batch, self.hud)
 
         enemy_idle_animation = load_enemy_idle()
         bush_animation = load_bush()

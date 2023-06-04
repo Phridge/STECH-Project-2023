@@ -6,7 +6,7 @@ import contextlib
 import color_scheme
 import main_controller
 import ui_elements
-from reactivex import concat
+from reactivex import concat, Observer
 from reactivex.operators import delay, map as rmap, combine_latest, do_action, starmap, filter as rfilter, share
 from reactivex.disposable import CompositeDisposable, Disposable
 from controller import Screen
@@ -15,7 +15,7 @@ from controller.inputbox import InputBox
 from . import Machine, animate, Level
 from input_tracker import InputAnalysis
 from tools.save_and_open import save_run
-from ui_elements_ex import Rect, map_inner_perc, Style, Rectangle
+from ui_elements_ex import Rect, map_inner_perc, Style, Rectangle, Button
 from events import Event, Var
 from ..level_finished import LevelFinishedScreen
 
@@ -33,13 +33,12 @@ Hallo! Ich bin Maxwell.\
 """.split("\n\n")
 
     def __init__(self, events, save):
-        super().__init__()
+        super().__init__(events, save)
         self.save = save
-        self.events = events
-        pos = events.size.pipe(
+        pos = self.events.size.pipe(
             rmap(lambda s: Rect(0, 0, *s))
         )
-        style = Style(events.color_scheme, "Monocraft", 15)
+        style = Style(self.events.color_scheme, "Monocraft", 15)
 
         # hintergrund
         self.gif = ui_elements.Gif("assets/images/port.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, self.background)
@@ -63,7 +62,7 @@ Hallo! Ich bin Maxwell.\
 
         # um die Spielereingaben Textübergreifend zu sammeln und in die Datenbank zu speicher.
         input_analysis = InputAnalysis()
-        self.input_box = InputBox(text, pos.pipe(map_inner_perc(10, 5, 80, 20)), style, events, input_analysis, batch=self.batch, group=self.foreground)
+        self.input_box = InputBox(text, pos.pipe(map_inner_perc(10, 5, 80, 20)), style, self.events, input_analysis, batch=self.batch, group=self.foreground)
         # ist ein Text fertig geschrieben, wird die Machine um einen Schritt vorangebracht.
         self._subs.add(
             self.input_box.text_tracker.pipe(
@@ -73,10 +72,6 @@ Hallo! Ich bin Maxwell.\
 
         # Überschrift.
         self.header = ui_elements.BorderedRectangle("Level 1: Der Hafen der Freiheit", 25, 80, 50, 15, self.events.color_scheme, color_scheme.Minecraft, 3.5, self.events, self.batch, self.foreground)
-        self.pause_visible = ui_elements.BorderedRectangleButton("Pause (Esc)", 2.5, 85, 15, 10, self.events.color_scheme, color_scheme.Minecraft, 6, self.events, self.batch, self.foreground)
-
-        self._subs.add(self.events.key.subscribe(self.test_for_escape))
-        self._subs.add(self.pause_visible.clicked.subscribe(lambda _: self.pause(self.events, self.save)))
 
         self.play_music()
 
@@ -96,10 +91,10 @@ Hallo! Ich bin Maxwell.\
             :return: Nachher zu löschenden Ressourcen.
             """
             # farbanimation
-            color = animate(255, 0, 3.0, events.update, lambda o: (0, 0, 0, int(o)))
+            color = animate(255, 0, 3.0, self.events.update, lambda o: (0, 0, 0, int(o)))
             # spielerpositionsanimation.
             # Sieht kompliziert aus, da noch die Position des Laufstegs mit berücksichtigt werden muss.
-            player_anim = animate(-300, 100, 5.0, events.update, lambda v: Rect(v, 0, 150, 150))
+            player_anim = animate(-300, 100, 5.0, self.events.update, lambda v: Rect(v, 0, 150, 150))
             # Das Rechteck für den FAde
             overlay_rect = Rectangle(pos, color, self.batch, self.overlay)
 
@@ -120,10 +115,10 @@ Hallo! Ich bin Maxwell.\
             save_run(save, "story_level_1", input_analysis)
 
             color = concat(
-                animate(0, 0, 2.0, events.update, lambda o: (0, 0, 0, int(o))),
-                animate(0, 255, 3.0, events.update, lambda o: (0, 0, 0, int(o)))
+                animate(0, 0, 2.0, self.events.update, lambda o: (0, 0, 0, int(o))),
+                animate(0, 255, 3.0, self.events.update, lambda o: (0, 0, 0, int(o)))
             )
-            pos_anim = animate(100, 2000, 10.0, events.update, lambda v: Rect(v, 0, 150, 150))
+            pos_anim = animate(100, 2000, 10.0, self.events.update, lambda v: Rect(v, 0, 150, 150))
 
             overlay_rect = Rectangle(pos, color, self.batch, self.overlay)
 
@@ -140,11 +135,6 @@ Hallo! Ich bin Maxwell.\
             self.reload_screen(LevelFinishedScreen.init_fn(save, 1, calculate_points(input_analysis), True))  # Abschlussbildschirm des Levels (Save, next_level, Punkte, Erfolgreich)
 
 
-        from main_controller import PushScreen
-        def goto(screen_init):
-            return lambda _: self.game_command.on_next(PushScreen(screen_init))
-
-
         # Erstellung der State Machine aus allen nötigen Zuständen:
         # Spieler entry
         # dann die ganzen texte
@@ -159,11 +149,6 @@ Hallo! Ich bin Maxwell.\
 
         def calculate_points(input_analysis: InputAnalysis):
             return int((input_analysis.correct_char_count / input_analysis.time) ** 2 * 100)
-
-
-    def test_for_escape(self, data):
-        if data[0] == 65307: self.pause(self.events, self.save)
-
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
