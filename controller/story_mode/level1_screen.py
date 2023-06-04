@@ -89,7 +89,7 @@ Und jetzt los, wir haben viel zu tun!\
         self.pause_visible = ui_elements.BorderedRectangleButton("Pause (Esc)", 2.5, 85, 15, 10, self.events.color_scheme, color_scheme.Minecraft, 6, self.events, self.batch, self.foreground)
 
         self._subs.add(self.events.key.subscribe(self.test_for_escape))
-        self._subs.add(self.pause_visible.clicked.subscribe(lambda _: self.push_screen(PauseScreen.init_fn(save))))
+        self._subs.add(self.pause_visible.clicked.subscribe(lambda _: self.pause(self.events, self.save)))
 
         def display_text(display_text):
             """
@@ -173,7 +173,7 @@ Und jetzt los, wir haben viel zu tun!\
 
 
     def test_for_escape(self, data):
-        if data[0] == 65307: self.push_screen(PauseScreen.init_fn(self.save))
+        if data[0] == 65307: self.pause(self.events, self.save)
 
 
     def get_view(self):  # Erzeugt den aktuellen View

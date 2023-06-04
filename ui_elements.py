@@ -77,6 +77,9 @@ class UIElement(Disposable):
             self.scale_x = (self.width_px - 2 * border) / self.normal_width  # skaliert das Bild auf die angegebene Pixelzahl
             self.scale_y = (self.height_px - 2 * border) / self.normal_height
 
+    def stop_timer(self):
+        pyglet.clock.unschedule(self.pulse_label)
+
 
 class BorderedRectangle(UIElement):
     def __init__(self, text, x, y, width, height, color_scheme, font_scheme, font_size, events, batch=None, group=pyglet.graphics.Group(order=0)):
