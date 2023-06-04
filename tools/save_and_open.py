@@ -26,34 +26,16 @@ Noch zu machen:
 
 """
 
-
-def save_to_json_file(red, blue, green, volume, windowsize, screenfull):
-    with open('data/settings.json', 'w', encoding='utf-8') as f:
-        json.dump([red, green, blue, volume, windowsize, screenfull], f, ensure_ascii=False, indent=5)
-
-
-# returns an array with the information's in the JSON file
-def get_info_from_json_file():
-    data = json.load(open('data/settings.json'))
-    return data
-
-
 # Setzt alle game Saves auf ein Preset, sollten keine Parameter übergeben werden
 # aktualisiert die Settings des Game Saves, in dem man Werte übergibt
-def get_game_save(save_id):
-    with new_session() as session:
-        try:
-            save = session.execute(select(Save).where(Save.id == save_id)).scalar_one()
-        except NoResultFound:
-            save = Save(
-                id=save_id
-            )
-            session.add(save)
-            session.commit()
-        return save
-
 
 def save_text_tracker(game_save_nr: int, level_name: str, text_tracker: TextTracker):
+    """
+    TODO
+    :param game_save_nr: Nummer des Speicherstands
+    :param level_name: Bezeichnung des jeweiligen Levels
+    :param text_tracker: TODO
+    """
     with new_session() as session:
         try:
             level = session.execute(select(Level).where(Level.name == level_name)).scalar_one()
@@ -94,6 +76,12 @@ def save_text_tracker(game_save_nr: int, level_name: str, text_tracker: TextTrac
 
 
 def save_run(game_save_nr: int, level_name: str, input_analysis: InputAnalysis):
+    """
+    Speichert entweder 1 abgeschlossenes Level, bzw. 1 Abschnitt in Sandbox- und Lernmodus
+    :param game_save_nr: Nummer des Speicherstands
+    :param level_name: Bezeichnung des jeweiligen Levels
+    :param input_analysis: InputAnalysis-Objekt mit berechneten Werten
+    """
     with new_session() as session:
         try:
             level = session.execute(select(Level).where(Level.name == level_name)).scalar_one()
@@ -134,43 +122,6 @@ def save_run(game_save_nr: int, level_name: str, input_analysis: InputAnalysis):
 
 
 # -----------------Noch testen---------------------
-def save_game(game_save_nr, level_id, preset_text, written_text, time_needed_for_game, char_array):
-    with new_session() as session:
-        r = Run(
-            save_id=game_save_nr,
-            level_id=level_id,
-            preset_text=preset_text,
-            typed_text=written_text,
-            time_taken_for_level=time_needed_for_game,
-        )
-
-        session.add(r)
-
-        id_run = get_last_run_id(game_save_nr)
-        session.commit()
-
-    for data in char_array:
-        accuracy = 0  # 0-1 --> 1==100%
-        if data[2] >= data[1]:
-            # sinnvoll ob über 100% genauigkeit = 100% genauigkeit sind? 110% sind ja auch fehler no?
-            accuracy = 1
-        else:
-            accuracy = data[2] - data[1]
-
-        with new_session() as session:
-            c = Char(
-                run_id=id_run,
-                char=data[0],
-                preset_char_count=data[1],
-                typed_char_count=data[2],
-                avg_time_per_char=data[3],
-                accuracy=accuracy,
-            )
-
-            session.add(c)
-            session.commit()
-
-
 def save_settings_to_db(save, fullscreen, volume, preview_color_scheme, new_screen_size):
     """
     Speichert die Save-spezifischen Einstellungen in die Datenbank. Erstellt ein neues Tupel, falls keins existiert.
@@ -225,6 +176,10 @@ def set_level_progress(save, level):
 
 
 def delete_save(save):
+    """
+    Löscht einen Speicherstand aus der lokalen Datenbank
+    :param save: zu löschender Speicherstand
+    """
     with new_session() as session:
         try:
             save_line = session.execute(select(Save).where(Save.id == save)).scalar_one()
@@ -234,12 +189,11 @@ def delete_save(save):
             session.delete(save_line)
             session.commit()
 
-
 def get_settings(save):
     """
     Holt die Settings aus der Datenbankund entschlüsselt sie
     :param save: Spielstand
-    :return:
+    :return: Einstellungs-Objekt
     """
 
     with new_session() as session:
@@ -253,6 +207,11 @@ def get_settings(save):
 
 
 def get_story_progress(save):
+    """
+    TODO
+    :param save: Spielstand
+    :return: Fortschritt des Spielstands (wenn vorhanden)
+    """
     with new_session() as session:
         try:
             save_line = session.execute(select(Save).where(Save.id == save)).scalar_one()
@@ -293,6 +252,12 @@ def get_game_save_keyboard_layout(game_save):
 
 
 def get_avg_accuracy_of_specific_char(game_save, char_name):
+    """
+    Gibt die Genaugkeit für das betreffende Zeichen zurück
+    :param game_save: Spielstand
+    :param char_name: betreffendes Zeichen
+    :return: Genaugkeit für das betreffende Zeichen
+    """
     with new_session() as session:
         try:
             count = session.query(func.count(Char.accuracy)).filter(Char.char == char_name and
@@ -305,6 +270,12 @@ def get_avg_accuracy_of_specific_char(game_save, char_name):
 
 
 def get_avg_time_for_specific_char(game_save, char_name):
+    """
+    Gibt die durchschnittliche Schreib-Zeit für das betreffende Zeichen zurück
+    :param game_save: Spielstand
+    :param char_name: betreffendes Zeichen
+    :return: durchschnittliche Schreib-Zeit für das betreffende Zeichen zurück
+    """
     with new_session() as session:
         try:
             count = session.query(func.count(Char.avg_time_per_char)).filter(
@@ -316,26 +287,30 @@ def get_avg_time_for_specific_char(game_save, char_name):
             return 0
 
 
-# Rückgabewert ist ein array (ohne das 2 dimensionale Array mit den Chars)
-def show_last_run_results(game_save):
-    last_run_id = get_last_run_id(game_save)
-    with new_session() as session:
-        last_level_played = session.execute(text(
-            'SELECT level_id FROM Run WHERE id = ' + str(last_run_id)
-        ))
-        last_preset_text = session.execute(text(
-            'SELECT preset_text FROM Run WHERE id = ' + str(last_run_id)
-        ))
-        last_typed_text = session.execute(text(
-            'SELECT typed_text FROM Run WHERE id = ' + str(last_run_id)
-        ))
-        last_time_taken_for_level = session.execute(text(
-            'SELECT time FROM Run WHERE id = ' + str(last_run_id)
-        ))
-    return [last_level_played, last_preset_text, last_typed_text, last_time_taken_for_level]
-
+# Rückgabewert ist ein array (ohne das 2 dimensionale Array mit den Chars), wird zurzeit nicht verwendet
+# def show_last_run_results(game_save):
+#     last_run_id = get_last_run_id(game_save)
+#     with new_session() as session:
+#         last_level_played = session.execute(text(
+#             'SELECT level_id FROM Run WHERE id = ' + str(last_run_id)
+#         ))
+#         last_preset_text = session.execute(text(
+#             'SELECT preset_text FROM Run WHERE id = ' + str(last_run_id)
+#         ))
+#         last_typed_text = session.execute(text(
+#             'SELECT typed_text FROM Run WHERE id = ' + str(last_run_id)
+#         ))
+#         last_time_taken_for_level = session.execute(text(
+#             'SELECT time FROM Run WHERE id = ' + str(last_run_id)
+#         ))
+#     return [last_level_played, last_preset_text, last_typed_text, last_time_taken_for_level]
 
 def show_last_char_results(game_save):
+    """
+    Zeigt die Ergebnisse des letzten Zeichens
+    :param game_save: Spielstand
+    :return: Array mit Resultaten
+    """
     result_array = []
     last_run_id = get_last_run_id(game_save)
     print(last_run_id)
@@ -349,33 +324,33 @@ def show_last_char_results(game_save):
 
     return result_array
 
+# wird zurzeit nicht verwendet
+# def show_three_best_chars(game_save, search_filter):
+#     result_array = []
+#     last_run_id = get_last_run_id(game_save)
+#     with new_session() as session:
+#         char_list = session.execute(text(
+#             'SELECT char, preset_char_count, typed_char_count, avg_time_per_char, accuracy FROM Char WHERE run_id = ' +
+#             str(last_run_id) + ' ORDER BY ' + search_filter + ' ASC LIMIT 3)'
+#         ))
+#     for data_row in char_list:
+#         result_array.append(data_row)
+#
+#     return result_array
 
-def show_three_best_chars(game_save, search_filter):
-    result_array = []
-    last_run_id = get_last_run_id(game_save)
-    with new_session() as session:
-        char_list = session.execute(text(
-            'SELECT char, preset_char_count, typed_char_count, avg_time_per_char, accuracy FROM Char WHERE run_id = ' +
-            str(last_run_id) + ' ORDER BY ' + search_filter + ' ASC LIMIT 3)'
-        ))
-    for data_row in char_list:
-        result_array.append(data_row)
-
-    return result_array
-
-
-def show_three_worst_chars(game_save, search_filter):
-    result_array = []
-    last_run_id = get_last_run_id(game_save)
-    with new_session() as session:
-        char_list = session.execute(text(
-            'SELECT char, preset_char_count, typed_char_count, avg_time_per_char, accuracy FROM Char WHERE run_id = ' +
-            str(last_run_id) + ' ORDER BY ' + search_filter + ' DESC LIMIT 3)'
-        ))
-    for data_row in char_list:
-        result_array.append(data_row)
-
-    return result_array
+# wird zurzeit nicht verwendet
+# def show_three_worst_chars(game_save, search_filter):
+#     result_array = []
+#     last_run_id = get_last_run_id(game_save)
+#     with new_session() as session:
+#         char_list = session.execute(text(
+#             'SELECT char, preset_char_count, typed_char_count, avg_time_per_char, accuracy FROM Char WHERE run_id = ' +
+#             str(last_run_id) + ' ORDER BY ' + search_filter + ' DESC LIMIT 3)'
+#         ))
+#     for data_row in char_list:
+#         result_array.append(data_row)
+#
+#     return result_array
 
 
 def show_time_progression(game_save, char):

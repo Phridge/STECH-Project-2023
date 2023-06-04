@@ -4,6 +4,12 @@ from textprovider.statistical import TextStatistics
 
 
 def collect_statistics(text, allowed_chars=None):
+    """
+    TODO
+    :param text: geschriebener Text
+    :param allowed_chars: in die Auswertung einbezogene Zeichen
+    :return: TextStatistics-Objekt mit berechneten Werten
+    """
     allowed_chars = set(allowed_chars or textprovider.Charset.EVERYTHING)
     twograms = defaultdict(int)
     char_count = defaultdict(int)

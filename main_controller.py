@@ -136,12 +136,17 @@ class GameWindow(pyglet.window.Window, Disposable):
         self.push_screen(self.history.pop())
 
     def _reset_subs(self):
+        """Setzt alle Subscriptions zurück"""
         self.controller_subs.disposable = CompositeDisposable([
             self.controller.game_command.subscribe(self._handle_command),
             self.controller,
         ])
 
     def _handle_command(self, cmd):
+        """
+        Behandelt eingehende Befehle zur Navigation der verschiedenen Screens
+        :param cmd: Art von Navigation, die getätigt werden soll
+        """
         match cmd:
             case SwitchScreen(screen_init):
                 self.switch_screen(screen_init)
@@ -166,11 +171,20 @@ class GameWindow(pyglet.window.Window, Disposable):
                     pyglet.app.exit()
 
     def on_draw(self, *args):
+        """
+        Wird aufgerufen, wenn das Hauptfenster gerendert wird
+        :param args: ergänzen
+        """
         self.clear()
         view = self.controller.get_view()
         view.draw()
 
     def on_key_press(self, keycode, mods):
+        """
+        Leitet alle getätigten Tastendrucke weiter
+        :param keycode: Keycode der Taste, die gedrückt wurde
+        :param mods: ergänzen
+        """
         print(keycode)
         self.events.key.on_next((keycode, mods))
 

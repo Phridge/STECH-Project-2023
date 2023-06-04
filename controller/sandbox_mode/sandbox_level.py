@@ -8,7 +8,7 @@ import ui_elements
 from controller import Screen
 from controller.inputbox import InputBox
 from input_tracker import InputAnalysis
-from tools.save_and_open import save_game, save_text_tracker
+from tools.save_and_open import save_text_tracker
 from ui_elements_ex import Rect, rx, Style, map_inner_perc, rmap, BorderedLabel, Button, ToggleButton, Rectangle
 from events import Var, Event
 
