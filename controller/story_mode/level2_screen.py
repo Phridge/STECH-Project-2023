@@ -43,7 +43,7 @@ class Level2Screen(Level):
 
         # im folgenden Block können Elemente eingefügt werden. Die Elemente die schon da sind dienen nur als Beispiele
         self.scroll_background = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, self.background)
-        self.header = ui_elements.BorderedRectangle("Level 2: Der Wald des Widerstands", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.batch, self.foreground)
+        self.header = ui_elements.BorderedRectangle("Level 2: Der Wald des Widerstands", 25, 80, 50, 15, self.events.color_scheme, color_scheme.Minecraft, 3, self.events, self.batch, self.foreground)
 
         enemy_idle_animation = load_enemy_idle()
         bush_animation = load_bush()
