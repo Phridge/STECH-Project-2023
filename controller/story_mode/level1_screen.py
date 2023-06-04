@@ -18,7 +18,6 @@ from tools.save_and_open import save_run
 from ui_elements_ex import Rect, map_inner_perc, Style, Rectangle
 from events import Event, Var
 from ..level_finished import LevelFinishedScreen
-from ..pause_screen import PauseScreen
 
 """
 Eine Vorlage für einen Screen. ab Zeile 22 können Elemente eingefügt werde. Ein paar der ui-Elements sind als Beispiel gezeigt.
