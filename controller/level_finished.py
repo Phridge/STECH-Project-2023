@@ -26,7 +26,7 @@ class LevelFinishedScreen(Screen):
         if successful:  headline = "Level abgeschlossen!"
         else: headline = "Level fehlgeschlagen"
         self.header = ui_elements.BorderedRectangle(headline, 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 5, events, self.batch)
-        self.back = ui_elements.InputButton("Modus verlassen", 15, 5, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
+        self.back = ui_elements.InputButton("Level verlassen", 15, 5, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
         self.statistics = ui_elements.InputButton("Auswertung", 40, 5, 20, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, self.batch)
 
         if successful:
