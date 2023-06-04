@@ -51,6 +51,9 @@ class Level3Screen(Level):
         self.play_music()
 
         def level_generator(msg):
+            """
+            Generiert das dritte Level un ddie komplette Aktions-Abfolge
+            """
             resources = CompositeDisposable()
 
             object_area = window.pipe(
@@ -93,6 +96,9 @@ class Level3Screen(Level):
             ia = InputAnalysis()
 
             def enemy_generator(msg, self_disposable):
+                """
+                Generiert die Gegner zufällig
+                """
                 strength = random.randint(3, 10)
 
                 enemy_approach_perc = Var(1)
@@ -131,6 +137,9 @@ class Level3Screen(Level):
                 )
 
                 def dispose_inputbox():
+                    """
+                    löscht die Inputbox, wenn der Gegner beim Spieler ist oder der Text fertig eingegeben ist
+                    """
                     inputbox.dispose()
                     inputbox_sub.dispose()
 
@@ -138,6 +147,10 @@ class Level3Screen(Level):
                 enemy_spawn_delay = SingleAssignmentDisposable()
 
                 def enemy_finished():
+                    """
+                    Wenn der Gegner beim Spieler ist oder getötet wurde, wird ein neuer Gegner gespawnt
+                    :return:
+                    """
                     nonlocal is_finished, kill_count
 
                     is_finished = True
@@ -148,11 +161,18 @@ class Level3Screen(Level):
 
                     # neuer gegner nach gegebener zeit
                     def new_enemy():
+                        """
+                        Erstellt neuen Gegner und setzt das Spawn-Delay zurück
+                        """
                         spawn_new_enemy()
                         enemy_spawn_delay.dispose()
                     enemy_spawn_delay.disposable = animate(0, 0, 0.5, events.update).subscribe(on_completed=new_enemy)
 
                 def on_input(tt):
+                    """
+                    Testet, ob die InputBox abgetippt ist. Wenn ja, wird der aktuelle Gegner getötet
+                    :param tt: Text der InputBox
+                    """
                     if tt.is_finished:
                         enemy_finished()
 
@@ -160,7 +180,6 @@ class Level3Screen(Level):
 
                 def at_player():
                     dispose_inputbox()
-                    msg()
 
                 yield CompositeDisposable(
                     animate(1.0, 0.0, strength, events.update)  # gegner zum spieler bewegen
@@ -182,6 +201,10 @@ class Level3Screen(Level):
                     enemy.look_dir.on_next(1)
 
                     def reset():
+                        """
+                        Testet, wie viele Leben noch da sind.
+                        :return:
+                        """
                         p.state.on_next(p.Running(5.0))
                         if lives.value > 0:
                             spawn_new_enemy()
@@ -199,6 +222,9 @@ class Level3Screen(Level):
             enemies = CompositeDisposable()
 
             def spawn_new_enemy():
+                """
+                Erstellt einen neuen Gegner
+                """
                 remove_handle = Disposable(lambda: enemies.remove(enemy))
                 enemy = LevelMachine(lambda msg: enemy_generator(msg, remove_handle))
                 enemies.add(enemy)
