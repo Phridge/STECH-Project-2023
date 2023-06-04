@@ -35,14 +35,14 @@ class MainStoryScreen(Screen):
 
         self.level1_button = ui_elements.BorderedSpriteButton("assets/images/port.gif", 2.5, 45, 15, 15, events.color_scheme, events, self.batch)
         self.level1_label = ui_elements.InputButton("Erstes Level", 2.5, 32.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
-        if self.story_progress >= 1: # Level 2 nur spielbar wenn Level 1 bereits abgeschlossen wurde
+        if self.story_progress >= 0: # SOLLTE EIGENTLICH 1 SEIN; IST NUR 0 DAMIT ES TROTZ BUGS SPIELBAR IST Level 2 nur spielbar wenn Level 1 bereits abgeschlossen wurde
             self.level2_button = ui_elements.BorderedSpriteButton("assets/images/forest.gif", 22.5, 45, 15, 15, events.color_scheme, events, self.batch)
             self.level2_label = ui_elements.InputButton("Zweites Level", 22.5, 32.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
         else:
             self.level2_button = ui_elements.BorderedSprite("assets/images/forest.gif", 22.5, 45, 15, 15, events.color_scheme, events, self.batch)
             self.level2_label = ui_elements.BorderedRectangle("Gesperrt", 22.5, 32.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
 
-        if self.story_progress >= 2: # Level 3 nur spielbar wenn Level 2 bereits abgeschlossen wurde
+        if self.story_progress >= 0: # SOLLTE EIGENTLICH 2 SEIN; IST NUR 0 DAMIT ES TROTZ BUGS SPIELBAR IST Level 3 nur spielbar wenn Level 2 bereits abgeschlossen wurde
             self.level3_button = ui_elements.BorderedSpriteButton("assets/images/city.gif", 42.5, 45, 15, 15, events.color_scheme, events, self.batch)
             self.level3_label = ui_elements.InputButton("Drittes Level", 42.5, 32.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
         else:
@@ -68,10 +68,10 @@ class MainStoryScreen(Screen):
 
         self._subs.add(self.level1_button.clicked.subscribe(lambda _: self.reload_screen(Level1Screen.init_fn(save))))
         self._subs.add(self.level1_label.clicked.subscribe(lambda _: self.reload_screen(Level1Screen.init_fn(save))))
-        if self.story_progress > 0:
+        if self.story_progress >= 0: # SOLLTE EIGENTLICH 1 SEIN; IST NUR 0 DAMIT ES TROTZ BUGS SPIELBAR IST
             self._subs.add(self.level2_button.clicked.subscribe(lambda _: self.reload_screen(Level2Screen.init_fn(save))))
             self._subs.add(self.level2_label.clicked.subscribe(lambda _: self.reload_screen(Level2Screen.init_fn(save))))
-        if self.story_progress > 1:
+        if self.story_progress >= 0: # SOLLTE EIGENTLICH 2 SEIN; IST NUR 0 DAMIT ES TROTZ BUGS SPIELBAR IST
             self._subs.add(self.level3_button.clicked.subscribe(lambda _: self.reload_screen(Level3Screen.init_fn(save))))
             self._subs.add(self.level3_label.clicked.subscribe(lambda _: self.reload_screen(Level3Screen.init_fn(save))))
         # self._subs.add(self.level4_button.clicked.subscribe(lambda _: self.reload_screen(Level4Screen.init_fn(save))))
