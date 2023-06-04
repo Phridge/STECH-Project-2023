@@ -75,8 +75,7 @@ class SandboxLevel(Screen):
             ).subscribe(regenerate)  # neuer text wenn fertig geschrieben.
         )
 
-        # Titel
-        self.title = BorderedLabel("Sandbox-Modus", pos.pipe(map_inner_perc(35, 85, 30, 10)), style, batch, foreground)
+        self.title = ui_elements.BorderedRectangle("Sandbox-Modus", 35, 85, 30, 10, events.color_scheme, color_scheme.Minecraft, 6, events, batch, foreground)
 
         # region, in der sich die Optionen-Buttons sich befinden
         button_region = pos.pipe(map_inner_perc(10, 60, 80, 10))
@@ -114,29 +113,10 @@ class SandboxLevel(Screen):
 
         from ..settings import SettingsScreen
         from ..home_screen import HomeScreen
-
-        # navigationselemente
-        small_style = Style(style.color, style.font, 10)
-        self.settings_button = Button(
-            "Einstellungen",
-            pos.pipe(map_inner_perc(2.5, 85, 12.5, 10)),
-            small_style,
-            events,
-            Observer(lambda _: self.push_screen(SettingsScreen.init_fn(save))),
-            False,
-            batch=batch,
-            group=foreground
-        )
-        self.leave_button = Button(
-            "Verlassen",
-            pos.pipe(map_inner_perc(85, 85, 12.5, 10)),
-            small_style,
-            events,
-            Observer(lambda _: self.go_back()),
-            False,
-            batch=batch,
-            group=foreground
-        )
+        self.settings_button = ui_elements.BorderedRectangleButton("Einstellungen", 2.5, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 7, events, batch, foreground)
+        self.leave_button = ui_elements.BorderedRectangleButton("Verlassen", 85, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8, events, batch, foreground)
+        self._subs.add(self.settings_button.clicked.subscribe(lambda _: self.push_screen(SettingsScreen.init_fn(save))))
+        self._subs.add(self.leave_button.clicked.subscribe(lambda _: self.go_back()))
 
 
     def get_view(self):
