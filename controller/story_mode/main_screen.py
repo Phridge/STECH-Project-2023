@@ -50,10 +50,10 @@ class MainStoryScreen(Screen):
             self.level3_label = ui_elements.BorderedRectangle("Gesperrt", 42.5, 32.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
 
         self.under_development = ui_elements.BorderedRectangle("In der Entwicklung", 65, 35, 30, 22.5, events.color_scheme, color_scheme.Minecraft, 4.5, events, self.batch, foreground)
-        self.level4_button = ui_elements.BorderedSpriteButton("assets/images/bridge.gif", 62.5, 45, 15, 15, events.color_scheme, events, self.batch)
-        self.level4_label = ui_elements.InputButton("Viertes Level", 62.5, 32.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
-        self.level5_button = ui_elements.BorderedSpriteButton("assets/images/city.gif", 82.5, 45, 15, 15, events.color_scheme, events, self.batch)
-        self.level5_label = ui_elements.InputButton("Fünftes Level", 82.5, 32.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
+        self.level4_button = ui_elements.BorderedSprite("assets/images/bridge.gif", 62.5, 45, 15, 15, events.color_scheme, events, self.batch)
+        self.level4_label = ui_elements.BorderedRectangle("Viertes Level", 62.5, 32.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
+        self.level5_button = ui_elements.BorderedSprite("assets/images/city.gif", 82.5, 45, 15, 15, events.color_scheme, events, self.batch)
+        self.level5_label = ui_elements.BorderedRectangle("Fünftes Level", 82.5, 32.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
         self._subs.add(self.back.clicked.subscribe(lambda _: self.go_back()))
