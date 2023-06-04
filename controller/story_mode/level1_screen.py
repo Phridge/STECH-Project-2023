@@ -29,7 +29,21 @@ Lasst euch dieses Template anzeigen, indem ihr es im main_controller als initial
 class Level1Screen(Level):
 
     TEXTS = """\
-Hallo! Ich bin Maxwell.\
+Hallo! Ich bin Maxwell.
+
+Schön, dass du dich entschieden hast, das 10-Finger-Schreiben zu lernen.
+
+Je schneller du schreibst, desto mehr Punkte warten am Ende jeden Levels auf dich.
+
+Achte darauf, dass du deine Zeigefinger auf "f" und "j" legst, und beim Tippen nicht nach unten schaust.
+
+Nur so hilfst du mir meine Freunde, die vom Maschinenkönig in der Dampfstadt gefangen halten werden, zu befreien!
+
+Hoffentlich habe ich genug Ersatz-Teetassen mit. Ohne mein Lebenselixier geht nichts!
+
+*Schlürf* Tee ist einfach das Beste!
+
+Und jetzt los, wir haben viel zu tun!\
 """.split("\n\n")
 
     def __init__(self, events, save):
