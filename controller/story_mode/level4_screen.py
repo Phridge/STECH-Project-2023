@@ -11,7 +11,6 @@ import ui_elements
 from reactivex.subject import Subject
 from reactivex.disposable import CompositeDisposable
 from controller import Screen
-from controller.actors import Player
 
 """
 Level4 noch nicht implementiert, Inhalt auch veraltet

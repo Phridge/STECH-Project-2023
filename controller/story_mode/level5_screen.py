@@ -10,7 +10,6 @@ from pygame import mixer
 from reactivex.subject import Subject
 from reactivex.disposable import CompositeDisposable
 from controller import Screen
-from controller.actors import Player, Enemy
 
 """
 Noch nicht implementiert

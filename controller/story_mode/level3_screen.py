@@ -15,7 +15,7 @@ from reactivex.subject import Subject
 from reactivex.disposable import CompositeDisposable, Disposable, MultipleAssignmentDisposable, \
     SingleAssignmentDisposable
 from controller import Screen
-from controller.actors import Player, ThePlayer, combine_offset, StaticActor
+from controller.actors import ThePlayer, combine_offset, StaticActor
 from reactivex import Observable, just, concat
 from reactivex.operators import combine_latest, map as rmap, share, starmap, scan, filter as rfilter, do_action
 
