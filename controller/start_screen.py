@@ -41,7 +41,7 @@ class StartScreen(Screen):
 
         self.leave = ui_elements.InputButton("Verlassen", 40, 2.5, 20, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
         self.settings = ui_elements.InputButton("Einstellungen", 2.5, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
-        self.help = ui_elements.InputButton("Hilfe", 67.5, 2.5, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 12, events, self.batch)
+        self.help = ui_elements.InputButton("Hilfe", 85, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 12, events, self.batch)
         #self.statistics = ui_elements.InputButton("Statistiken", 85, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, self.batch)
 
         # Fängt ab, wenn Buttons gedrückt werden und erzeugt Subscriptions
