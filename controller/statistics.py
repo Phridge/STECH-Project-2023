@@ -55,6 +55,11 @@ class StatisticsScreen(Screen):
         # self._subs.add(self.back.clicked.subscribe(lambda _: self.game_command.on_next(PopScreen())))
 
     def update_view_on_char_input(self, char):
+        """
+        Aktualisiert die Anzeige je nach getätigtem Tastendruck
+        :param char: Zeichen, das durch Tastendruck getippt wurde
+        :return:
+        """
         self.current_char.change_char(char)
         print(self.current_char.get_char())
         self.header.label.text = 'Statistics for the char: ' + self.current_char.get_char()
