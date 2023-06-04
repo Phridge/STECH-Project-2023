@@ -191,6 +191,17 @@ def save_settings_to_db(save, fullscreen, volume, preview_color_scheme, new_scre
             #  der Save existiert
 
 
+def set_level_progress(save, level):
+    with new_session() as session:
+        try:
+            save_line = session.execute(select(Save).where(Save.id == save)).scalar_one()
+        except NoResultFound:
+            pass
+        else:
+            setattr(save_line, "level_progress", level)
+            session.commit()
+
+
 def get_settings(save):
     with new_session() as session:
         try:
@@ -200,6 +211,17 @@ def get_settings(save):
         else:
             settings_data = pickle.loads(getattr(save_line, "settings"))
             return settings_data
+
+
+def get_story_progress(save):
+    with new_session() as session:
+        try:
+            save_line = session.execute(select(Save).where(Save.id == save)).scalar_one()
+        except NoResultFound:
+            return 0
+        else:
+            progress_data = getattr(save_line, "level_progress")
+            return progress_data
 
 
 # Nicht wirklich sicher, ob das geht, da das MySQL statt SQL code ist

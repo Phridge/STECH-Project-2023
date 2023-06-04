@@ -9,6 +9,7 @@ from reactivex.disposable import CompositeDisposable
 from pygame import mixer
 
 from controller import Screen
+from tools import save_and_open
 
 
 class LevelFinishedScreen(Screen):
@@ -32,6 +33,7 @@ class LevelFinishedScreen(Screen):
         if successful:
             self.points_achieved = ui_elements.BorderedRectangle(str(points) + " Punkte", 35, 55, 30, 15, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
             self.next_level = ui_elements.InputButton("Nächstes Level", 65, 5, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
+            save_and_open.set_level_progress(save_file, previous_screen)
         else:
             self.retry = ui_elements.InputButton("Neuer Versuch", 65, 5, 20, 10, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
 

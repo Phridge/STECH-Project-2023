@@ -11,6 +11,7 @@ from controller import Controller, Screen
 from controller.settings import SettingsScreen
 from controller.statistics import StatisticsScreen
 from controller.story_mode.level1_screen import Level1Screen
+from tools import save_and_open
 
 
 class MainStoryScreen(Screen):
@@ -22,6 +23,8 @@ class MainStoryScreen(Screen):
         background = pyglet.graphics.Group(order=-1)
         foreground = pyglet.graphics.Group(order=1)
 
+        self.story_progress = save_and_open.get_story_progress(save)
+
         # Layout für den Startbildschirm des Lern-Modus
         self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, self.batch, background)
         self.header = ui_elements.BorderedRectangle("Story", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 4, events, self.batch)
@@ -32,10 +35,19 @@ class MainStoryScreen(Screen):
 
         self.level1_button = ui_elements.BorderedSpriteButton("assets/images/port.gif", 2.5, 45, 15, 15, events.color_scheme, events, self.batch)
         self.level1_label = ui_elements.InputButton("Erstes Level", 2.5, 32.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
-        self.level2_button = ui_elements.BorderedSpriteButton("assets/images/forest.gif", 22.5, 45, 15, 15, events.color_scheme, events, self.batch)
-        self.level2_label = ui_elements.InputButton("Zweites Level", 22.5, 32.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
-        self.level3_button = ui_elements.BorderedSpriteButton("assets/images/city.gif", 42.5, 45, 15, 15, events.color_scheme, events, self.batch)
-        self.level3_label = ui_elements.InputButton("Drittes Level", 42.5, 32.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
+        if self.story_progress >= 1:
+            self.level2_button = ui_elements.BorderedSpriteButton("assets/images/forest.gif", 22.5, 45, 15, 15, events.color_scheme, events, self.batch)
+            self.level2_label = ui_elements.InputButton("Zweites Level", 22.5, 32.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
+        else:
+            self.level2_button = ui_elements.BorderedSprite("assets/images/forest.gif", 22.5, 45, 15, 15, events.color_scheme, events, self.batch)
+            self.level2_label = ui_elements.BorderedRectangle("Gesperrt", 22.5, 32.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
+
+        if self.story_progress >= 2:
+            self.level3_button = ui_elements.BorderedSpriteButton("assets/images/city.gif", 42.5, 45, 15, 15, events.color_scheme, events, self.batch)
+            self.level3_label = ui_elements.InputButton("Drittes Level", 42.5, 32.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
+        else:
+            self.level3_button = ui_elements.BorderedSprite("assets/images/city.gif", 42.5, 45, 15, 15, events.color_scheme, events, self.batch)
+            self.level3_label = ui_elements.BorderedRectangle("Gesperrt", 42.5, 32.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
 
         self.under_development = ui_elements.BorderedRectangle("In der Entwicklung", 65, 35, 30, 22.5, events.color_scheme, color_scheme.Minecraft, 4.5, events, self.batch, foreground)
         self.level4_button = ui_elements.BorderedSpriteButton("assets/images/bridge.gif", 62.5, 45, 15, 15, events.color_scheme, events, self.batch)
@@ -56,14 +68,17 @@ class MainStoryScreen(Screen):
 
         self._subs.add(self.level1_button.clicked.subscribe(lambda _: self.reload_screen(Level1Screen.init_fn(save))))
         self._subs.add(self.level1_label.clicked.subscribe(lambda _: self.reload_screen(Level1Screen.init_fn(save))))
-        self._subs.add(self.level2_button.clicked.subscribe(lambda _: self.reload_screen(Level2Screen.init_fn(save))))
-        self._subs.add(self.level2_label.clicked.subscribe(lambda _: self.reload_screen(Level2Screen.init_fn(save))))
-        self._subs.add(self.level3_button.clicked.subscribe(lambda _: self.reload_screen(Level3Screen.init_fn(save))))
-        self._subs.add(self.level3_label.clicked.subscribe(lambda _: self.reload_screen(Level3Screen.init_fn(save))))
+        if self.story_progress > 0:
+            self._subs.add(self.level2_button.clicked.subscribe(lambda _: self.reload_screen(Level2Screen.init_fn(save))))
+            self._subs.add(self.level2_label.clicked.subscribe(lambda _: self.reload_screen(Level2Screen.init_fn(save))))
+        if self.story_progress > 1:
+            self._subs.add(self.level3_button.clicked.subscribe(lambda _: self.reload_screen(Level3Screen.init_fn(save))))
+            self._subs.add(self.level3_label.clicked.subscribe(lambda _: self.reload_screen(Level3Screen.init_fn(save))))
         # self._subs.add(self.level4_button.clicked.subscribe(lambda _: self.reload_screen(Level4Screen.init_fn(save))))
         # self._subs.add(self.level4_label.clicked.subscribe(lambda _: self.reload_screen(Level4Screen.init_fn(save))))
         # self._subs.add(self.level5_button.clicked.subscribe(lambda _: self.reload_screen(Level5Screen.init_fn())))
         # self._subs.add(self.level5_label.clicked.subscribe(lambda _: self.reload_screen(Level5Screen.init_fn())))
+
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
