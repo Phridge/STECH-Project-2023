@@ -18,6 +18,7 @@ from tools.save_and_open import save_run
 from ui_elements_ex import Rect, map_inner_perc, Style, Rectangle
 from events import Event, Var
 from ..level_finished import LevelFinishedScreen
+from ..pause_screen import PauseScreen
 
 """
 Eine Vorlage für einen Screen. ab Zeile 22 können Elemente eingefügt werde. Ein paar der ui-Elements sind als Beispiel gezeigt.
@@ -46,6 +47,7 @@ Und jetzt los, wir haben viel zu tun!\
 
     def __init__(self, events, save):
         super().__init__()
+        self.save = save
         self.events = events
         pos = events.size.pipe(
             rmap(lambda s: Rect(0, 0, *s))
@@ -84,6 +86,10 @@ Und jetzt los, wir haben viel zu tun!\
 
         # Überschrift.
         self.header = ui_elements.BorderedRectangle("Level 1: Der Hafen der Freiheit", 25, 80, 50, 15, self.events.color_scheme, color_scheme.Minecraft, 3.5, self.events, self.batch, self.foreground)
+        self.pause_visible = ui_elements.BorderedRectangleButton("Pause (Esc)", 2.5, 85, 15, 10, self.events.color_scheme, color_scheme.Minecraft, 6, self.events, self.batch, self.foreground)
+
+        self._subs.add(self.events.key.subscribe(self.test_for_escape))
+        self._subs.add(self.pause_visible.clicked.subscribe(lambda _: self.push_screen(PauseScreen.init_fn(save))))
 
         def display_text(display_text):
             """
@@ -164,6 +170,11 @@ Und jetzt los, wir haben viel zu tun!\
 
         def calculate_points(input_analysis: InputAnalysis):
             return int((input_analysis.correct_char_count / input_analysis.time) ** 2 * 100)
+
+
+    def test_for_escape(self, data):
+        if data[0] == 65307: self.push_screen(PauseScreen.init_fn(self.save))
+
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch

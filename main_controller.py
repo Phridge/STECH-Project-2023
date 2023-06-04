@@ -97,7 +97,7 @@ class GameWindow(pyglet.window.Window, Disposable):
 
         # self.push_screen(Level1Screen)
         self.push_screen(StartScreen)
-        self.set_icon(pyglet.image.load("assets/images/mech_tea.png"))
+        self.set_icon(pyglet.image.load("assets/images/icon.png"))
 
 
     def push_screen(self, screen_init):
@@ -168,6 +168,7 @@ class GameWindow(pyglet.window.Window, Disposable):
         view.draw()
 
     def on_key_press(self, keycode, mods):
+        print(keycode)
         self.events.key.on_next((keycode, mods))
 
     def on_text(self, text):
