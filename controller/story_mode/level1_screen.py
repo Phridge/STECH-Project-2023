@@ -56,7 +56,7 @@ Und jetzt los, wir haben viel zu tun!\
         # hintergrund
         self.gif = ui_elements.Gif("assets/images/port.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, self.background)
 
-        # Region, in dem sich der spieler bewegen darf. Die untere kante stellt den laufsteg dar.
+        # Region, in dem sich der spieler bewegen darf. Die untere Kante stellt den laufsteg dar.
         player_area = pos.pipe(
             map_inner_perc(0, 40, 100, 60)
         )

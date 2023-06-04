@@ -172,6 +172,15 @@ def save_game(game_save_nr, level_id, preset_text, written_text, time_needed_for
 
 
 def save_settings_to_db(save, fullscreen, volume, preview_color_scheme, new_screen_size):
+    """
+    Speichert die Save-spezifischen Einstellungen in die Datenbank. Erstellt ein neues Tupel, falls keins existiert.
+
+    :param save: Spielstand, dem die Einstellungen angehören
+    :param fullscreen: Bool, ob Fullscreen an oder aus ist
+    :param volume: Lautstärke als Wert zwischen 0 und 100
+    :param preview_color_scheme: Farbschema des Saves als EditableColorSchemee-Objekt
+    :param new_screen_size: Bildschirmgröße als Tupel (w,h)
+    """
     with new_session() as session:
         settings_pickle = pickle.dumps((fullscreen, volume, preview_color_scheme, new_screen_size))
         print((fullscreen, volume, preview_color_scheme, new_screen_size))
@@ -192,14 +201,27 @@ def save_settings_to_db(save, fullscreen, volume, preview_color_scheme, new_scre
 
 
 def set_level_progress(save, level):
+    """
+    Speichert, wenn ein Level zum ersten Mal abgeschlossen wurde
+    :param save:
+    :param level:
+    :return:
+    """
     with new_session() as session:
         try:
             save_line = session.execute(select(Save).where(Save.id == save)).scalar_one()
         except NoResultFound:
-            pass
-        else:
-            setattr(save_line, "level_progress", level)
+            s = Save(
+                id=save,
+                level_progress=level,
+                settings=pickle.dumps((False, 0, color_scheme.BlackWhite, (600, 600)))
+            )
+            session.add(s)
             session.commit()
+        else:
+            if getattr(save_line, "level_progress") < level:
+                setattr(save_line, "level_progress", level)
+                session.commit()
 
 
 def delete_save(save):
@@ -214,6 +236,12 @@ def delete_save(save):
 
 
 def get_settings(save):
+    """
+    Holt die Settings aus der Datenbankund entschlüsselt sie
+    :param save: Spielstand
+    :return:
+    """
+
     with new_session() as session:
         try:
             save_line = session.execute(select(Save).where(Save.id == save)).scalar_one()

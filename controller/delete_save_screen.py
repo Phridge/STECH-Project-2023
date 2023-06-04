@@ -27,8 +27,11 @@ class DeleteSaveScreen(Screen):
         self._subs.add(self.button1.clicked.subscribe(lambda _: self.delete_save(save)))
         self._subs.add(self.button2.clicked.subscribe(lambda _: self.back_to_menu()))
 
-    def delete_save(self, save):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
-        # Hier muss der Save gelöscht werden
+    def delete_save(self, save):
+        """
+        Löscht den angegeben save aus der Datenbank und wechselt den Screen
+        :param save: zu löschender Save
+        """
         save_and_open.delete_save(save)
         self.back_to_menu()
 
