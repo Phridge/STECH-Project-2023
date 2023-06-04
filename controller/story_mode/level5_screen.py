@@ -1,9 +1,12 @@
 import logging
 import time
 
+import contextlib
 import pyglet
+import pygame
 import color_scheme
 import ui_elements
+from pygame import mixer
 from reactivex.subject import Subject
 from reactivex.disposable import CompositeDisposable
 from controller import Screen
@@ -44,7 +47,6 @@ class Level5Screen(Screen):
 
         self.change_controller = Subject()
         self.event = Subject()  # separates Subject für eventuelle Events die in diesem Screen stattfinden
-
     #  Falls die Funktionen namentlich nicht passen erstellte einfach neue!
 
     def button_clicked(self, data):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
@@ -52,3 +54,5 @@ class Level5Screen(Screen):
 
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
+
+

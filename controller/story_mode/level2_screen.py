@@ -130,9 +130,8 @@ class Level2Screen(Level):
     def get_view(self):  # Erzeugt den aktuellen View
         return self.batch
 
-    def play_music(self, nextmusic):
+    def play_music(self):
         with contextlib.suppress(pygame.error):
             mixer.init()
-            mixer.music.load(nextmusic)
-            mixer.music.play()
+            mixer.music.load("assets/sounds/Unnecessary Tension.mp3")
             mixer.music.play(-1)
