@@ -94,6 +94,9 @@ class Level(Screen):
         self.foreground = Group(1)
         self.overlay = Group(2)
 
+    def pause(self):
+        pass
+
 
 def linear(t):
     return t
