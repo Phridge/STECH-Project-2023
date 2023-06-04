@@ -1,5 +1,9 @@
+import logging as l
+l.basicConfig(filename="log.log", level=l.DEBUG)
+
 from contextlib import suppress
 from dataclasses import dataclass
+from sys import stdout
 from typing import Any, Callable, Optional
 
 import pygame
@@ -194,6 +198,7 @@ class GameWindow(pyglet.window.Window, Disposable):
 
     def on_refresh(self, dt):
         self.events.update.on_next(dt)
+
 
 def main():
     window = GameWindow()
