@@ -65,7 +65,7 @@ class ChangeSetting:
 
 class GameWindow(pyglet.window.Window, Disposable):
     def __init__(self):
-        super().__init__(resizable=True, caption="Typerpunk: The Rise of Maxwell")
+        super().__init__(resizable=False, caption="Typerpunk")
         self.events = Events(
             key=Event(),
             text=Event(),

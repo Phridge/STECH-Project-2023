@@ -30,7 +30,7 @@ class StartScreen(Screen):
 
         #Layout für den Hauptbildschirm
         self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, self.batch)
-        self.header = ui_elements.BorderedRectangle("Typerpunk: The Rise of Maxwell", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 3.5, events, self.batch)
+        self.header = ui_elements.BorderedRectangle("Typerpunk", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 7, events, self.batch)
         self.save1 = ui_elements.InputButton("Erster Spielstand", 35, 55, 30, 10, events.color_scheme, color_scheme.Minecraft, 5.5, events, self.batch)
         self.save2 = ui_elements.InputButton("Zweiter Spielstand", 35, 42.5, 30, 10, events.color_scheme, color_scheme.Minecraft, 5.5, events, self.batch)
         self.save3 = ui_elements.InputButton("Dritter Spielstand", 35, 30, 30, 10, events.color_scheme, color_scheme.Minecraft, 5.5, events, self.batch)
