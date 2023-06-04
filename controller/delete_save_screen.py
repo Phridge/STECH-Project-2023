@@ -1,5 +1,3 @@
-import logging
-
 import pyglet
 import color_scheme
 import ui_elements
@@ -7,6 +5,7 @@ from reactivex.subject import Subject
 from reactivex.disposable import CompositeDisposable
 
 from controller import Screen
+from tools import save_and_open
 
 
 class DeleteSaveScreen(Screen):
@@ -28,9 +27,9 @@ class DeleteSaveScreen(Screen):
         self._subs.add(self.button1.clicked.subscribe(lambda _: self.delete_save(save)))
         self._subs.add(self.button2.clicked.subscribe(lambda _: self.back_to_menu()))
 
-    def delete_save(self, data):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
+    def delete_save(self, save):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
         # Hier muss der Save gelöscht werden
-        logging.warning("SAVE WIRD NOCH NICHT GELÖSCHT")
+        save_and_open.delete_save(save)
         self.back_to_menu()
 
     def back_to_menu(self):  # Wird getriggert, wenn ein Spielstand ausgewählt wird

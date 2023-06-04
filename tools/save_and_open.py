@@ -202,6 +202,17 @@ def set_level_progress(save, level):
             session.commit()
 
 
+def delete_save(save):
+    with new_session() as session:
+        try:
+            save_line = session.execute(select(Save).where(Save.id == save)).scalar_one()
+        except NoResultFound:
+            pass
+        else:
+            session.delete(save_line)
+            session.commit()
+
+
 def get_settings(save):
     with new_session() as session:
         try:
