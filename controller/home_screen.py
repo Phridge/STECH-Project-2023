@@ -13,7 +13,7 @@ from controller.learning_mode.main_screen import MainLearningScreen
 from controller.sandbox_mode.sandbox_level import SandboxLevel
 from controller.settings import SettingsScreen
 from controller.statistics import StatisticsScreen
-#import statistics.statistic_view as SV
+#import statistic_lib.statistic_view as SV
 from controller.story_mode.main_screen import MainStoryScreen
 from tools import save_and_open
 
@@ -60,7 +60,7 @@ class HomeScreen(Screen):
         self._subs.add(self.settings.clicked.subscribe(goto(SettingsScreen.init_fn(save_file))))
 
         self._subs.add(self.statistics.clicked.subscribe(goto(StatisticsScreen.init_fn(save_file))))
-        #self._subs.add(self.statistics.clicked.subscribe(goto(SV)))
+        #self._subs.add(self.statistic_lib.clicked.subscribe(goto(SV)))
 
         self.play_music()
 

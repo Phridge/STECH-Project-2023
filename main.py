@@ -5,5 +5,5 @@ l.debug("SEX")
 
 from main_controller import main
 
-#import statistics.statistic_view
+#import statistic_lib.statistic_view
 main()

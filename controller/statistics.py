@@ -3,8 +3,8 @@ import color_scheme
 import ui_elements
 from reactivex.subject import Subject
 from reactivex.disposable import CompositeDisposable
-import statistics.statistic_view as sv
-import statistics.statistics_controller as sc
+import statistic_lib.statistic_view as sv
+import statistic_lib.statistics_controller as sc
 from controller import Screen
 
 
