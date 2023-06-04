@@ -6,6 +6,7 @@ import contextlib
 import color_scheme
 import main_controller
 import ui_elements
+from reactivex import concat
 from reactivex.operators import delay, map as rmap, combine_latest, do_action, starmap, filter as rfilter, share
 from reactivex.disposable import CompositeDisposable, Disposable
 from controller import Screen
@@ -17,7 +18,6 @@ from tools.save_and_open import save_run
 from ui_elements_ex import Rect, map_inner_perc, Style, Rectangle
 from events import Event, Var
 from ..level_finished import LevelFinishedScreen
-from reactivex import concat
 
 """
 Eine Vorlage für einen Screen. ab Zeile 22 können Elemente eingefügt werde. Ein paar der ui-Elements sind als Beispiel gezeigt.
@@ -89,7 +89,8 @@ Und jetzt los, wir haben viel zu tun!\
 
         self._subs.add(self.events.key.subscribe(self.test_for_escape))
         self._subs.add(self.pause_visible.clicked.subscribe(lambda _: self.pause(self.events, self.save)))
-        self.header = ui_elements.BorderedRectangle("Level 1: Der Hafen der Freiheit", 30, 80, 40, 15, self.events.color_scheme, color_scheme.Minecraft, 4, self.events, self.batch, self.foreground)
+
+        self.play_music()
 
         def display_text(display_text):
             """
@@ -107,10 +108,7 @@ Und jetzt los, wir haben viel zu tun!\
             :return: Nachher zu löschenden Ressourcen.
             """
             # farbanimation
-            color = concat(
-                animate(0, 0, 2.0, events.update, lambda o: (0, 0, 0, int(o))),
-                animate(0, 255, 3.0, events.update, lambda o: (0, 0, 0, int(o)))
-            )
+            color = animate(255, 0, 3.0, events.update, lambda o: (0, 0, 0, int(o)))
             # spielerpositionsanimation.
             # Sieht kompliziert aus, da noch die Position des Laufstegs mit berücksichtigt werden muss.
             player_anim = animate(-300, 100, 5.0, events.update, lambda v: Rect(v, 0, 150, 150))
@@ -124,7 +122,6 @@ Und jetzt los, wir haben viel zu tun!\
                 overlay_rect,
                 player_anim.subscribe(player_pos.on_next, on_completed=lambda: self.machine.next()),
                 Disposable(lambda: self.p.state.on_next(ThePlayer.Idle())),  # wenn fertig, dann spieler stoppen.
-                Disposable(lambda: self.p.look_dir.on_next(1))  # wenn fertig, dann twist
             )
 
         def player_exit():
@@ -134,7 +131,10 @@ Und jetzt los, wir haben viel zu tun!\
             # save game
             save_run(save, "story_level_1", input_analysis)
 
-            color = animate(0, 255, 3.0, events.update, lambda o: (0, 0, 0, int(o))).pipe(delay(3.0))
+            color = concat(
+                animate(0, 0, 2.0, events.update, lambda o: (0, 0, 0, int(o))),
+                animate(0, 255, 3.0, events.update, lambda o: (0, 0, 0, int(o)))
+            )
             pos_anim = animate(100, 2000, 10.0, events.update, lambda v: Rect(v, 0, 150, 150))
 
             overlay_rect = Rectangle(pos, color, self.batch, self.overlay)
@@ -156,6 +156,7 @@ Und jetzt los, wir haben viel zu tun!\
         def goto(screen_init):
             return lambda _: self.game_command.on_next(PushScreen(screen_init))
 
+
         # Erstellung der State Machine aus allen nötigen Zuständen:
         # Spieler entry
         # dann die ganzen texte
@@ -167,8 +168,10 @@ Und jetzt los, wir haben viel zu tun!\
             + [show_results]
         )
 
+
         def calculate_points(input_analysis: InputAnalysis):
             return int((input_analysis.correct_char_count / input_analysis.time) ** 2 * 100)
+
 
     def test_for_escape(self, data):
         if data[0] == 65307: self.pause(self.events, self.save)
