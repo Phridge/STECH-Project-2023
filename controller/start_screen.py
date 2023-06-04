@@ -79,11 +79,13 @@ class StartScreen(Screen):
             self.game_command.on_next(ChangeSetting("volume", volume))
             if size: self.game_command.on_next(ChangeSetting("size", size))
 
-    def get_view(self):  # Erzeugt den aktuellen View
+    def get_view(self):
         return self.batch
 
-
-    def play_music(self, volume): #Musik im Start Menü
+    def play_music(self, volume):
+        """
+            Spielt Hintergrundmusik ab
+        """
         with contextlib.suppress(pygame.error):
             mixer.music.load("assets/sounds/02 Start Menu.mp3")
             mixer.music.play()

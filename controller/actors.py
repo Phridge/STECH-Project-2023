@@ -147,6 +147,10 @@ class ThePlayer(Actor):
         super().__init__(pos, look_dir, state, batch, group)
 
     def _get_image(self, state):
+        """
+        Erstellt das anzuzeigende Bild für gegebenen Zustand.
+        :param state: aktueller Zustand
+        """
         match state:
             case self.Idle():
                 path = "assets/images/mech_idle.gif"
@@ -197,4 +201,9 @@ class StaticActor(Actor):
         super().__init__(pos, look_dir, self.Idle(), batch, group)
 
     def _get_image(self, state):
+        """
+        Erstellt das anzuzeigende Bild für gegebenen Zustand.
+        :param state: aktueller Zustand
+        :return: Bild für den aktuellen Zustand
+        """
         return self.image

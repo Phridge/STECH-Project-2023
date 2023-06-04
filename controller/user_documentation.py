@@ -52,6 +52,11 @@ class UserDocumentationScreen(Screen):
 
 
     def play_music(self, volume): #Musik im Start Menü
+        """
+        Spielt Hintergrundmusik ab
+        :param volume: Lautstärke der Musik
+        :return:
+        """
         with contextlib.suppress(pygame.error):
             mixer.music.load("assets/sounds/02 Start Menu.mp3")
             mixer.music.play()

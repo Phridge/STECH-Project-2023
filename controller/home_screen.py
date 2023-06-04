@@ -82,6 +82,9 @@ class HomeScreen(Screen):
         return self.batch
 
     def play_music(self):
+        """
+        Spielt Hintergrundmusik ab
+        """
         with contextlib.suppress(pygame.error):
             mixer.init()
             mixer.music.load("assets/sounds/02 Start Menu.mp3")
