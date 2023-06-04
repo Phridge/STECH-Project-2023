@@ -27,7 +27,7 @@ class UserDocumentationScreen(Screen):
         background = pyglet.graphics.Group(order=-1)
         foreground = pyglet.graphics.Group(order=1)
 
-        # Erstes Layout für den Hauptbildschirm
+        # Erstes Layout für den NutzerDoku-Bildschirm
         self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, self.batch)
         self.header = ui_elements.BorderedRectangle("So funktioniert alles:", 20, 85, 60, 10, events.color_scheme, color_scheme.Minecraft, 3.5, events, self.batch)
         self.maneuvering = ui_elements.BorderedRectangle("Manövrierung:", 30, 72.5, 40, 7.5, events.color_scheme, color_scheme.Minecraft, 5, events, self.batch)
