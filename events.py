@@ -3,30 +3,21 @@ from reactivex.abc import DisposableBase
 from reactivex.disposable import CompositeDisposable
 from reactivex.subject import Subject as Event, BehaviorSubject as Var, BehaviorSubject
 from reactivex.operators import combine_latest, filter, starmap
+import reactivex.disposable
 
 
 
 class Disposable:
-    _is_disposed = False
 
     def dispose(self) -> None:
-        if self._is_disposed:
-            return
-
         for key, value in vars(self).items():
             if isinstance(value, (Disposable, DisposableBase)):
                 value.dispose()
-                setattr(self, key, None)
-
-        self._is_disposed = True
-
-#    def __del__(self):
-#        if not self._is_disposed:
-#            self.dispose()
 
 
-class Events:
+class Events(DisposableBase):
     def __init__(self, **kwargs):
+        self._sub = reactivex.disposable.Disposable()
         vars(self).update(kwargs)
 
     def extend(self, **kwargs):
@@ -34,16 +25,19 @@ class Events:
 
     def add_lever(self, lever):
         new = {}
+        predicate = True
+        self._sub = lever.subscribe(lambda p: locals().update(predicate=p))
         for key, value in vars(self).items():
             if isinstance(value, Observable):
                 new[key] = value.pipe(
-                    combine_latest(lever),
-                    filter(lambda d: d[1]),
-                    starmap(lambda v, p: v),
+                    filter(lambda d: predicate),
                 )
             else:
                 new[key] = value
         return Events(**new)
+
+    def dispose(self) -> None:
+        self._sub.dispose()
 
 
 Unset = object()

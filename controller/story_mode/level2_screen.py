@@ -29,13 +29,22 @@ Lasst euch dieses Template anzeigen, indem ihr es im main_controller als initial
 
 
 class Level2Screen(Level):
+    """
+    Screen-Klasse für Level2.
+    """
     def __init__(self, events, save):
+        """
+        Initialisiere ein Level 2
+        :param events: Events-Objekt
+        :param save: Save-Nummer
+        """
         super().__init__(events, save)
         window = events.size.pipe(
             rmap(lambda s: Rect(0, 0, *s))
         )
         style = Style(events.color_scheme, "Monocraft", 15)
 
+        # verschiedene Render-Gruppen, um die Objekte auf dem Bildschirm zu ordnen.
         player_group = Group(0, parent=self.foreground)
         bush_group = Group(1, parent=self.foreground)
         enemy_group = Group(2, parent=self.foreground)
@@ -44,6 +53,7 @@ class Level2Screen(Level):
         self.scroll_background = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, self.background)
         self.header = ui_elements.BorderedRectangle("Level 2: Der Wald des Widerstands", 25, 80, 50, 15, self.events.color_scheme, color_scheme.Minecraft, 3, self.events, self.batch, self.hud)
 
+        # Animationen vorladen für gegner und Busch
         enemy_idle_animation = load_enemy_idle()
         bush_animation = load_bush()
         enemy_run_animation = load_enemy_run()
@@ -105,6 +115,7 @@ class Level2Screen(Level):
                 """
                 bush_pos, enemy_pos = positions[index]
 
+                # generiere einen Spieler, dessen position von Scroll abhängig ist
                 enemy = StaticActor(
                     enemy_idle_animation,
                     just(enemy_pos).pipe(
@@ -116,6 +127,7 @@ class Level2Screen(Level):
                     group=enemy_group
                 )
 
+                # und ein busch, dessen position auch von SCroll anhängig ist.
                 bush = StaticActor(
                     bush_animation,
                     just(bush_pos).pipe(
@@ -150,8 +162,8 @@ class Level2Screen(Level):
 
             # spieler sitzt nun hinterm busch.
             level_progress = 0
-            max_fails = 10
-            fails_left = Var(max_fails)
+            max_fails = 10  # maximale versuche im level
+            fails_left = Var(max_fails)  # Observable für die übrigen versuche
             long_enough = False
             self._subs.add(  # nach 3 minuten wird das level beendet (flag wird auf true gesetzt)
                 animate(0, 0, 3 * 60, events.update)
@@ -172,12 +184,13 @@ class Level2Screen(Level):
             ia = InputAnalysis()
             text_provider = textprovider.statistical.StatisticalTextProvider.from_pickle("assets/text_statistics/stats_1.pickle")
 
+            # nach 3 minuten ist schluss, solange wird die schleife durchlaufen
             while not long_enough:
                 # spieler anhalten, da am busch
                 self.player.state.on_next(ThePlayer.Idle())
                 self.scroll_background.paused = True
 
-                # inputbox kreieren und positionieren
+                # inputbox kreieren und positionieren unterm aktuellen gegner
                 current_enemy_pos = positions[level_progress][1]
                 box_pos = just(Rect(-30, -20, 200, 50)).pipe(
                     combine_offset(just(current_enemy_pos)),
@@ -215,6 +228,7 @@ class Level2Screen(Level):
                         batch=self.batch,
                         group=enemy_group,
                     )
+                    # und kurz warten
                     yield animate(0, 0, 0.3, events.update).subscribe(on_completed=msg)
                 else:
                     alert_box = Disposable()
@@ -223,11 +237,11 @@ class Level2Screen(Level):
                 # inputbox weg
                 inputbox.dispose()
 
-
+                # sind alle versuche aufgegbraucht, dann wird die endsequenz auch abgespielt
                 if fails_left.value == 0:
                     break
 
-                # vorwärts rennen
+                # vorwärts rennen, wenn noch versuche da sind
                 self.player.state.on_next(ThePlayer.Running(5.0))
                 self.scroll_background.paused = False
                 yield CompositeDisposable(
@@ -274,6 +288,7 @@ class Level2Screen(Level):
                 combine_offset(just(player_stationary)),
                 combine_offset(object_area)
             )
+            # ausrufezeichen über maxwell
             alert_box = BorderedLabel(
                 "!",
                 alert_box,
@@ -321,6 +336,7 @@ class Level2Screen(Level):
                 animate(0, 255, 4, events.update, lambda v: (0, 0, 0, int(v))),
             )
 
+            # aus-dem-Sichtfeld-laufen-Animation
             yield CompositeDisposable(
                 animate(-200, 3000, 30, events.update).subscribe(enemy_advance.on_next),
                 animate(0, 3000, 20, events.update, lambda x: player_stationary.offset((x, 0))).subscribe(player_pos.on_next),
@@ -336,6 +352,7 @@ class Level2Screen(Level):
             if fails_left.value > 0: successful = True
             self.reload_screen(LevelFinishedScreen.init_fn(save, 2, calculate_points(ia), successful))  # Abschlussbildschirm des Levels (Save, next_level, Punkte, Erfolgreich)
 
+        # levelmaschine erstellen
         self.machine = LevelMachine(level_generator)
 
         def calculate_points(input_analysis: InputAnalysis):

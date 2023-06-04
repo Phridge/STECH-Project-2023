@@ -27,6 +27,9 @@ Lasst euch dieses Template anzeigen, indem ihr es im main_controller als initial
 
 
 class Level1Screen(Level):
+    """
+    Screen für Level1.
+    """
 
     TEXTS = """\
 Hallo! Ich bin Maxwell.
@@ -160,8 +163,11 @@ Und jetzt los, wir haben viel zu tun!\
             + [show_results]
         )
 
-
         def calculate_points(input_analysis: InputAnalysis):
+            """
+            Berechnet Punkte aus der Eingabeanalyse.
+            :return: Erreichte Punktzahl als Int
+            """
             return int((input_analysis.correct_char_count / input_analysis.time) ** 2 * 100)
 
     def get_view(self):  # Erzeugt den aktuellen View

@@ -16,7 +16,18 @@ from reactivex.operators import combine_latest, sample, do_action, zip as rzip, 
 
 
 class LearningLevel(Screen):
+    """
+    Screen-Klasse für den Übungsmodus.
+    """
     def __init__(self, events, focus_chars, all_chars, save):
+        """
+        Erstelle ein Learning-Level.
+
+        :param events: Events-Objekt.
+        :param focus_chars: Buchstaben, auf die sich in diesem Level sich fokussiert wird.
+        :param all_chars: Alle buchstaben, die nach den Fokus-Buchstaben trainiert werden (alle vorherigen buchstaben idr.)
+        :param save: spielstand, in den gespeichert wird.
+        """
         super().__init__()
         self.level_name = f"learning_{focus_chars}"
         pos = events.size.pipe(rmap(lambda size: Rect(0, 0, *size)))
@@ -45,11 +56,15 @@ class LearningLevel(Screen):
             return provider.get_text(args)
 
 
+        # titel
         self.title = BorderedLabel(f"Buchstaben {', '.join(focus_chars)}", pos.pipe(map_inner_perc(25, 80, 50, 15)), style, batch, foreground)
 
+        # wieviele runden (nur vorgabe, keine pfilciht) geübt werden sollen
         max_rounds = 5
+        # aktuelle runde
         round = Var(0)
 
+        # label zuma nzeigen der Runde
         self.round_label = BorderedLabel(
             round.pipe(
                 rmap(lambda p: f"Runde {p}/{max_rounds}"),
@@ -63,17 +78,19 @@ class LearningLevel(Screen):
         # runde zu text
         text = round.pipe(rmap(text_for_round))
 
+        # die eingabebox.
         self.input_box = InputBox(text, pos.pipe(map_inner_perc(15, 10, 70, 30)), style, events, batch=batch, group=foreground)
         self._subs.add(
             self.input_box.text_tracker.pipe(
                 rfilter(lambda tt: tt.is_finished),
                 do_action(lambda tt: save_text_tracker(save, self.level_name, tt))
-            ).subscribe(lambda _: round.on_next(round.value + 1))
+            ).subscribe(lambda _: round.on_next(round.value + 1))  # ist ein text fertig geschrieben, wird der nächste Text geladen.
         )
 
         from ..settings import SettingsScreen
         from ..home_screen import HomeScreen
 
+        # Buttons zum Einstellungen- und Verlassen aufrufen
         small_style = Style(style.color, style.font, 10)
         self.settings_button = Button(
             "Einstellungen",

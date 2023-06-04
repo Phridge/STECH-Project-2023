@@ -18,11 +18,14 @@ from collections import namedtuple
 from dataclasses import dataclass
 
 
-# Klasse welche für die Datensammlung da ist.
-# Der zu trackende Zeichensatz ist quasi latin-1 also Deutsch. Mögliche ergänzung kann folgen...
-# Array besteht aus:
-# [<Zeichen>, <Anzahl wie oft es vorkam>, <Anzahl wie oft anderes Zeichen gedrückt wurde>, <average Time needed>]
+
 class InputAnalysis:
+    """
+    Klasse welche für die Datensammlung da ist.
+    Der zu trackende Zeichensatz ist quasi latin-1 also Deutsch. Mögliche ergänzung kann folgen...
+    Array besteht aus:
+    [<Zeichen>, <Anzahl wie oft es vorkam>, <Anzahl wie oft anderes Zeichen gedrückt wurde>, <average Time needed>]
+    """
     def __init__(self):
         self.char_list = [
             ['0', 0, 0, 0], ['1', 0, 0, 0], ['2', 0, 0, 0], ['3', 0, 0, 0], ['4', 0, 0, 0], ['5', 0, 0, 0],
@@ -52,6 +55,12 @@ class InputAnalysis:
         self.correct_time = 0.0
 
     def track_input(self, char, is_correct, time_taken: datetime.timedelta):
+        """
+        Buchstaben tracken.
+        :param char: Der eingegebene Buchstabe
+        :param is_correct: War das der richtige Buchstabe? Bool.
+        :param time_taken: Gebrauchte zeit.
+        """
         self.char_count += 1
         self.time += time_taken.total_seconds()
         self.text_written += char
@@ -81,57 +90,14 @@ class InputAnalysis:
     def logical_type_speed(self):
         return self.correct_time / self.correct_char_count
 
-    def set_level_text(self, level_text):
-        self.level_text = level_text
-
-    def set_written_text_by_user(self, user_text):
-        self.written_text_by_user = user_text
-
-    def set_time_per_char(self, time_per_char):
-        self.time_per_char = time_per_char
-
-    # setzt die Endzeit in die Klasse ein, wenn das Level beendet wurde
-    def ind_tracking(self, finish_time):
-        self.end_time = finish_time
-
-    # Prüft UserInputs mit den zu erwartenden Chars und macht abhängig davon einen Eintrag im Analyseobjekt
-    def input_compare(self, current_char, user_input_char):
-        is_correct = False
-        # Ist der InputChar, dass was erwartet wird, zähle den count des Buchstaben hoch
-        if current_char == user_input_char:
-            for item in self.char_list:
-                if item[0] == user_input_char:
-                    item[1] += 1
-                    is_correct = True
-        else:  # Zähle zusätzlich noch die Fehlervariable hoch
-            for item in self.char_list:
-                if item[0] == user_input_char:
-                    item[1] += 1
-                    item[2] += 1
-
-        return is_correct
-
-    """Mögliche Verbesserung Median stat arithmetisches Mittel für Durchschnitt"""
-    # Funktion, welche den vom User geschriebenen Text durchgeht und ein durchschnittswert der dafür gebrauchten zeiten
-    # aus self.time_per_char ermittelt
-    def tag_average_time_per_Char(self):
-        # Durchlauf Variable um Position der zum Buchstaben zugehörigen Zeit im Array self.time_per_char zu ermitteln
-        i = 0
-        # Zähl variable, um Teiler für Durchschnittswert zu ermitteln
-        j = 0
-        for char_data in self.char_list:
-            for x in self.written_text_by_user:
-                # Wenn der Buchstabe x gleich dem des Eintrages in der self.char_list ist
-                if char_data[0] == x:
-                    # Addiere die Zeit auf die schon bestehende Zeit auf
-                    char_data[3] += self.time_per_char[i]
-                    j += 1
-                i += 1
-            # Zeile den Aufsummierten wert des Buchstaben in der self.char_list durch die Anzahl der Aufsummierungen
-            char_data[3] = char_data / j
-
 # Klasse, welche den aktuellen Text beinhaltet und die derzeitige Position im Text wiedergibt
 class TextTracker:
+    """
+    Eingabetracker. Gibt an, welcher Text zu schreiben ist, bis wohin bisher geschrieben wurde und ob die letzte eingabe
+    richtig war. Nimmt optional einen Inputtracker an. Um mit diesen über eingabedauer zu reden, wird die letzte eingabezeit
+    gespeichert.
+    Der erste Buchstabe wird zeitlich nicht gemessen, da keine Referenzzeit existiert.
+    """
 
     def __init__(self, current_text, input_analysis=None):
         self.current_text = current_text
@@ -163,9 +129,7 @@ class TextTracker:
     def accept_char(self, char):
         """
         Akzeptiert eine Eingabe des Nutzers.
-        ACHTUNG: start_timer davor starten!
         :param char: der Buchstabe, der gedrückt wurde
-        :return:
         """
         # nix machen wenn schon fertig
         if self.is_finished or not self.text_valid:
@@ -175,44 +139,20 @@ class TextTracker:
         current_time = datetime.datetime.now()
         time_taken = current_time - self.last_input if self.last_input else None  # keine zeitangabe wenn nicht gestartet vorher
 
+        # buchstabe richtig?
         is_correct = char == self.current_text[self.current_position]
 
+        # wenn richtig, dann fortschritt
         if is_correct:
             self.written_text += char
 
         self.last_input_correct = is_correct
 
+        # wenn zeitmessungen da sind, werden diese an den InputAnanysis-Instanz gesendet
         if time_taken:
             self.input_analysis.track_input(char, is_correct, time_taken)
 
         self.last_input = current_time
-
-    def reset(self):
-        self.written_text = ""
-        self.last_input_correct = True
-
-    # fügt den geschriebenen Buchstaben zum text hinzu, welcher vom Benutzer geschrieben wurde
-    def update_written_text(self, user_input):
-        self.write_time_end = current_milli_time()
-        self.written_text = self.written_text + user_input
-
-    # Schreibt die Zeit, die für den aktuellen Buchstaben benötigt wurde in ein Array
-    def input_time(self):
-        time_needed = self.write_time_end - self.write_time_start
-
-        if self.current_position == 0:
-            self.time_per_char[0] = time_needed
-        else:
-            self.time_per_char.append(time_needed)
-
-    def get_written_text(self):
-        return self.written_text
-
-    def get_current_text(self):
-        return self.current_text
-
-    def get_time_per_char(self):
-        return self.time_per_char
 
 
 # Funktion, welche die Zeit in Millisekunden Ausgibt

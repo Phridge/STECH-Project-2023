@@ -15,6 +15,13 @@ from tools import save_and_open
 
 
 class MainStoryScreen(Screen):
+    """
+    Übersichts-SCreen für spielbare level.
+
+    5 level sind von der Theorie her auswählbar, 3 davon sind implementiert,
+    die Level sind auch nur in der Reihenfolge spielbar, die anderen sind nur clickbar, wenn die level davor
+    freigeschaltet sind.
+    """
     def __init__(self, events, save):
         super().__init__()
         self.batch = pyglet.graphics.Batch()
@@ -23,16 +30,19 @@ class MainStoryScreen(Screen):
         background = pyglet.graphics.Group(order=-1)
         foreground = pyglet.graphics.Group(order=1)
 
+        # spielfortschritt laden, damit entsprechende Level
         self.story_progress = save_and_open.get_story_progress(save)
 
         # Layout für den Startbildschirm des Lern-Modus
         self.background = ui_elements.Sprite("assets/images/StartScreenBackground.png", 0, 0, 100, 100, events, self.batch, background)
         self.header = ui_elements.BorderedRectangle("Story", 20, 75, 60, 20, events.color_scheme, color_scheme.Minecraft, 4, events, self.batch)
 
+        # navigationselemente
         self.back = ui_elements.InputButton("Zurück", 40, 10, 20, 10, events.color_scheme, color_scheme.Minecraft, 10, events, self.batch)
         self.settings = ui_elements.InputButton("Einstellungen", 2.5, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
         self.statistics = ui_elements.InputButton("Statistiken", 85, 85, 12.5, 10, events.color_scheme, color_scheme.Minecraft, 8.4, events, self.batch)
 
+        # buttons und bidler für die einzelnen Level.
         self.level1_button = ui_elements.BorderedSpriteButton("assets/images/port.gif", 2.5, 45, 15, 15, events.color_scheme, events, self.batch)
         self.level1_label = ui_elements.InputButton("Erstes Level", 2.5, 32.5, 15, 10, events.color_scheme, color_scheme.Minecraft, 8, events, self.batch)
         if self.story_progress >= 1: # Level 2 nur spielbar wenn Level 1 bereits abgeschlossen wurde
@@ -63,7 +73,6 @@ class MainStoryScreen(Screen):
         from controller.story_mode.level1_screen import Level1Screen
         from controller.story_mode.level2_screen import Level2Screen
         from controller.story_mode.level3_screen import Level3Screen
-        from controller.story_mode.level4_screen import Level4Screen
         # from controller.story_mode.level5_screen import Level5Screen
 
         self._subs.add(self.level1_button.clicked.subscribe(lambda _: self.reload_screen(Level1Screen.init_fn(save))))

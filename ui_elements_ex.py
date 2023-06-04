@@ -93,6 +93,9 @@ class UIElement(Disposable):
 
 
 class BorderedLabel(UIElement):
+    """
+    Text mit rand.
+    """
     def __init__(self, text, pos, style: Style, batch=None, group=None):
         super().__init__()
         text, pos = rx(text), rx(pos)
@@ -116,6 +119,9 @@ class BorderedLabel(UIElement):
 
 
 class TypeTracker(Disposable):
+    """
+    Um einggebbare Texte zu realisieren.
+    """
     def __init__(self, preset_text, typed):
 
         def on_subscribe(subscriber, scheduler):
@@ -146,6 +152,9 @@ class TypeTracker(Disposable):
 
 
 class Button(UIElement):
+    """
+    Anklickbarer und Eingebbarer Button.
+    """
     def __init__(self, text, pos, style, events, on_click: Observer, type_in=True, batch=None, group=None):
         super().__init__()
         text, pos = rx(text), rx(pos)
@@ -174,6 +183,9 @@ class Button(UIElement):
 
 
         def update_style():
+            """
+            Je nach aktuellen zustand wird aussehen geändert.
+            """
             if self.down:
                 fill.color = style.color.click
                 border.color = style.color.click_border
@@ -216,6 +228,9 @@ class Button(UIElement):
 
 
 class ToggleButton(UIElement):
+    """
+    Button, der zwei zustände hat.
+    """
     def __init__(self, text, pos, style, events, type_in=True, batch=None, group=None):
         super().__init__()
         text, pos = rx(text), rx(pos)
@@ -242,6 +257,9 @@ class ToggleButton(UIElement):
         self._subs.add(type_tracker.finished.subscribe(on_typed_in))
 
         def update_style():
+            """
+            Je nach aktuellen zustand wird aussehen geändert.
+            """
             if self.toggle.value:
                 fill.color = style.color.click
                 border.color = style.color.click_border
@@ -286,7 +304,11 @@ class ToggleButton(UIElement):
         self._subs.add(events.mouse.subscribe(handle_mouse))
         self._subs.add(events.mouse_button.subscribe(handle_mouse_button))
 
+
 class Rectangle(UIElement):
+    """
+    Einfarbiges Rechteck.
+    """
     def __init__(self, pos, color, batch=None, group=None):
         super().__init__()
         pos, color = rx(pos), rx(color)

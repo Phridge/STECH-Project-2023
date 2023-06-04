@@ -95,7 +95,7 @@ class Level(Screen):
         self.save = save
         # ob pausiert ist.
         self.is_paused = Var(False)
-        # events für das level an sich, kann ausgeschaltet werden.
+        # events für das level an sich, kann ausgeschaltet werden. (per is_paused)
         self.events = events.add_lever(self.is_paused.pipe(rmap(lambda p: not p)))
         # events für das is_paused menü, funktioniert immer.
         self.pause_events = events
@@ -109,10 +109,13 @@ class Level(Screen):
         self.pause_background = Group(4)
         self.pause_foreground = Group(5)
 
+        # pausier-button
         self.pause_visible = ui_elements.BorderedRectangleButton("Pause (Esc)", 2.5, 85, 15, 10,
                                                                  self.events.color_scheme, color_scheme.Minecraft, 6,
                                                                  self.events, self.batch, self.foreground)
+        # wird escape gedruckt?
         self._subs.add(self.events.key.subscribe(self.test_for_escape))
+        # pausieren, wenn click
         self._subs.add(self.pause_visible.clicked.subscribe(lambda _: self.pause()))
 
         # disposable objekte für den is_paused screen.
@@ -124,9 +127,11 @@ class Level(Screen):
             self.pause()
 
     def pause(self):
+        """Pausiere. (zeige pausescreen an)"""
         self.is_paused.on_next(True)
 
     def unpause(self):
+        """zurück zum Spiel (pausescreen weg)"""
         self.is_paused.on_next(False)
 
     def _show_pause(self, show):
@@ -148,6 +153,7 @@ class Level(Screen):
         pause_maxwell = ui_elements.Sprite("assets/images/mech_tea.png", 40, 17.5, 20, 37.5, self.pause_events, self.batch, self.pause_foreground)
         pause_header = ui_elements.BorderedRectangle("Tee-Pause", 20, 75, 60, 20, self.pause_events.color_scheme, color_scheme.Minecraft, 5, self.pause_events, self.batch, self.pause_foreground)
 
+        # hier alle disposable resourcen
         self.pause_sub.disposable = CompositeDisposable(
             pause_back.clicked.subscribe(lambda _: self.reload_screen(MainStoryScreen.init_fn(self.save))),
             pause_continue_level.clicked.subscribe(lambda _: self.unpause()),
@@ -183,6 +189,8 @@ def animate(lo, hi, time, update_event, map=lambda x: x, interp=linear) -> Obser
     return animation
 
 
+
+# folgende Funktionen sind zum Laden bestimmter Animationen für Spielobjekte.
 @lru_cache()
 def load_enemy_idle(duration=0.3):
     sprite_sheet = pyglet.resource.image('assets/images/enemy_idle.png')
