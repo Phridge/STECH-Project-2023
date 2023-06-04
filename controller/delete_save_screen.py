@@ -35,7 +35,10 @@ class DeleteSaveScreen(Screen):
         save_and_open.delete_save(save)
         self.back_to_menu()
 
-    def back_to_menu(self):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
+    def back_to_menu(self):
+        """
+        Wechselt den Screen zurück zum MainScreen
+        """
         from main_controller import PopScreen
         self.game_command.on_next(PopScreen())
 

@@ -65,6 +65,10 @@ class HomeScreen(Screen):
         self.play_music()
 
     def load_settings(self, save):
+        """
+        Lädt die Settings des angegebenen Saves
+        :param save: Zu ladender Save, hier Save 0
+        """
         from main_controller import ChangeSetting, SetFullscreen
         if save_and_open.get_settings(save):
             fullscreen, volume, color, size = save_and_open.get_settings(save)

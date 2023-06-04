@@ -72,7 +72,8 @@ class SettingsScreen(Screen):
 
     def apply_changes(self, save):
         """
-        Lädt den SettingsScreen neu, nachdem die Einstellungen angewandt wurden
+        Lädt den SettingsScreen neu, nachdem die Einstellungen angewandt und in die Datenbank gespeichert wurden.
+        :param save: aktueller Speicherstand
         """
         from main_controller import ChangeSetting, SwitchScreen, SetFullscreen, ReloadScreen
 
@@ -165,6 +166,10 @@ class SettingsScreen(Screen):
         self.game_command.on_next(SetFullscreen(state))
 
     def change_size(self, data):
+        """
+        Ändert die Bildschirmgröße
+        :param data: Neue Fenster-Größe
+        """
         x = y = None
         if self.window_x.label.text.isnumeric():
             x = int(self.window_x.label.text)

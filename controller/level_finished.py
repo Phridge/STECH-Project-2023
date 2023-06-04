@@ -51,10 +51,16 @@ class LevelFinishedScreen(Screen):
         self.play_music()
 
     def push_next_level(self, next_screen, save_file):
+        """
+        Lädt das nächste Level, abhängig vom letzten Level
+        :param next_screen: Nächster zu ladender Screen
+        :param save_file: Aktuellee save
+        :return:
+        """
         from controller.story_mode.level1_screen import Level1Screen
         from controller.story_mode.level2_screen import Level2Screen
         from controller.story_mode.level3_screen import Level3Screen
-        from controller.story_mode.level4_screen import Level4Screen
+        # from controller.story_mode.level4_screen import Level4Screen
         # from controller.story_mode.level5_screen import Level5Screen
 
         match next_screen:
@@ -64,8 +70,8 @@ class LevelFinishedScreen(Screen):
                 self.reload_screen(Level2Screen.init_fn(save_file))
             case 3:
                 self.reload_screen(Level3Screen.init_fn(save_file))
-            case 4:
-                self.reload_screen(Level4Screen.init_fn(save_file))
+            #case 4:
+                #self.reload_screen(Level4Screen.init_fn(save_file))
             #case 5:
                 #self.reload_screen(Level5Screen.init_fn(save_file))
 
