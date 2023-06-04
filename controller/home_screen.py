@@ -81,5 +81,4 @@ class HomeScreen(Screen):
         with contextlib.suppress(pygame.error):
             mixer.init()
             mixer.music.load("assets/sounds/02 Start Menu.mp3")
-            mixer.music.play()
             mixer.music.play(-1)
