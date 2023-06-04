@@ -14,7 +14,7 @@ from controller import Screen
 from controller.actors import Player
 
 """
-Level4 noch nicht implementiert
+Level4 noch nicht implementiert, Inhalt auch veraltet
 """
 
 class Level4Screen(Screen):
@@ -31,14 +31,13 @@ class Level4Screen(Screen):
         # self.sublist = []
 
         self.gif = ui_elements.Gif("assets/images/city.gif", 0, 0, 100, 100, 5, True, self.events, self.batch, background)
-
-        # Player-Objekt
-        player = Player(self.events, self.batch, 40, 27.5, 15, 22.5)
-
         self.header = ui_elements.BorderedRectangle("Level 4: Die Dampfstadt", 20, 80, 60, 20, self.events.color_scheme, color_scheme.Minecraft, 2, self.events, self.batch)
 
+
         # Hier muss für jeden Button eine Subscription erstellt werden.
-        player.subs.add(player.gif.clicked.subscribe(player.jump))
+
+
+        self.change_controller = Subject()
 
 
     def button_clicked(self, data):  # Wird getriggert, wenn ein Spielstand ausgewählt wird
