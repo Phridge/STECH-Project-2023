@@ -16,7 +16,7 @@ from reactivex.disposable import CompositeDisposable, Disposable, MultipleAssign
     SingleAssignmentDisposable
 from controller import Screen
 from controller.actors import ThePlayer, combine_offset, StaticActor
-from reactivex import Observable, just, concat
+from reactivex import Observable, just, concat, Observer
 from reactivex.operators import combine_latest, map as rmap, share, starmap, scan, filter as rfilter, do_action
 
 from controller.inputbox import InputBox
@@ -24,7 +24,7 @@ from controller.story_mode import Level, LevelMachine, load_enemy_run, animate, 
 
 from events import Event, Var
 from input_tracker import InputAnalysis
-from ui_elements_ex import Rect, Style, map_inner_perc, BorderedLabel, Rectangle
+from ui_elements_ex import Rect, Style, map_inner_perc, BorderedLabel, Rectangle, Button
 
 
 def linear_map(v, lo1, hi1, lo2, hi2):
@@ -35,7 +35,7 @@ def lerp(v, lo, hi):
 
 class Level3Screen(Level):
     def __init__(self, events, save):
-        super().__init__()
+        super().__init__(events, save)
         self.events = events
         window = events.size.pipe(
             rmap(lambda s: Rect(0, 0, *s))
@@ -44,8 +44,7 @@ class Level3Screen(Level):
         battle_group = Group(0, parent=self.foreground)
         ship_group = Group(1, parent=self.foreground)
 
-        self.gif = ui_elements.Gif("assets/images/city.gif", 0, 0, 100, 100, 5, True, self.events, self.batch,
-                                   self.background)
+        self.gif = ui_elements.Gif("assets/images/city.gif", 0, 0, 100, 100, 5, True, self.events, self.batch, self.hud)
 
         self.header = ui_elements.BorderedRectangle("Level 3: Die Dampfstadt", 25, 80, 50, 15, self.events.color_scheme, color_scheme.Minecraft, 3.5, self.events, self.batch, self.foreground)
         self.play_music()
