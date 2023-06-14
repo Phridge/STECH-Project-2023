@@ -1,5 +1,6 @@
 import contextlib
 import itertools
+from functools import partial
 
 import pygame
 from pygame import mixer
@@ -170,9 +171,15 @@ class Level2Screen(Level):
             max_fails = 10  # maximale versuche im level
             fails_left = Var(max_fails)  # Observable für die übrigen versuche
             long_enough = False
+
+
+            def game_timer_finished():
+                nonlocal long_enough
+                long_enough = True
+
             self._subs.add(  # nach 3 minuten wird das level beendet (flag wird auf true gesetzt)
                 animate(0, 0, 3 * 60, self.events.update)
-                .subscribe(on_completed=lambda: locals().update(long_enough=True))
+                .subscribe(on_completed=game_timer_finished)
             )
 
             # wie viele versuche noch - Display
@@ -191,7 +198,7 @@ class Level2Screen(Level):
                 "assets/text_statistics/stats_1.pickle")
 
             # nach 3 minuten ist schluss, solange wird die schleife durchlaufen
-            while not long_enough:
+            while True:
                 # spieler anhalten, da am busch
                 self.player.state.on_next(ThePlayer.Idle())
                 self.scroll_background.paused = True
@@ -244,7 +251,7 @@ class Level2Screen(Level):
                 inputbox.dispose()
 
                 # sind alle versuche aufgegbraucht, dann wird die endsequenz auch abgespielt
-                if fails_left.value == 0:
+                if fails_left.value == 0 or long_enough:
                     break
 
                 # vorwärts rennen, wenn noch versuche da sind
