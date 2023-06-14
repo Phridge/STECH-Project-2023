@@ -96,7 +96,7 @@ class Level(Screen):
         # ob pausiert ist.
         self.is_paused = Var(False)
         # events für das level an sich, kann ausgeschaltet werden. (per is_paused)
-        self.events = events.add_lever(self.is_paused.pipe(rmap(lambda p: not p)))
+        self.events = events.add_valve(self.is_paused.pipe(rmap(lambda p: not p)))
         # events für das is_paused menü, funktioniert immer.
         self.pause_events = events
 
