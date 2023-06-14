@@ -1,4 +1,5 @@
 import contextlib
+import datetime
 import itertools
 from functools import partial
 
@@ -172,25 +173,45 @@ class Level2Screen(Level):
             fails_left = Var(max_fails)  # Observable für die übrigen versuche
             long_enough = False
 
+            game_duration = 3 * 60
 
             def game_timer_finished():
                 nonlocal long_enough
                 long_enough = True
 
+            # countdown,
+            countdown_animation = animate(game_duration, 0, game_duration, self.events.update)
             self._subs.add(  # nach 3 minuten wird das level beendet (flag wird auf true gesetzt)
-                animate(0, 0, 3 * 60, self.events.update)
-                .subscribe(on_completed=game_timer_finished)
+                countdown_animation.subscribe(on_completed=game_timer_finished)
             )
 
-            # wie viele versuche noch - Display
-            fails_left_display = BorderedLabel(
-                fails_left.pipe(rmap(lambda n: f"Verdächtig: {max_fails - n}/{max_fails}")),
+            def seconds_to_str(secs):
+                return f"{int(secs/60)}:{int(secs%60):0>2}"
+
+            # wie viel zeit übrig - display
+            time_left_display = BorderedLabel(
+                countdown_animation.pipe(rmap(seconds_to_str)),
                 window.pipe(
-                    map_inner_perc(35, 70, 30, 5)
+                    map_inner_perc(90, 90, 7, 5)
                 ),
                 style.scale_font_size(0.7),
                 batch=self.batch,
                 group=self.foreground
+            )
+
+            self._subs.add(time_left_display)
+
+            # wie viele versuche noch - Display
+            self._subs.add(
+                BorderedLabel(
+                    fails_left.pipe(rmap(lambda n: f"Verdächtig: {max_fails - n}/{max_fails}")),
+                    window.pipe(
+                        map_inner_perc(35, 70, 30, 5)
+                    ),
+                    style.scale_font_size(0.7),
+                    batch=self.batch,
+                    group=self.foreground
+                )
             )
 
             ia = InputAnalysis()
@@ -269,6 +290,12 @@ class Level2Screen(Level):
                 alert_box.dispose()
 
                 level_progress += 1
+
+            ### End-Sequenz. Ab hier nur noch geskriptettes.
+            ### Grund idee: Maxwell rennt weg, wird gejagt
+
+            # zeitanzeige weg
+            self._subs.remove(time_left_display)
 
             # wegrennen, sodass die gegner außer sichtweite kommen
             self.player.state.on_next(ThePlayer.Running(5.0))
