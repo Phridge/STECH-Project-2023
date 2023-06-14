@@ -185,7 +185,6 @@ class GameWindow(pyglet.window.Window, Disposable):
         :param keycode: Keycode der Taste, die gedrückt wurde
         :param mods: ergänzen
         """
-        print(keycode)
         self.events.key.on_next((keycode, mods))
 
     def on_text(self, text):

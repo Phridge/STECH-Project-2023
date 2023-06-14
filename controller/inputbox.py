@@ -118,8 +118,9 @@ class InputBox(Controller):
                 # NEUER TEXTTRACKER!!
                 self.text_tracker.on_next(tt)
                 # wenn fertig, dann ist ruhe
-                if tt.is_finished:
-                    tt_sub.disposable = None
+                # if tt.is_finished:
+                #     print("Early Dispose", vars(tt))
+                #     tt_sub.disposable = None
 
             tt_sub.disposable = CompositeDisposable([
                 events.text.subscribe(accept_char),  # auf eingaben reagieren

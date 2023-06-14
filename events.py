@@ -24,6 +24,8 @@ class Events(DisposableBase):
         return Events(**vars(self), **kwargs)
 
     def add_lever(self, lever):
+        return self
+
         new = {}
         predicate = True
         self._sub = lever.subscribe(lambda p: locals().update(predicate=p))

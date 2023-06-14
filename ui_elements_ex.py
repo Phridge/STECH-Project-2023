@@ -111,10 +111,6 @@ class BorderedLabel(UIElement):
         # Text
         text_layout = pyglet.text.Label("", style.font, style.font_size, color=style.color.text, anchor_x="center", anchor_y="center", batch=batch, group=group)
         self._subs.add(pos.pipe(map_center_anchor()).subscribe(partial(position_pyglet_text, text_layout)))
-        def test(text):
-            print(text)
-            print(text_layout)
-        self._subs.add(text.subscribe(test))
         self._subs.add(text.subscribe(partial(setattr, text_layout, "text")))
 
 
