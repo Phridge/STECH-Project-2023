@@ -46,18 +46,17 @@ class Level3Screen(Level):
         :param save:
         """
         super().__init__(events, save)
-        self.events = events
-        window = events.size.pipe(
+        window = self.events.size.pipe(
             rmap(lambda s: Rect(0, 0, *s))
         )
-        style = Style(events.color_scheme, "Monocraft", 15)
+        style = Style(self.events.color_scheme, "Monocraft", 15)
 
         # zum sortieren von Spielobjekten.
         battle_group = Group(0, parent=self.foreground)  # alle, die im kampf involviert sind
         ship_group = Group(1, parent=self.foreground)  # das luftschiff, muss vorm spielern sein
 
         # hintergrund
-        self.gif = ui_elements.Gif("assets/images/city.gif", 0, 0, 100, 100, 5, True, self.events, self.batch, self.hud)
+        self.gif = ui_elements.Gif("assets/images/city.gif", 0, 0, 100, 100, 5, True, self.events, self.batch, self.background)
 
         # header
         self.header = ui_elements.BorderedRectangle("Level 3: Die Dampfstadt", 25, 80, 50, 15, self.events.color_scheme, color_scheme.Minecraft, 3.5, self.events, self.batch, self.foreground)
@@ -113,7 +112,7 @@ class Level3Screen(Level):
 
             ia = InputAnalysis()
 
-            def enemy_generator(msg, self_disposable):
+            def enemy_generator(msg, dispose_self):
                 """
                 Generiert die Gegner zufällig.
 
@@ -162,7 +161,7 @@ class Level3Screen(Level):
                         map_inner_perc(30, 3, 67, 17),
                     ),
                     style.scale_font_size(1),
-                    events,
+                    self.events,
                     input_analysis=ia,
                     batch=self.batch,
                     group=self.overlay
@@ -200,7 +199,7 @@ class Level3Screen(Level):
                         """
                         spawn_new_enemy()
                         enemy_spawn_delay.dispose()
-                    enemy_spawn_delay.disposable = animate(0, 0, 0.5, events.update).subscribe(on_completed=new_enemy)
+                    enemy_spawn_delay.disposable = animate(0, 0, 0.5, self.events.update).subscribe(on_completed=new_enemy)
 
                 def on_input(tt):
                     """
@@ -215,10 +214,11 @@ class Level3Screen(Level):
 
                 def at_player():
                     dispose_inputbox()
+                    msg()
 
                 # "Laufe-zum-Spieler"-Zustand. Nächster zustand, wenn beim Spieler (laufanimation fertig)
                 yield CompositeDisposable(
-                    animate(1.0, 0.0, strength, events.update)  # gegner zum spieler bewegen
+                    animate(1.0, 0.0, strength, self.events.update)  # gegner zum spieler bewegen
                     .subscribe(enemy_approach_perc.on_next, on_completed=at_player)
                 )
 
@@ -227,7 +227,7 @@ class Level3Screen(Level):
                     # wenn dieser Gegner gekillt wurde, den Spieler auf attackieren setzen
                     p.state.on_next(p.Attacking(None))
                     # eine sekunde lang attackieren
-                    attack = animate(0.0, 0.0, 1, events.update)
+                    attack = animate(0.0, 0.0, 1, self.events.update)
                     yield CompositeDisposable(
                         attack.subscribe(on_completed=msg)
                     )
@@ -257,15 +257,15 @@ class Level3Screen(Level):
                     # nach 2 sekunden spieler aua, neuer gegner.
                     # dieser Gegner wird nach 5 sekunden gelöscht
                     yield CompositeDisposable(
-                        animate(0, 0, 2, events.update).subscribe(on_completed=reset),
-                        animate(0.0, -1.0, 5, events.update)
+                        animate(0, 0, 2, self.events.update).subscribe(on_completed=reset),
+                        animate(0.0, -1.0, 5, self.events.update)
                         .subscribe(enemy_approach_perc.on_next, on_completed=msg)
                     )
 
                 # gegner ACtor löschen
                 enemy.dispose()
                 # und diesen callback auch, sodass dieser Gegner aus der Liste der Gegner gelöscht und disposed wird
-                self_disposable.dispose()
+                dispose_self()
 
             # liste der Gegner.
             # Löschen sich gegner selbständig aus dieser Liste, werden sie disposed.
@@ -275,8 +275,8 @@ class Level3Screen(Level):
                 """
                 Erstellt einen neuen Gegner und fügt diesen in die Gegner in die Gegnerliste ein
                 """
-                # dieses Disposable wird vom Gegner gelöscht, dadurch wird auch der gegner entfernt
-                remove_handle = Disposable(lambda: enemies.remove(enemy))
+                # dieser callback entfernt den gegner
+                remove_handle = lambda: enemies.remove(enemy)
                 enemy = LevelMachine(lambda msg: enemy_generator(msg, remove_handle))
                 enemies.add(enemy)
 
@@ -305,11 +305,11 @@ class Level3Screen(Level):
 
             # animationen: Spieler nach rechts, SChiff nach unten
             yield CompositeDisposable(
-                animate(0, 1, 4, events.update).pipe(
+                animate(0, 1, 4, self.events.update).pipe(
                     combine_latest(object_area),
                     starmap(lambda p, area: Rect(area.w - 300, lerp(p, area.h, area.y - 20), 700, 500))
                 ).subscribe(ship_pos.on_next),
-                animate(0, 1, 6, events.update).pipe(
+                animate(0, 1, 6, self.events.update).pipe(
                     do_action(on_completed=msg),
                     combine_latest(object_area),
                     starmap(lambda p, area: Rect(lerp(p, player_stationary.x, area.w), player_stationary.y, player_stationary.w, player_stationary.h))
@@ -318,12 +318,12 @@ class Level3Screen(Level):
             )
 
             # eine Sekunde lang warten
-            yield animate(0, 0, 1, events.update).subscribe(on_completed=msg)
+            yield animate(0, 0, 1, self.events.update).subscribe(on_completed=msg)
 
             # Schiff nach oben. Spieler wird nicht animiert, ist sowiso nicht sichtbar.
             yield CompositeDisposable(
-                Rectangle(window, animate(0, 255, 3, events.update, lambda v: (0, 0, 0, int(v))), batch=self.batch, group=self.overlay),
-                animate(1, 0, 3, events.update).pipe(
+                Rectangle(window, animate(0, 255, 3, self.events.update, lambda v: (0, 0, 0, int(v))), batch=self.batch, group=self.overlay),
+                animate(1, 0, 3, self.events.update).pipe(
                     do_action(on_completed=msg),
                     combine_latest(object_area),
                     starmap(lambda p, area: Rect(area.w - 300, lerp(p, area.h, area.y - 20), 700, 500))

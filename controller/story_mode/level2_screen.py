@@ -2,12 +2,11 @@ import contextlib
 import itertools
 
 import pygame
-import pyglet
 from pygame import mixer
 from pyglet.graphics import Group
-from reactivex import Observable, just, concat, Observer
-from reactivex.disposable import CompositeDisposable, SerialDisposable, Disposable
-from reactivex.operators import combine_latest, map as rmap, share, starmap, scan
+from reactivex import just, concat
+from reactivex.disposable import CompositeDisposable, Disposable
+from reactivex.operators import map as rmap
 
 import color_scheme
 import textprovider.statistical
@@ -16,7 +15,7 @@ from controller.actors import ThePlayer, combine_offset, StaticActor
 from events import Var
 from input_tracker import InputAnalysis, TextTracker
 from tools.save_and_open import save_run
-from ui_elements_ex import rx, Rect, Style, map_inner_perc, BorderedLabel, Rectangle, Button
+from ui_elements_ex import Rect, Style, map_inner_perc, BorderedLabel, Rectangle
 from . import Level, animate, LevelMachine, load_enemy_idle, load_bush, load_enemy_run
 from ..inputbox import InputBox
 from ..level_finished import LevelFinishedScreen
@@ -32,6 +31,7 @@ class Level2Screen(Level):
     """
     Screen-Klasse für Level2.
     """
+
     def __init__(self, events, save):
         """
         Initialisiere ein Level 2
@@ -39,10 +39,10 @@ class Level2Screen(Level):
         :param save: Save-Nummer
         """
         super().__init__(events, save)
-        window = events.size.pipe(
+        window = self.events.size.pipe(
             rmap(lambda s: Rect(0, 0, *s))
         )
-        style = Style(events.color_scheme, "Monocraft", 15)
+        style = Style(self.events.color_scheme, "Monocraft", 15)
 
         # verschiedene Render-Gruppen, um die Objekte auf dem Bildschirm zu ordnen.
         player_group = Group(0, parent=self.foreground)
@@ -50,8 +50,11 @@ class Level2Screen(Level):
         enemy_group = Group(2, parent=self.foreground)
 
         # im folgenden Block können Elemente eingefügt werden. Die Elemente die schon da sind dienen nur als Beispiele
-        self.scroll_background = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, self.events, self.batch, self.background)
-        self.header = ui_elements.BorderedRectangle("Level 2: Der Wald des Widerstands", 25, 80, 50, 15, self.events.color_scheme, color_scheme.Minecraft, 3, self.events, self.batch, self.hud)
+        self.scroll_background = ui_elements.Gif("assets/images/forest.gif", 0, 0, 100, 100, 30, True, self.events,
+                                                 self.batch, self.background)
+        self.header = ui_elements.BorderedRectangle("Level 2: Der Wald des Widerstands", 25, 80, 50, 15,
+                                                    self.events.color_scheme, color_scheme.Minecraft, 3, self.events,
+                                                    self.batch, self.hud)
 
         # Animationen vorladen für gegner und Busch
         enemy_idle_animation = load_enemy_idle()
@@ -62,6 +65,7 @@ class Level2Screen(Level):
             """
             Generiert das zweite Level und alle Aktionen darin
             """
+
             def generate_bush_enemy_positions():
                 """
                 Generiert positionen von Büschen und Gegnern. Da dieses Level im prinzip ein endlos-scroller ist,
@@ -157,7 +161,8 @@ class Level2Screen(Level):
             # spielbeginn: spieler kommt angerannt.
             self.player.state.on_next(ThePlayer.Running(5.0))
             yield CompositeDisposable(
-                animate(-1500, -player_stationary.x, 4.0, events.update).subscribe(scroll.on_next, on_completed=msg),
+                animate(-1500, -player_stationary.x, 4.0, self.events.update).subscribe(scroll.on_next,
+                                                                                        on_completed=msg),
             )
 
             # spieler sitzt nun hinterm busch.
@@ -166,13 +171,13 @@ class Level2Screen(Level):
             fails_left = Var(max_fails)  # Observable für die übrigen versuche
             long_enough = False
             self._subs.add(  # nach 3 minuten wird das level beendet (flag wird auf true gesetzt)
-                animate(0, 0, 3 * 60, events.update)
+                animate(0, 0, 3 * 60, self.events.update)
                 .subscribe(on_completed=lambda: locals().update(long_enough=True))
             )
 
             # wie viele versuche noch - Display
             fails_left_display = BorderedLabel(
-                fails_left.pipe(rmap(lambda n: f"Verdächtig: {max_fails-n}/{max_fails}")),
+                fails_left.pipe(rmap(lambda n: f"Verdächtig: {max_fails - n}/{max_fails}")),
                 window.pipe(
                     map_inner_perc(35, 70, 30, 5)
                 ),
@@ -182,7 +187,8 @@ class Level2Screen(Level):
             )
 
             ia = InputAnalysis()
-            text_provider = textprovider.statistical.StatisticalTextProvider.from_pickle("assets/text_statistics/stats_1.pickle")
+            text_provider = textprovider.statistical.StatisticalTextProvider.from_pickle(
+                "assets/text_statistics/stats_1.pickle")
 
             # nach 3 minuten ist schluss, solange wird die schleife durchlaufen
             while not long_enough:
@@ -199,7 +205,8 @@ class Level2Screen(Level):
                 )
                 generation_args = textprovider.TextProviderArgs(20, 20 + level_progress * 2, textprovider.Charset.ALPHA)
                 text = text_provider.get_text(generation_args)
-                inputbox = InputBox(text, box_pos, style.scale_font_size(.7), events, ia, batch=self.batch, group=enemy_group)
+                inputbox = InputBox(text, box_pos, style.scale_font_size(.7), self.events, ia, batch=self.batch,
+                                    group=enemy_group)
 
                 def react_to_input(tt: TextTracker):
                     if tt.is_finished:
@@ -229,10 +236,9 @@ class Level2Screen(Level):
                         group=enemy_group,
                     )
                     # und kurz warten
-                    yield animate(0, 0, 0.3, events.update).subscribe(on_completed=msg)
+                    yield animate(0, 0, 0.3, self.events.update).subscribe(on_completed=msg)
                 else:
                     alert_box = Disposable()
-
 
                 # inputbox weg
                 inputbox.dispose()
@@ -247,8 +253,8 @@ class Level2Screen(Level):
                 yield CompositeDisposable(
                     animate(
                         positions[level_progress][0].x - player_stationary.x,
-                        positions[level_progress+1][0].x - player_stationary.x,
-                        1, events.update
+                        positions[level_progress + 1][0].x - player_stationary.x,
+                        1, self.events.update
                     ).subscribe(scroll.on_next, on_completed=msg)
                 )
 
@@ -256,7 +262,6 @@ class Level2Screen(Level):
                 alert_box.dispose()
 
                 level_progress += 1
-
 
             # wegrennen, sodass die gegner außer sichtweite kommen
             self.player.state.on_next(ThePlayer.Running(5.0))
@@ -266,7 +271,7 @@ class Level2Screen(Level):
                     positions[level_progress][0].x - player_stationary.x,
                     positions[level_progress + generate_ahead][0].x - player_stationary.x + 1000,
                     3,
-                    events.update
+                    self.events.update
                 ).subscribe(scroll.on_next, on_completed=msg)
             )
 
@@ -274,13 +279,13 @@ class Level2Screen(Level):
             self.player.state.on_next(ThePlayer.Idle())
             self.scroll_background.paused = True
             yield CompositeDisposable(
-                animate(0, 0, 2, events.update).subscribe(on_completed=msg)
+                animate(0, 0, 2, self.events.update).subscribe(on_completed=msg)
             )
 
             # umschauen
             self.player.look_dir.on_next(-1)
             yield CompositeDisposable(
-                animate(0, 0, 1, events.update).subscribe(on_completed=msg)
+                animate(0, 0, 1, self.events.update).subscribe(on_completed=msg)
             )
 
             # erschrecken (ausrufezeichen über Maxwell anzeigen)
@@ -296,14 +301,14 @@ class Level2Screen(Level):
                 batch=self.batch,
                 group=enemy_group,
             )
-            yield animate(0, 0, 0.3, events.update).subscribe(on_completed=msg)
+            yield animate(0, 0, 0.3, self.events.update).subscribe(on_completed=msg)
 
             # umschauen
             self.player.look_dir.on_next(1)
             yield CompositeDisposable(
-                animate(0, 0, 1, events.update).subscribe(on_completed=msg)
+                animate(0, 0, 1, self.events.update).subscribe(on_completed=msg)
             )
-            alert_box.dispose() # Ausrufezeichen geht weg
+            alert_box.dispose()  # Ausrufezeichen geht weg
 
             # !!WEGRENNEN!
             self.player.state.on_next(ThePlayer.Running(5.0))
@@ -323,7 +328,7 @@ class Level2Screen(Level):
             enemy2 = StaticActor(
                 enemy_run_animation,
                 enemy_advance.pipe(
-                    rmap(lambda x: Rect(x-200, -10, 100, 130)),
+                    rmap(lambda x: Rect(x - 200, -10, 100, 130)),
                     combine_offset(object_area),
                 ),
                 batch=self.batch,
@@ -332,14 +337,15 @@ class Level2Screen(Level):
 
             # fadeout animation
             animation = concat(
-                animate(0, 0, 1, events.update, lambda v: (0, 0, 0, int(v))),
-                animate(0, 255, 4, events.update, lambda v: (0, 0, 0, int(v))),
+                animate(0, 0, 1, self.events.update, lambda v: (0, 0, 0, int(v))),
+                animate(0, 255, 4, self.events.update, lambda v: (0, 0, 0, int(v))),
             )
 
             # aus-dem-Sichtfeld-laufen-Animation
             yield CompositeDisposable(
-                animate(-200, 3000, 30, events.update).subscribe(enemy_advance.on_next),
-                animate(0, 3000, 20, events.update, lambda x: player_stationary.offset((x, 0))).subscribe(player_pos.on_next),
+                animate(-200, 3000, 30, self.events.update).subscribe(enemy_advance.on_next),
+                animate(0, 3000, 20, self.events.update, lambda x: player_stationary.offset((x, 0))).subscribe(
+                    player_pos.on_next),
                 Rectangle(window, animation, batch=self.batch, group=self.overlay),
                 animation.subscribe(on_completed=msg)
             )
@@ -350,7 +356,8 @@ class Level2Screen(Level):
             # Lädt Abschluss-Screen, egal ob
             successful = False
             if fails_left.value > 0: successful = True
-            self.reload_screen(LevelFinishedScreen.init_fn(save, 2, calculate_points(ia), successful))  # Abschlussbildschirm des Levels (Save, next_level, Punkte, Erfolgreich)
+            self.reload_screen(LevelFinishedScreen.init_fn(save, 2, calculate_points(ia),
+                                                           successful))  # Abschlussbildschirm des Levels (Save, next_level, Punkte, Erfolgreich)
 
         # levelmaschine erstellen
         self.machine = LevelMachine(level_generator)
