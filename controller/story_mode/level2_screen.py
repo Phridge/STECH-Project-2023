@@ -179,7 +179,7 @@ class Level2Screen(Level):
                 nonlocal long_enough
                 long_enough = True
 
-            # countdown,
+            # countdown
             countdown_animation = animate(game_duration, 0, game_duration, self.events.update)
             self._subs.add(  # nach 3 minuten wird das level beendet (flag wird auf true gesetzt)
                 countdown_animation.subscribe(on_completed=game_timer_finished)
@@ -192,9 +192,9 @@ class Level2Screen(Level):
             time_left_display = BorderedLabel(
                 countdown_animation.pipe(rmap(seconds_to_str)),
                 window.pipe(
-                    map_inner_perc(90, 90, 7, 5)
+                    map_inner_perc(80, 85, 17, 10)
                 ),
-                style.scale_font_size(0.7),
+                style.scale_font_size(1),
                 batch=self.batch,
                 group=self.foreground
             )
