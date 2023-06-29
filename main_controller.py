@@ -225,8 +225,6 @@ def main():
     # startet das Spiel
     pyglet.app.run(1/30)
 
-    window.dispose()
-
 
 
 
